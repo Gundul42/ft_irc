@@ -10,8 +10,10 @@
 
 int	main(void)
 {
-		struct addrinfo hints, *res;
-		int				sockfd;
+		struct sockaddr_storage		their_addr;
+		socklen_t					addr_size;
+		struct addrinfo 			hints, *res;
+		int							sockfd, newfd;
 
 		memset(&hints, 0, sizeof hints);
 		hints.ai_family = AF_UNSPEC;		// AF_INET or AF_INET6 to force version
@@ -48,6 +50,16 @@ int	main(void)
 		else
 				std::cout << "Success: listen on Port #" << PORT << std::endl;
 
+		//accept incoming calls and and assign new fd to the caller
+		addr_size = sizeof(their_addr);
+		newfd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+		if (newfd < 0)
+		{
+				std::cout << "Error: accept failed" << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		else
+				std::cout << "Success: connection established new fd is: " << newfd << std::endl;
 
 		return (0);
 }
