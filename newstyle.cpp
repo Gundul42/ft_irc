@@ -3,10 +3,24 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
 #include <string.h>
 #include <iostream>
 
 #define PORT "1974"
+
+/**********************************************************
+  struct addrinfo {
+               int              ai_flags;		multiple flags with OR
+               int              ai_family;		specifies IP4/IP6 or auto	
+               int              ai_socktype;	Stream or diagram == TCP or UDP
+               int              ai_protocol;	protocoll or 0 for any
+               socklen_t        ai_addrlen;		|
+               struct sockaddr *ai_addr;		|>
+               char            *ai_canonname;	|>		must be 0 or NULL
+               struct addrinfo *ai_next;		|
+           };
+**********************************************************/
 
 int	main(void)
 {
@@ -59,8 +73,23 @@ int	main(void)
 				exit(EXIT_FAILURE);
 		}
 		else
-				std::cout << "Success: connection established new fd is: " << newfd << std::endl;
+				std::cout << "Success: connection established, new fd is: " << newfd << std::endl;
 
+		//read in a loop until client closes connection
+		int		send_data, buflen;
+		char	msg[1024];
+
+		buflen = 1024;
+		send_data = 1;
+		while (send_data != -1 && msg != "\n\0")
+		{
+			send_data = recv(newfd, (char *)msg, buflen, 0);
+			std::cout << ":" << send_data << " >>> " << msg << std::endl;
+		}
+		std::perror("receiv failed");
 		freeaddrinfo(res);
+		close(sockfd);
+		close(newfd);
 		return (0);
 }
+
