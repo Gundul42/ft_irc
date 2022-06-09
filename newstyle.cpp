@@ -84,7 +84,7 @@ int	main(void)
 		while (send_data != -1 && msg != "\n\0")
 		{
 			send_data = recv(newfd, (char *)msg, buflen, 0);
-			std::cout << ":" << send_data << " >>> " << msg << std::endl;
+			std::cout << ":" << send_data << " >>> " << msg;
 		}
 		std::perror("receiv failed");
 		freeaddrinfo(res);
