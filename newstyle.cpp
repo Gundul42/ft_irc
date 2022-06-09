@@ -5,6 +5,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <iostream>
 
 #define PORT "1974"
@@ -21,6 +22,14 @@
                struct addrinfo *ai_next;		|
            };
 **********************************************************/
+static
+void	handle(int num, siginfo_t *inf, void *ctxt)
+{
+	if (num && (ctxt || !ctxt) && inf)
+			std::cout << "Good Bye" << std::endl;
+	exit(0);
+}
+
 
 int	main(void)
 {
@@ -28,6 +37,11 @@ int	main(void)
 		socklen_t					addr_size;
 		struct addrinfo 			hints, *res;
 		int							sockfd, newfd;
+		struct sigaction			sgl;
+
+		sgl.sa_flags = SA_SIGINFO;
+		sgl.sa_sigaction = &handle;
+		sigaction(SIGINT, &sgl, NULL);
 
 		memset(&hints, 0, sizeof hints);
 		hints.ai_family = AF_UNSPEC;		// AF_INET or AF_INET6 to force version
@@ -81,12 +95,15 @@ int	main(void)
 
 		buflen = 1024;
 		send_data = 1;
-		while (send_data != -1 && msg != "\n\0")
+		while (1) //send_data > 0)
 		{
 			send_data = recv(newfd, (char *)msg, buflen, 0);
 			std::cout << ":" << send_data << " >>> " << msg;
+			send(newfd, ">>> OK <<<\n", 11, 0);
+			memset(msg, 0, buflen);
 		}
-		std::perror("receiv failed");
+		if (send_data < 0)
+			std::perror("receiv failed");
 		freeaddrinfo(res);
 		close(sockfd);
 		close(newfd);
