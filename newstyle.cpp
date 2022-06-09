@@ -3,12 +3,14 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
 #include <signal.h>
 #include <iostream>
+#include <errno.h>
 
-#define PORT "1974"
+#define PORT "1999"
 
 /**********************************************************
   struct addrinfo {
@@ -36,7 +38,7 @@ int	main(void)
 		struct sockaddr_storage		their_addr;
 		socklen_t					addr_size;
 		struct addrinfo 			hints, *res;
-		int							sockfd, newfd;
+		int							sockfd, newfd, flags;
 		struct sigaction			sgl;
 
 		sgl.sa_flags = SA_SIGINFO;
@@ -59,6 +61,10 @@ int	main(void)
 		}
 		else
 				std::cout << "Success: Socket fd is : " << sockfd << std::endl;
+
+		//set non blocking mod
+		//flags = fcntl(sockfd, F_GETFL);
+		//flags = fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
 
 		//bind port to address
 		if (bind(sockfd, res->ai_addr, res->ai_addrlen) < 0)
