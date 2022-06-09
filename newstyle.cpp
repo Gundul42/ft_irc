@@ -63,8 +63,8 @@ int	main(void)
 				std::cout << "Success: Socket fd is : " << sockfd << std::endl;
 
 		//set non blocking mod
-		//flags = fcntl(sockfd, F_GETFL);
-		//flags = fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+		flags = fcntl(sockfd, F_GETFL);
+		flags = fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
 
 		//bind port to address
 		if (bind(sockfd, res->ai_addr, res->ai_addrlen) < 0)
@@ -86,14 +86,27 @@ int	main(void)
 
 		//accept incoming calls and and assign new fd to the caller
 		addr_size = sizeof(their_addr);
-		newfd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
-		if (newfd < 0)
+		while (true)
 		{
-				std::cout << "Error: accept failed" << std::endl;
-				exit(EXIT_FAILURE);
+			newfd = accept(sockfd, (struct sockaddr *)&their_addr, &addr_size);
+			if (newfd < 0 && errno != EWOULDBLOCK)
+			{
+					std::cout << "Error: accept failed" << std::endl;
+					exit(EXIT_FAILURE);
+			}
+			else if (newfd < 0 && errno == EWOULDBLOCK)
+			{
+					std::cout << "No pending connection, waiting" << std::endl;
+					sleep(1);
+			}
+			else
+			{
+				std::cout << "We have a connection, send <<<ok>>>" << std::endl;
+				send(newfd, ">>> OK <<<\n", 11, 0);
+				close(newfd);
+			}
 		}
-		else
-				std::cout << "Success: connection established, new fd is: " << newfd << std::endl;
+
 
 		//read in a loop until client closes connection
 		int		send_data, buflen;
