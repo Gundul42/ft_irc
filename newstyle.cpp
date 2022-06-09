@@ -61,5 +61,6 @@ int	main(void)
 		else
 				std::cout << "Success: connection established new fd is: " << newfd << std::endl;
 
+		freeaddrinfo(res);
 		return (0);
 }
