@@ -96,13 +96,13 @@ int	main(void)
 			}
 			else if (newfd < 0 && errno == EWOULDBLOCK)
 			{
-					std::cout << "No pending connection, waiting" << std::endl;
+					//std::cout << "No pending connection, waiting" << std::endl;
 					sleep(1);
 			}
-			else
+			else if (newfd > 0)
 			{
 				std::cout << "We have a connection, send <<<ok>>>" << std::endl;
-				send(newfd, ">>> OK <<<\n", 11, 0);
+				send(newfd, ">>> Hello from Gundul <<<", 25, 0);
 				close(newfd);
 			}
 		}
