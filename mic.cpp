@@ -30,6 +30,8 @@ main (int argc, char *argv[])
 	int		timeout;
 	struct	pollfd fds[200];
 	int		nfds = 1, current_size = 0, i, j;
+	struct sockaddr				their_addr;
+	socklen_t					addr_size;
 
 	memset(&addr, 0, sizeof(addr));
 	addr.ai_family = AF_UNSPEC;
@@ -124,6 +126,7 @@ main (int argc, char *argv[])
 			break;
 		}
 
+		addr_size = sizeof(their_addr);
 		current_size = nfds;
 		for (i = 0; i < current_size; i++)
 		{
@@ -158,7 +161,8 @@ main (int argc, char *argv[])
 					/* failure on accept will cause us to end the		 */
 					/* server.											 */
 					/*****************************************************/
-					new_sd = accept(listen_sd, NULL, NULL);
+					new_sd = accept(listen_sd, (struct sockaddr *)&their_addr, &addr_size);
+					//new_sd = accept(listen_sd, NULL, NULL);
 					if (new_sd < 0)
 					{
 						if (errno != EWOULDBLOCK)
@@ -173,7 +177,7 @@ main (int argc, char *argv[])
 					/* Add the new incoming connection to the		     */
 					/* pollfd structure									 */
 					/*****************************************************/
-					printf("	New incoming connection - %d\n", new_sd);
+					printf("	New incoming connection - %d \n", new_sd);
 					fds[nfds].fd = new_sd;
 					fds[nfds].events = POLLIN;
 					nfds++;
