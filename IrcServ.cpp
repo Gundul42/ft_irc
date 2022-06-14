@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 18:15:03 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 15:02:19 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/14 19:08:33 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,11 @@
 
 //these are private, no use of copying
 IrcServ::IrcServ(const IrcServ & cpy) {*this = cpy;}
-IrcServ & IrcServ::operator=(const IrcServ & rgt) {socketfd = rgt.socketfd; return *this;}
+IrcServ & IrcServ::operator=(const IrcServ & rgt) 
+{
+		_socketfd = rgt._socketfd; 
+		return *this;
+}
 
 IrcServ::IrcServ(const char *port)
 {
@@ -35,13 +39,13 @@ IrcServ::IrcServ(const char *port)
     }
 	for(p = ai; p != NULL; p = p->ai_next)
 	{
-		socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
-    	if (socketfd < 0) 
+		_socketfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol);
+    	if (_socketfd < 0) 
 		    continue;
-		setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
-		if (bind(socketfd, p->ai_addr, p->ai_addrlen) < 0)
+		setsockopt(_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int));
+		if (bind(_socketfd, p->ai_addr, p->ai_addrlen) < 0)
 		{
-			close(socketfd);
+			close(_socketfd);
 			continue;
 		}
 		break;
@@ -52,29 +56,29 @@ IrcServ::IrcServ(const char *port)
         exit(1);
 	}
 	freeaddrinfo(ai);
-	if (listen(socketfd, 10) == -1)
+	if (listen(_socketfd, 10) == -1)
 	{
 		std::cerr << "Error: socket could not listen" << std::endl;
         exit(1);
 	}
-	std::cout << "Success: Socket opened and listening at FD#" << socketfd << std::endl;
+	std::cout << "Success: Socket opened and listening at FD#" << _socketfd << std::endl;
 }
 
 IrcServ::~IrcServ(void)
 {
-		close(socketfd);
+		close(_socketfd);
 		std::cout << "Byebye" << std::endl;
 }
 
 int	IrcServ::getSocketFd(void) const
 {
-		return (socketfd);
+		return (_socketfd);
 }
 
 //
 // dynamically change size of the pollfd array
 //
-void IrcServ::add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_size)
+void IrcServ::_add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_size)
 {
 	if(*fd_count==*fd_size)
 	{
@@ -89,7 +93,7 @@ void IrcServ::add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_siz
 //
 // delete one entry, means copy the last over it and reduce size by one
 //
-void IrcServ::del_from_pfds(pollfd pfds[], int i, int *fd_count)
+void IrcServ::_del_from_pfds(pollfd pfds[], int i, int *fd_count)
 {
 	pfds[i] = pfds[*fd_count-1];
 	(*fd_count)--;
@@ -98,7 +102,7 @@ void IrcServ::del_from_pfds(pollfd pfds[], int i, int *fd_count)
 //
 // check for IPv4 or IPv6 and return address string
 //
-void* IrcServ::get_in_addr(sockaddr *sa)
+void* IrcServ::_get_in_addr(sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
         return &(((sockaddr_in *)sa)->sin_addr);
@@ -126,7 +130,7 @@ void IrcServ::loop(void)
 	std::map<int, ftClient*>				connections;
 	std::map<int, ftClient*>::iterator		iter;
 
-	pfds[0].fd=socketfd;
+	pfds[0].fd=_socketfd;
 	pfds[0].events = POLLIN;
 	fd_count=1;
 	addrlen = sizeof remoteaddr;
@@ -145,15 +149,16 @@ void IrcServ::loop(void)
 		{
 			if (pfds[i].revents & POLLIN)
 			{
-				if (pfds[i].fd == socketfd) //server
+				if (pfds[i].fd == _socketfd) //server
 				{
-					newfd = accept(socketfd, (sockaddr*)&remoteaddr, &addrlen);
+					newfd = accept(_socketfd, (sockaddr*)&remoteaddr, &addrlen);
 					if (newfd == -1)
 						std::cerr << "Error while accept" << std::endl;
 					else
 					{
-						add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
-						addrStr = inet_ntop(remoteaddr.ss_family, get_in_addr(
+						std::cout << _printTime() << ":";
+						_add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
+						addrStr = inet_ntop(remoteaddr.ss_family, _get_in_addr(
 									(sockaddr*)&remoteaddr), remoteIP, INET6_ADDRSTRLEN);
 						connections.insert(std::pair<int, ftClient*>(newfd, 
 									new ftClient(newfd, "", addrStr)));
@@ -167,13 +172,16 @@ void IrcServ::loop(void)
 						//Got error or connection closed by client
 						if (nbytes < 0)
 							std::cerr << "Error while receiving" << std::endl;
+						std::cout << _printTime() << ":";
 						delete connections.find(pfds[i].fd)->second;
 						connections.erase(pfds[i].fd);
 						close (pfds[i].fd);
-						del_from_pfds(pfds, i, &fd_count);
+						_del_from_pfds(pfds, i, &fd_count);
 					}
 					else
 					{
+						std::cout << "Last action before " << getTimeDiff(connections.find(
+							pfds[i].fd)->second->getLastAction()) << " seconds ";
 						std::cout << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
 						//we have received something
 						// client fd is pfds[i].fd
@@ -187,4 +195,21 @@ void IrcServ::loop(void)
 		}
 	}
 }
+				
+int	IrcServ::getTimeDiff(time_t start)
+{
+		time_t	end;
+
+		time(&end);
+		return (static_cast<int> (difftime(end, start)));
+}
+
+std::string	IrcServ::_printTime(void)
+{
+   time_t now = time(0);
+   std::string	mytime(ctime(&now));
+   
+   return (mytime.substr(0, mytime.size() - 1));
+}
+
 

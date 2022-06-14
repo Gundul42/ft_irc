@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 15:10:46 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/14 19:01:52 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ ftClient ftClient::operator=(const ftClient & rgt)
 		_name = rgt._name;
 		_addr = rgt._addr;
 		_val = rgt._val;
+		_connect = rgt._connect;
+		_lastAction = rgt._lastAction;
 		return (*this);
 }
 
@@ -34,6 +36,8 @@ ftClient ftClient::operator=(const ftClient & rgt)
 ftClient::ftClient(int fd, std::string name, const std::string addr): _fd(fd), _name(name), 
 		_addr(addr), _val(false) 
 {
+		time(&_connect);
+		time(&_lastAction);
 		std::cout << "NEW CLIENT: " << _addr << " joined with fd#" << fd << std::endl;
 }
 
@@ -63,4 +67,10 @@ void ftClient::set_name(std::string nname) {_name = nname;}
 
 //
 // get address string of client
+//
 std::string ftClient::get_addr(void) const {return this->_addr;}
+
+//
+// time from last action
+//
+time_t	ftClient::getLastAction(void) {return (_lastAction);}
