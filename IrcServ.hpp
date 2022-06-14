@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 18:04:16 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 11:35:39 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/14 14:16:16 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,8 @@
 #include <netdb.h>
 #include <poll.h>
 #include <iostream>
+#include <map>
+#include "ftClient.hpp"
 
 class IrcServ
 {

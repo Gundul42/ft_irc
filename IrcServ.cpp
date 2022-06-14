@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 18:15:03 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 12:43:35 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/14 15:02:19 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,15 +113,18 @@ void* IrcServ::get_in_addr(sockaddr *sa)
 //
 void IrcServ::loop(void)
 {
-	int					newfd;
-	sockaddr_storage	remoteaddr;
-	socklen_t			addrlen;
-	char				buf[512];
-	char				remoteIP[INET6_ADDRSTRLEN];
-	int					fd_count=0;
-	int					fd_size=5;
-	int					poll_count = 0;
-	pollfd				*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
+	int										newfd;
+	sockaddr_storage						remoteaddr;
+	socklen_t								addrlen;
+	char									buf[512];
+	char									remoteIP[INET6_ADDRSTRLEN];
+	int										fd_count=0;
+	int										fd_size=5;
+	int										poll_count = 0;
+	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
+	std::string								addrStr;
+	std::map<int, ftClient*>				connections;
+	std::map<int, ftClient*>::iterator		iter;
 
 	pfds[0].fd=socketfd;
 	pfds[0].events = POLLIN;
@@ -137,37 +140,35 @@ void IrcServ::loop(void)
 			std::cerr << "Error while poll" << std::endl;
 			exit(1);
 		}
-
+		std::cout << "Connected hosts: " << connections.size() << std::endl;
 		for (int i = 0; i < fd_count; i++)
 		{
-			//std::cout << "fd#" << i << "checking revents is:" << pfds[i].revents << std::endl;
 			if (pfds[i].revents & POLLIN)
 			{
 				if (pfds[i].fd == socketfd) //server
 				{
 					newfd = accept(socketfd, (sockaddr*)&remoteaddr, &addrlen);
-					if (newfd==-1)
+					if (newfd == -1)
 						std::cerr << "Error while accept" << std::endl;
 					else
 					{
 						add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
-						std::cout << "New Connection from: ";
-						std::cout << inet_ntop(remoteaddr.ss_family, get_in_addr(
+						addrStr = inet_ntop(remoteaddr.ss_family, get_in_addr(
 									(sockaddr*)&remoteaddr), remoteIP, INET6_ADDRSTRLEN);
-						std::cout << " with new FD#" << newfd << std::endl;
+						connections.insert(std::pair<int, ftClient*>(newfd, 
+									new ftClient(newfd, "", addrStr)));
 					}
 				}
 				else //clients
 				{
 					int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-					int sender_fd = pfds[i].fd;
 					if (nbytes <= 0)
 					{
 						//Got error or connection closed by client
-						if (nbytes == 0)
-							std::cout << "FD#" << sender_fd << " said good bye" << std::endl;
-						else
-							std::cerr << "Error while recveiving" << std::endl;
+						if (nbytes < 0)
+							std::cerr << "Error while receiving" << std::endl;
+						delete connections.find(pfds[i].fd)->second;
+						connections.erase(pfds[i].fd);
 						close (pfds[i].fd);
 						del_from_pfds(pfds, i, &fd_count);
 					}
@@ -178,6 +179,7 @@ void IrcServ::loop(void)
 						// client fd is pfds[i].fd
 						// string is buf
 						// nbytes is size of string
+						// here is where the string should enter parsing.
 						memset(buf, 0, sizeof(buf));
 					}
 				}
