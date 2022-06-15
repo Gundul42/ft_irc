@@ -34,7 +34,7 @@ Commands::Commands()
 	userCommands["REHASH"] = &Commands::rehash;
 	userCommands["RESTART"] = &Commands::restart;
 	userCommands["STATS"] = &Commands::stats;
-	//userCommands["TIME"] = &Commands::time; //conflicting with time() from <ctime>
+	userCommands["TIME"] = &Commands::time;
 	userCommands["TOPIC"] = &Commands::topic;
 	userCommands["USERHOST"] = &Commands::userhost;
 	userCommands["VERSION"] = &Commands::version;
@@ -94,7 +94,7 @@ int		Commands::part(ftClient& client, std::string& param) { return 1; }
 int		Commands::pass(ftClient& client, std::string& param) { return 1; }
 int		Commands::ping(ftClient& client, std::string& param)
 {
-	std::string pong = "PONG: " + param;
+	std::string pong = "PONG: " + param + "\n";
 	if (param.empty())
 	{
 		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
