@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ftClient.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
+/*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/15 12:49:35 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/15 23:59:47 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ ftClient ftClient::operator=(const ftClient & rgt)
 // val will be false until server checks validity of the client
 //
 ftClient::ftClient(int fd, std::string name, const std::string addr): _fd(fd), _name(name), 
-		_addr(addr), _val(false) 
+		_addr(addr), _val(false), _oper(false)
 {
 		time(&_connect);
 		time(&_lastAction);
@@ -78,3 +78,12 @@ time_t	ftClient::getLastAction(void) {return (_lastAction);}
 // setter for the above
 //
 void ftClient::setLastAction(time_t newT) {_lastAction = newT;}
+
+//
+// get fd of client
+//
+const int		ftClient::get_fd(void) const { return _fd; }
+
+bool			ftClient::isRegistered(void) const { return _val==true; }
+
+bool			ftClient::isOperator(void) const { return _oper==true; }

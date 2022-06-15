@@ -51,44 +51,6 @@ IrcServ::IrcServ(const char *port)
         exit(1);
 	}
 	std::cout << "Success: Socket opened and listening at FD#" <<_socketfd << std::endl;
-	
-	
-	serviceCommands["KILL"] = &IrcServ::kill;
-	serviceCommands["NICK"] = &IrcServ::nick;
-	serviceCommands["NOTICE"] = &IrcServ::notice;
-	serviceCommands["OPER"] = &IrcServ::oper;
-	serviceCommands["PASS"] = &IrcServ::pass;
-	serviceCommands["PING"] = &IrcServ::ping;
-	serviceCommands["PONG"] = &IrcServ::pong;
-	serviceCommands["PRIVMSG"] = &IrcServ::privmsg;
-	serviceCommands["QUIT"] = &IrcServ::quit;
-	serviceCommands["SERVICE"] = &IrcServ::service;
-	serviceCommands["SERVLIST"] = &IrcServ::servlist;
-	serviceCommands["SQUERY"] = &IrcServ::squery;
-	serviceCommands["USER"] = &IrcServ::user;
-	serviceCommands["WHO"] = &IrcServ::who;
-	serviceCommands["WHOIS"] = &IrcServ::whois;
-	serviceCommands["WHOWAS"] = &IrcServ::whowas;
-	userCommands = serviceCommands;
-	userCommands["AWAY"] = &IrcServ::away;
-	userCommands["DIE"] = &IrcServ::die;
-	userCommands["INFO"] = &IrcServ::info;
-	userCommands["INVITE"] = &IrcServ::invite;
-	userCommands["JOIN"] = &IrcServ::join;
-	userCommands["KICK"] = &IrcServ::kick;
-	userCommands["LIST"] = &IrcServ::list;
-	userCommands["LUSERS"] = &IrcServ::lusers;
-	userCommands["MODE"] = &IrcServ::mode;
-	userCommands["MOTD"] = &IrcServ::motd;
-	userCommands["NAMES"] = &IrcServ::names;
-	userCommands["PART"] = &IrcServ::part;
-	userCommands["REHASH"] = &IrcServ::rehash;
-	userCommands["RESTART"] = &IrcServ::restart;
-	userCommands["STATS"] = &IrcServ::stats;
-	//userCommands["TIME"] = &IrcServ::time; //conflicting with time() from <ctime>
-	userCommands["TOPIC"] = &IrcServ::topic;
-	userCommands["USERHOST"] = &IrcServ::userhost;
-	userCommands["VERSION"] = &IrcServ::version;
 }
 
 IrcServ::~IrcServ(void)
@@ -187,6 +149,7 @@ void IrcServ::loop(void)
 						_add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
 						addrStr = inet_ntop(remoteaddr.ss_family, _get_in_addr(
 									(sockaddr*)&remoteaddr), remoteIP, INET6_ADDRSTRLEN);
+						//inet_ntop() not allowed?
 						connections.insert(std::pair<int, ftClient*>(newfd, 
 									new ftClient(newfd, "", addrStr)));
 					}
@@ -210,7 +173,7 @@ void IrcServ::loop(void)
 						std::cout << "Last action before " << updateTimeDiff(*(connections.find(
 							pfds[i].fd)->second)) << " seconds ";
 						std::cout << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
-						handle_command(pfds[i].fd, buf);
+						this->_commands.handle_command(*(connections.find(pfds[i].fd)->second), buf);
 						//we have received something
 						// client fd is pfds[i].fd
 						// string is buf
@@ -251,58 +214,3 @@ std::string	IrcServ::_printTime(void)
    return (mytime.substr(0, mytime.size() - 1));
 }
 
-
-void	IrcServ::handle_command(int socket, const void* buf)
-{
-	std::string			command;
-	std::stringstream	str(static_cast<const char*>(buf));
-
-	std::getline(str, command, ' ');
-	if (*(command.end() - 1) == '\n')
-		command.erase(command.find('\n'));
-		
-	userCommandsMap::const_iterator it = userCommands.find(command);
-	if (it == userCommands.end())
-	{
-		if (send(socket, ERR_BUFF, sizeof(ERR_BUFF), 0) == -1)
-			perror("send");
-	}
-	else
-		(this->*(it->second))();
-}
-
-int		IrcServ::away() { return 1; }
-int		IrcServ::die() { return 1; }
-int		IrcServ::info() { return 1; }
-int		IrcServ::invite() { return 1; }
-int		IrcServ::join() { return 1; }
-int		IrcServ::kick() { return 1; }
-int		IrcServ::kill() { return 1; }
-int		IrcServ::list() { return 1; }
-int		IrcServ::lusers() { return 1; }
-int		IrcServ::mode() { return 1; }
-int		IrcServ::motd() { return 1; }
-int		IrcServ::names() { return 1; }
-int		IrcServ::nick() { return 1; }
-int		IrcServ::notice() { return 1; }
-int		IrcServ::oper() { return 1; }
-int		IrcServ::part() { return 1; }
-int		IrcServ::pass() { return 1; }
-int		IrcServ::ping() { return 1; }
-int		IrcServ::pong() { return 1; }
-int		IrcServ::privmsg() { return 1; }
-int		IrcServ::quit() { return 1; }
-int		IrcServ::rehash() { return 1; }
-int		IrcServ::restart() { return 1; }
-int		IrcServ::service() { return 1; }
-int		IrcServ::servlist() { return 1; }
-int		IrcServ::squery() { return 1; }
-int		IrcServ::stats() { return 1; }
-//int		IrcServ::time() { return 1; } // conflicts time () <ctime>
-int		IrcServ::topic() { return 1; }
-int		IrcServ::user() { return 1; }
-int		IrcServ::userhost() { return 1; }
-int		IrcServ::version() { return 1; }
-int		IrcServ::who() { return 1; }
-int		IrcServ::whois() { return 1; }
-int		IrcServ::whowas() { return 1; }
