@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 19:01:52 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/15 12:49:35 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,3 +74,7 @@ std::string ftClient::get_addr(void) const {return this->_addr;}
 // time from last action
 //
 time_t	ftClient::getLastAction(void) {return (_lastAction);}
+//
+// setter for the above
+//
+void ftClient::setLastAction(time_t newT) {_lastAction = newT;}

@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:08:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/14 19:00:12 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/15 12:58:14 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ class ftClient
 				std::string 	get_addr(void) const;
 
 				time_t			getLastAction(void);
+				void			setLastAction(time_t newT);
 
 				//to be continued
 };
