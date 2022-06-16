@@ -128,6 +128,7 @@ void IrcServ::loop(void)
 	{
 		poll_count = poll(pfds, fd_count, -1);
 
+
 		if (poll_count == -1)
 		{
 			std::cerr << "Error while poll" << std::endl;
@@ -150,6 +151,8 @@ void IrcServ::loop(void)
 						addrStr = inet_ntop(remoteaddr.ss_family, _get_in_addr(
 									(sockaddr*)&remoteaddr), remoteIP, INET6_ADDRSTRLEN);
 						//inet_ntop() not allowed?
+						//looks like not, but I am a bit lost in all those socket structs
+						//and functions XD
 						connections.insert(std::pair<int, ftClient*>(newfd, 
 									new ftClient(newfd, "", addrStr)));
 					}
@@ -162,6 +165,9 @@ void IrcServ::loop(void)
 						//Got error or connection closed by client
 						if (nbytes < 0)
 							std::cerr << "Error while receiving" << std::endl;
+						std::cout << "Connection time was: ";
+						std::cout << (connections.find(pfds[i].fd)->second)->getTimeConnected();
+						std::cout << " Seconds" << std::endl;
 						std::cout << _printTime() << ":";
 						delete connections.find(pfds[i].fd)->second;
 						connections.erase(pfds[i].fd);

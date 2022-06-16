@@ -1,18 +1,9 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   ftClient.hpp                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/14 13:08:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/16 05:46:48 by graja            ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
 
 #pragma once
 #include <iostream>
 #include <ctime>
+
+#define FT_IRC_TIMEOUT 20
 
 class ftClient
 {
@@ -21,7 +12,7 @@ class ftClient
 				std::string	_name;			// NICK name
 				std::string	_addr;			// addr string
 				bool		_val;			// flag if server has validated the client 
-				bool		_oper;		// if the client is an operator
+				bool		_oper;			// if the client is an operator
 				time_t		_connect;		// time of connection
 				time_t		_lastAction;	// when was the last action
 				//maybe more to come, at least a timestamp
@@ -40,7 +31,8 @@ class ftClient
 				std::string 	get_addr(void) const;
 				int				get_fd(void) const;
 
-				time_t			getLastAction(void);
+				int				getTimeConnected(void) const;
+				time_t			getLastAction(void) const;
 				void			setLastAction(time_t newT);
 
 				bool			isRegistered(void) const;

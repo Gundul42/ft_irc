@@ -8,7 +8,7 @@
 
 #define ERR_COMMAND "Command does not exits\n"
 #define ERR_NOTOPER "User must be an operator to use the command\n"
-#define ERR_NULLPARAM "Command incomplete"
+#define ERR_NULLPARAM "Command incomplete\n"
 
 class Commands
 {

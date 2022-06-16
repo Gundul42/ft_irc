@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/16 05:47:58 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/16 11:46:34 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,9 +71,21 @@ void ftClient::set_name(std::string nname) {_name = nname;}
 std::string ftClient::get_addr(void) const {return this->_addr;}
 
 //
+// get connection time in seconds
+//
+int ftClient::getTimeConnected(void) const
+{
+		time_t	end;
+
+		time(&end);
+		return (static_cast<int> (difftime(end, this->_connect)));
+}
+
+//
 // time from last action
 //
-time_t	ftClient::getLastAction(void) {return (_lastAction);}
+time_t	ftClient::getLastAction(void) const {return (_lastAction);}
+
 //
 // setter for the above
 //
