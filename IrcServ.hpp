@@ -18,8 +18,9 @@ class IrcServ
 {
 		private:
 
-				int					_socketfd;
-				Commands			_commands;
+				int								_socketfd;
+				Commands						_commands;
+				std::map<int, ftClient*>		_connections;
 
 				IrcServ(const IrcServ & cpy);
 				IrcServ & operator=(const IrcServ & rgt);
@@ -38,4 +39,5 @@ class IrcServ
 				void	loop(void);
 				int		getTimeDiff(ftClient & start);
 				int		updateTimeDiff(ftClient & start);
+				void	check_valid_client(pollfd pfds[],int *fd_count);
 };

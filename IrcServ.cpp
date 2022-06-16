@@ -84,7 +84,10 @@ void IrcServ::_add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_si
 //
 void IrcServ::_del_from_pfds(pollfd pfds[], int i, int *fd_count)
 {
-	pfds[i] = pfds[*fd_count-1];
+	delete _connections.find(pfds[i].fd)->second;
+	_connections.erase(pfds[i].fd);
+	close (pfds[i].fd);
+	pfds[i] = pfds[*fd_count - 1];
 	(*fd_count)--;
 }
 
@@ -116,8 +119,6 @@ void IrcServ::loop(void)
 	int										poll_count = 0;
 	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
 	std::string								addrStr;
-	std::map<int, ftClient*>				connections;
-	std::map<int, ftClient*>::iterator		iter;
 
 	pfds[0].fd=_socketfd;
 	pfds[0].events = POLLIN;
@@ -128,13 +129,14 @@ void IrcServ::loop(void)
 	{
 		poll_count = poll(pfds, fd_count, -1);
 
+		check_valid_client(pfds, &fd_count);
 
 		if (poll_count == -1)
 		{
 			std::cerr << "Error while poll" << std::endl;
 			exit(1);
 		}
-		std::cout << "Connected hosts: " << connections.size() << std::endl;
+		std::cout << "Connected hosts: " << _connections.size() << std::endl;
 		for (int i = 0; i < fd_count; i++)
 		{
 			if (pfds[i].revents & POLLIN)
@@ -153,7 +155,7 @@ void IrcServ::loop(void)
 						//inet_ntop() not allowed?
 						//looks like not, but I am a bit lost in all those socket structs
 						//and functions XD
-						connections.insert(std::pair<int, ftClient*>(newfd, 
+						_connections.insert(std::pair<int, ftClient*>(newfd, 
 									new ftClient(newfd, "", addrStr)));
 					}
 				}
@@ -166,20 +168,17 @@ void IrcServ::loop(void)
 						if (nbytes < 0)
 							std::cerr << "Error while receiving" << std::endl;
 						std::cout << "Connection time was: ";
-						std::cout << (connections.find(pfds[i].fd)->second)->getTimeConnected();
+						std::cout << (_connections.find(pfds[i].fd)->second)->getTimeConnected();
 						std::cout << " Seconds" << std::endl;
 						std::cout << _printTime() << ":";
-						delete connections.find(pfds[i].fd)->second;
-						connections.erase(pfds[i].fd);
-						close (pfds[i].fd);
 						_del_from_pfds(pfds, i, &fd_count);
 					}
 					else
 					{
-						std::cout << "Last action before " << updateTimeDiff(*(connections.find(
+						std::cout << "Last action before " << updateTimeDiff(*(_connections.find(
 							pfds[i].fd)->second)) << " seconds ";
 						std::cout << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
-						this->_commands.handle_command(*(connections.find(pfds[i].fd)->second), buf);
+						this->_commands.handle_command(*(_connections.find(pfds[i].fd)->second), buf);
 						//we have received something
 						// client fd is pfds[i].fd
 						// string is buf
@@ -220,3 +219,26 @@ std::string	IrcServ::_printTime(void)
    return (mytime.substr(0, mytime.size() - 1));
 }
 
+void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
+{
+		std::map<int, ftClient*>::iterator	it = this->_connections.begin();
+		int									distance;
+
+		while (it != this->_connections.end())
+		{
+			if ((it->second)->isRegistered() == false)
+			{
+					if (it->second->getTimeConnected() > FT_IRC_TIMEOUT)
+					{
+						std::cout << "Timeout of FD#" << it->first << std::endl;
+						//todo send timeout err to client FD
+						distance = 1 + std::distance(this->_connections.begin(), it);
+						it++;
+						_del_from_pfds(pfds, distance, fd_count);
+						continue;
+					}
+			}
+			it++;
+		}
+
+}
