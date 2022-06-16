@@ -95,7 +95,7 @@ int		Commands::part(ftClient& client, std::string& param) { return 1; }
 int		Commands::pass(ftClient& client, std::string& param) { return 1; }
 int		Commands::ping(ftClient& client, std::string& param)
 {
-	std::string pong = "PONG: " + param + "\n";
+	std::string pong = "PONG " + param + "\n";
 	if (param.empty())
 	{
 		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
@@ -104,7 +104,7 @@ int		Commands::ping(ftClient& client, std::string& param)
 	}
 	else
 	{
-		if (send(client.get_fd(), &pong, sizeof(pong), 0) == -1)
+		if (send(client.get_fd(), pong.c_str(), pong.length(), 0) == -1)
 			perror("ping send");
 		return true;
 	}
