@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/15 23:59:47 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/16 05:47:58 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void ftClient::setLastAction(time_t newT) {_lastAction = newT;}
 //
 // get fd of client
 //
-const int		ftClient::get_fd(void) const { return _fd; }
+int ftClient::get_fd(void) const { return _fd; }
 
 bool			ftClient::isRegistered(void) const { return _val==true; }
 
