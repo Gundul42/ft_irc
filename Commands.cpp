@@ -43,14 +43,15 @@ Commands::Commands()
 Commands::~Commands() {}
 
 
-void	Commands::read_command(int socket, std::stringstream& str, std::string& command, std::string& param)
+void	Commands::read_command(int socket, std::stringstream& str, std::string& command,
+				std::string& param)
 {
 	//pending: add buf size exceed limit test
 	std::getline(str, command, ' ');
 	if (*(command.end() - 1) == '\n')
 	{
 		command.erase(command.find('\n'));
-		param = nullptr;
+		param = ""; //Segfaults + compiler telling me nullptr is C++11 
 		return ;
 	}
 	std::getline(str, param, '\n');

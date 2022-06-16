@@ -1,4 +1,5 @@
 #include <string>
+#include <stdio.h> //needed for perror
 #include <sstream>
 #include <map>
 #include <sys/socket.h>
@@ -8,6 +9,7 @@
 #define ERR_COMMAND "Command does not exits\n"
 #define ERR_NOTOPER "User must be an operator to use the command\n"
 #define ERR_NULLPARAM "Command incomplete"
+
 class Commands
 {
 		typedef int (Commands::*UserCommandPointer)(ftClient&, std::string& param);
@@ -24,7 +26,8 @@ class Commands
 		public:
 					Commands();
 					~Commands();
-					void	read_command(int socket, std::stringstream& str, std::string& command, std::string& message);
+					void	read_command(int socket, std::stringstream& str, std::string& command,
+									std::string& message);
 					void	handle_command(ftClient& client, const void* buf);
 
 					//commands, to be implemented

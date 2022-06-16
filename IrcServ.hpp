@@ -11,7 +11,6 @@
 #include <ctime>
 #include <iostream>
 #include <map>
-#include <set>
 #include "ftClient.hpp"
 #include "Commands.hpp"
 
