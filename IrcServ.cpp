@@ -129,13 +129,12 @@ void IrcServ::loop(void)
 	{
 		poll_count = poll(pfds, fd_count, -1);
 
-		check_valid_client(pfds, &fd_count);
-
 		if (poll_count == -1)
 		{
 			std::cerr << "Error while poll" << std::endl;
 			exit(1);
 		}
+		check_valid_client(pfds, &fd_count);
 		std::cout << "Connected hosts: " << _connections.size() << std::endl;
 		for (int i = 0; i < fd_count; i++)
 		{
@@ -242,3 +241,17 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 		}
 
 }
+
+bool IrcServ::NickExists(const std::string & nick) const
+{
+		std::map<int, ftClient*>::const_iterator	it = this->_connections.begin();
+
+		while (it != this->_connections.end())
+		{
+			if (nick == it->second->get_name())
+					return true;
+			it++;
+		}
+		return false;
+}
+
