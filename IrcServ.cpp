@@ -230,7 +230,7 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 					if (it->second->getTimeConnected() > FT_IRC_TIMEOUT)
 					{
 						std::cout << "Timeout of FD#" << it->first << std::endl;
-						//todo send timeout err to client FD
+						serverSend(it->first, "", "Auth failed. Connection timed out", "");
 						distance = 1 + std::distance(this->_connections.begin(), it);
 						it++;
 						_del_from_pfds(pfds, distance, fd_count);
@@ -239,7 +239,6 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 			}
 			it++;
 		}
-
 }
 
 bool IrcServ::NickExists(const std::string & nick) const
@@ -254,4 +253,18 @@ bool IrcServ::NickExists(const std::string & nick) const
 		}
 		return false;
 }
+				
+void IrcServ::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+{
+		std::string	tosend;
 
+		if (prefix.length() == 0)
+				prefix = IRCSERVNAME;
+		if (trl.length() == 0)
+				trl = IRCSERVNAME;
+
+		tosend = ":" + prefix + " " + msg + " :" + trl + "\n";
+		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
+				perror("serverSend");
+		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
+}

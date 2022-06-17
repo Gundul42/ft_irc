@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>	// usleep
 #include <stdio.h>	// perror!
 #include <string.h>
 #include <unistd.h>
@@ -13,6 +14,8 @@
 #include <map>
 #include "ftClient.hpp"
 #include "Commands.hpp"
+
+#define IRCSERVNAME "ft_IrcServ.nowhere.xy"
 
 class IrcServ
 {
@@ -35,6 +38,7 @@ class IrcServ
 				IrcServ(const char *port);
 				~IrcServ(void);
 
+				void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 				int		getSocketFd(void) const;
 				void	loop(void);
 				int		getTimeDiff(ftClient & start);
