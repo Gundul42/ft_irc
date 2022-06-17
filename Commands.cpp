@@ -88,14 +88,23 @@ int		Commands::lusers(ftClient& client, std::string& param) { return 1; }
 int		Commands::mode(ftClient& client, std::string& param) { return 1; }
 int		Commands::motd(ftClient& client, std::string& param) { return 1; }
 int		Commands::names(ftClient& client, std::string& param) { return 1; }
-int		Commands::nick(ftClient& client, std::string& param) { return 1; }
+int		Commands::nick(ftClient& client, std::string& param)
+{ 
+		if (client.isRegistered() == false)
+				return (1);
+		std::string	sendme = ":ftIrcServ,nowhere.xy NOTICE * :*** Checking Ident";
+		if (send(client.get_fd(), sendme.c_str(), sendme.length(), 0) == -1)
+			perror("ping send");
+		
+		return 1; 
+}
 int		Commands::notice(ftClient& client, std::string& param) { return 1; }
 int		Commands::oper(ftClient& client, std::string& param) { return 1; }
 int		Commands::part(ftClient& client, std::string& param) { return 1; }
 int		Commands::pass(ftClient& client, std::string& param) { return 1; }
 int		Commands::ping(ftClient& client, std::string& param)
 {
-	std::string pong = "PONG " + param + "\n";
+	std::string pong = ":ftIrcServ.nowhere.xy PONG " + param + "\x0d\x0a";
 	if (param.empty())
 	{
 		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
@@ -120,7 +129,14 @@ int		Commands::squery(ftClient& client, std::string& param) { return 1; }
 int		Commands::stats(ftClient& client, std::string& param) { return 1; }
 int		Commands::time(ftClient& client, std::string& param) { return 1; }
 int		Commands::topic(ftClient& client, std::string& param) { return 1; }
-int		Commands::user(ftClient& client, std::string& param) { return 1; }
+int		Commands::user(ftClient& client, std::string& param)
+{ 
+		std::string sendme = ":ftIrcServ.nowhere.xy MODE " + param + ":iw \x0d\x0a";
+		if (send(client.get_fd(), sendme.c_str(), sendme.length(), 0) == -1)
+			perror("user send");
+		
+		return 1; 
+}
 int		Commands::userhost(ftClient& client, std::string& param) { return 1; }
 int		Commands::version(ftClient& client, std::string& param) { return 1; }
 int		Commands::who(ftClient& client, std::string& param) { return 1; }

@@ -15,7 +15,7 @@
 #include "ftClient.hpp"
 #include "Commands.hpp"
 
-#define IRCSERVNAME "ft_IrcServ.nowhere.xy"
+#define IRCSERVNAME "ftIrcServ.nowhere.xy"
 
 class IrcServ
 {

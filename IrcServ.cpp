@@ -134,7 +134,7 @@ void IrcServ::loop(void)
 			std::cerr << "Error while poll" << std::endl;
 			exit(1);
 		}
-		check_valid_client(pfds, &fd_count);
+		//check_valid_client(pfds, &fd_count);
 		std::cout << "Connected hosts: " << _connections.size() << std::endl;
 		for (int i = 0; i < fd_count; i++)
 		{
