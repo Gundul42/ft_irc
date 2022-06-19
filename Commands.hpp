@@ -40,6 +40,7 @@ class Commands
 
 					bool	sendCommandResponse(const std::string & code, const ftClient & clt) const;
 					bool	sendErrorResponse(const std::string & code, const ftClient & clt) const;
+					void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 
 					//commands, to be implemented
 					int		away(ftClient& client, std::string& param);

@@ -178,8 +178,8 @@ void IrcServ::loop(void)
 						//Got error or connection closed by client
 						if (nbytes < 0)
 							_logAction("Error while receiving");
-						oss << client->get_addr() << " has left the server. ";
-						oss << "Connection time: ";
+						oss << client->get_name() << ":" << client->get_addr();
+						oss << " has left the server. " << "Connection time: ";
 						oss << client->getTimeConnected();
 						oss << " sec" << std::endl;
 						_logAction(oss.str());
@@ -188,12 +188,15 @@ void IrcServ::loop(void)
 					}
 					else
 					{
-						oss << "Last action before " << updateTimeDiff(*(_connections.find(
-							pfds[i].fd)->second)) << " seconds ";
+						//we got something in -> parse command
+						//IRC adds CR,LF to each end of a buffer line, remove it first !
+						memset(buf + strlen(buf) - 2, 0, 2);
+
+						oss << "Last action " << updateTimeDiff(*(_connections.find(
+							pfds[i].fd)->second)) << " seconds ago ";
 						oss << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
 						_logAction(oss.str());
 						oss.str("");
-						//we got something in -> parse command
 						this->_commands.handle_command(*client, buf);
 					}
 				}
@@ -243,7 +246,7 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 					{
 						oss << "Timeout of FD#" << it->first;
 						_logAction(oss.str());
-						serverSend(it->first, "", "Auth failed. Connection timed out", "");
+						_commands.serverSend(it->first, "", "Auth failed. Connection timed out", "");
 						distance = 1 + std::distance(this->_connections.begin(), it);
 						it++;
 						_del_from_pfds(pfds, distance, fd_count);
@@ -266,19 +269,16 @@ bool IrcServ::NickExists(const std::string & nick) const
 		}
 		return false;
 }
-				
-void IrcServ::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+
+void IrcServ::_debugBuffer(const char *buf) const
 {
-		std::string	tosend;
+		int		i = 0;
 
-		if (prefix.length() == 0)
-				prefix = IRCSERVNAME;
-		if (trl.length() == 0)
-				trl = IRCSERVNAME;
-
-		tosend = ":" + prefix + " " + msg + " :" + trl + "\n";
-		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
-				perror("serverSend");
-		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
+		std::cout << "BUFFER dumped:" << std::endl;
+		while (buf[i])
+		{
+				std::cout << static_cast<int>(buf[i]) << ", ";
+				i++;
+		}
+		std::cout << std::endl;
 }
-

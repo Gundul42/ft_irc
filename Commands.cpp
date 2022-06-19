@@ -48,15 +48,15 @@ void	Commands::read_command(int socket, std::stringstream& str, std::string& com
 {
 	//pending: add buf size exceed limit test
 	std::getline(str, command, ' ');
-	if (*(command.end() - 1) == '\n')
+	if ((command.find(':') != std::string::npos)) //if trailer is found cut it off
 	{
-		command.erase(command.find('\n'));
+		std::getline(str, command, ':');
 		param = ""; //Segfaults + compiler telling me nullptr is C++11 
 		return ;
 	}
-	std::getline(str, param, '\n');
-	if (*(param.end() - 1) == '\n')
-		param.erase(param.find('\n'));
+	std::getline(str, param, ':'); //cut until trailer found or nothing
+	//if (*(param.end() - 1) == '\n')
+	//	param.erase(param.find('\n'));
 }
 
 void	Commands::handle_command(ftClient& client, const void* buf)
@@ -92,15 +92,14 @@ int		Commands::nick(ftClient& client, std::string& param)
 { 
 		if (client.isRegistered() == false)
 		{
-				if (*(param.end() - 1) == '\n')
-					param.erase(param.find('\n'));
 				client.set_name(param);
 				client.validate();
 				return (1);
 		}
-		//if (send(client.get_fd(), param.c_str(), param.length(), 0) == -1)
-		//	perror("ping send");
-		
+		//check for already registered client names before setting new nick
+		//return error code in case of already existing
+		client.set_name(param);
+		serverSend(client.get_fd(), "", "NICK", param);
 		return 1; 
 }
 int		Commands::notice(ftClient& client, std::string& param) { return 1; }
@@ -136,6 +135,7 @@ int		Commands::time(ftClient& client, std::string& param) { return 1; }
 int		Commands::topic(ftClient& client, std::string& param) { return 1; }
 int		Commands::user(ftClient& client, std::string& param)
 { 
+		//std::cout << std::endl << param << std::endl;
 		sendCommandResponse("001", client);
 		return 1; 
 }
@@ -152,7 +152,7 @@ bool Commands::sendCommandResponse(const std::string & code, const ftClient & cl
 
 	if (code !="001")
 			return false;
-	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << ":welcome\x0d\x0a";
+	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :welcome\x0d\x0a";
 	go = tosend.str();
 	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
 		perror("sendCommandResponse");
@@ -164,3 +164,19 @@ bool Commands::sendErrorResponse(const std::string & code, const ftClient & clt)
 {
 		//todo
 }
+
+void Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+{
+		std::string	tosend;
+
+		if (prefix.length() == 0)
+				prefix = IRCSERVNAME;
+		if (trl.length() == 0)
+				trl = IRCSERVNAME;
+
+		tosend = ":" + prefix + " " + msg + " :" + trl + "\x0d\x0a";
+		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
+				perror("serverSend");
+		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
+}
+

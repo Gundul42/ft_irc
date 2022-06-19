@@ -40,12 +40,12 @@ class IrcServ
 
 				std::string	_printTime(void) const;
 				void		_logAction(const std::string & log) const;
+				void		_debugBuffer(const char *buf) const;
 
 		public:
 				IrcServ(const char *port);
 				~IrcServ(void);
 
-				void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 				int		getSocketFd(void) const;
 				void	loop(void);
 				int		getTimeDiff(ftClient & start);
