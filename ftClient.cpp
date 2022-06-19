@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/16 11:46:34 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/18 18:13:08 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ ftClient::ftClient(int fd, std::string name, const std::string addr): _fd(fd), _
 {
 		time(&_connect);
 		time(&_lastAction);
-		std::cout << "NEW CLIENT: " << _addr << " joined with fd#" << fd << std::endl;
 }
 
 //
@@ -46,7 +45,6 @@ ftClient::ftClient(int fd, std::string name, const std::string addr): _fd(fd), _
 //
 ftClient::~ftClient(void)
 {
-		std::cout << _addr << " from fd#" << _fd << " says byebye" << std::endl;
 		close(_fd);
 }
 

@@ -1,5 +1,6 @@
 #include <string>
 #include <stdio.h> //needed for perror
+#include <unistd.h> //usleep
 #include <sstream>
 #include <map>
 #include <sys/socket.h>
@@ -9,6 +10,13 @@
 #define ERR_COMMAND "Command does not exits\n"
 #define ERR_NOTOPER "User must be an operator to use the command\n"
 #define ERR_NULLPARAM "Command incomplete\n"
+
+#define IRCSERVNAME "ftIrcServ.nowhere.xy"
+#define IRCSERVWLC "Welcome to ft_IrcServ V 0.1beta"
+#define IRCSERVVERSION "V0.1beta"
+#define IRCSERVCDATE "180622"
+#define IRCSERVUSERMODES "aiwroOs"
+#define IRCSERVCHANMODES "birkfsmqz"
 
 class Commands
 {
@@ -29,6 +37,9 @@ class Commands
 					void	read_command(int socket, std::stringstream& str, std::string& command,
 									std::string& message);
 					void	handle_command(ftClient& client, const void* buf);
+
+					bool	sendCommandResponse(const std::string & code, const ftClient & clt) const;
+					bool	sendErrorResponse(const std::string & code, const ftClient & clt) const;
 
 					//commands, to be implemented
 					int		away(ftClient& client, std::string& param);

@@ -91,10 +91,15 @@ int		Commands::names(ftClient& client, std::string& param) { return 1; }
 int		Commands::nick(ftClient& client, std::string& param)
 { 
 		if (client.isRegistered() == false)
+		{
+				if (*(param.end() - 1) == '\n')
+					param.erase(param.find('\n'));
+				client.set_name(param);
+				client.validate();
 				return (1);
-		std::string	sendme = ":ftIrcServ,nowhere.xy NOTICE * :*** Checking Ident";
-		if (send(client.get_fd(), sendme.c_str(), sendme.length(), 0) == -1)
-			perror("ping send");
+		}
+		//if (send(client.get_fd(), param.c_str(), param.length(), 0) == -1)
+		//	perror("ping send");
 		
 		return 1; 
 }
@@ -131,10 +136,7 @@ int		Commands::time(ftClient& client, std::string& param) { return 1; }
 int		Commands::topic(ftClient& client, std::string& param) { return 1; }
 int		Commands::user(ftClient& client, std::string& param)
 { 
-		std::string sendme = ":ftIrcServ.nowhere.xy MODE " + param + ":iw \x0d\x0a";
-		if (send(client.get_fd(), sendme.c_str(), sendme.length(), 0) == -1)
-			perror("user send");
-		
+		sendCommandResponse("001", client);
 		return 1; 
 }
 int		Commands::userhost(ftClient& client, std::string& param) { return 1; }
@@ -142,3 +144,23 @@ int		Commands::version(ftClient& client, std::string& param) { return 1; }
 int		Commands::who(ftClient& client, std::string& param) { return 1; }
 int		Commands::whois(ftClient& client, std::string& param) { return 1; }
 int		Commands::whowas(ftClient& client, std::string& param) { return 1; }
+
+bool Commands::sendCommandResponse(const std::string & code, const ftClient & clt) const
+{
+	std::ostringstream	tosend;
+	std::string			go;
+
+	if (code !="001")
+			return false;
+	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << ":welcome\x0d\x0a";
+	go = tosend.str();
+	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
+		perror("sendCommandResponse");
+	usleep(100); 
+	return true;
+}
+
+bool Commands::sendErrorResponse(const std::string & code, const ftClient & clt) const
+{
+		//todo
+}
