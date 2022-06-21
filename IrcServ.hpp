@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <unistd.h>	// usleep
 #include <stdio.h>	// perror!
 #include <string.h>
 #include <unistd.h>
@@ -13,6 +14,15 @@
 #include <map>
 #include "ftClient.hpp"
 #include "Commands.hpp"
+
+#define IRCSERVNAME "ftIrcServ.nowhere.xy"
+#define IRCSERVWLC "Welcome to ft_IrcServ V 0.1beta"
+#define IRCSERVVERSION "V0.1beta"
+#define IRCSERVCDATE "180622"
+#define IRCSERVUSERMODES "aiwroOs"
+#define IRCSERVCHANMODES "birkfsmqz"
+#define IRCFLOODCONTROL 2
+
 
 class IrcServ
 {
@@ -29,7 +39,9 @@ class IrcServ
 				void		_del_from_pfds(pollfd pfds[], int i, int *fd_count);
 				void		*_get_in_addr(sockaddr *sa);
 
-				std::string	_printTime(void);
+				std::string	_printTime(void) const;
+				void		_logAction(const std::string & log) const;
+				void		_debugBuffer(const char *buf) const;
 
 		public:
 				IrcServ(const char *port);
@@ -41,4 +53,5 @@ class IrcServ
 				int		updateTimeDiff(ftClient & start);
 				void	check_valid_client(pollfd *pfds,int *fd_count);
 				bool	NickExists(const std::string & nick) const;
+
 };

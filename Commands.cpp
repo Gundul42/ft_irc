@@ -116,7 +116,7 @@ int		Commands::part(ftClient& client, Message& msg) { return 1; }
 int		Commands::pass(ftClient& client, Message& msg) { return 1; }
 int		Commands::ping(ftClient& client, Message& msg)
 {
-	std::string pong = "PONG " + msg.getParam() + "\n";
+	std::string pong = ":ftIrcServ.nowhere.xy PONG " + msg.getParam() + "\x0d\x0a";
 	if (msg.getParam().empty())
 	{
 		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
@@ -130,24 +130,62 @@ int		Commands::ping(ftClient& client, Message& msg)
 		return true;
 	}
 }
-int		Commands::pong(ftClient& client, Message& msg) { return 1; }
-int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
-int		Commands::quit(ftClient& client, Message& msg) { return 1; }
-int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
-int		Commands::restart(ftClient& client, Message& msg) { return 1; }
-int		Commands::service(ftClient& client, Message& msg) { return 1; }
-int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
-int		Commands::squery(ftClient& client, Message& msg) { return 1; }
-int		Commands::stats(ftClient& client, Message& msg) { return 1; }
-int		Commands::time(ftClient& client, Message& msg) { return 1; }
-int		Commands::topic(ftClient& client, Message& msg) { return 1; }
-int		Commands::user(ftClient& client, Message& msg)
-{
-	
+int		Commands::pong(ftClient& client, std::string& param) { return 1; }
+int		Commands::privmsg(ftClient& client, std::string& param) { return 1; }
+int		Commands::quit(ftClient& client, std::string& param) { return 1; }
+int		Commands::rehash(ftClient& client, std::string& param) { return 1; }
+int		Commands::restart(ftClient& client, std::string& param) { return 1; }
+int		Commands::service(ftClient& client, std::string& param) { return 1; }
+int		Commands::servlist(ftClient& client, std::string& param) { return 1; }
+int		Commands::squery(ftClient& client, std::string& param) { return 1; }
+int		Commands::stats(ftClient& client, std::string& param) { return 1; }
+int		Commands::time(ftClient& client, std::string& param) { return 1; }
+int		Commands::topic(ftClient& client, std::string& param) { return 1; }
+int		Commands::user(ftClient& client, std::string& param)
+{ 
+		//std::cout << std::endl << param << std::endl;
+		sendCommandResponse("001", client);
+		return 1; 
 }
-int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
-int		Commands::version(ftClient& client, Message& msg) { return 1; }
-int		Commands::who(ftClient& client, Message& msg) { return 1; }
-int		Commands::whois(ftClient& client, Message& msg) { return 1; }
-int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
-int		Commands::cap(ftClient& client, Message& msg) {return true;}
+int		Commands::userhost(ftClient& client, std::string& param) { return 1; }
+int		Commands::version(ftClient& client, std::string& param) { return 1; }
+int		Commands::who(ftClient& client, std::string& param) { return 1; }
+int		Commands::whois(ftClient& client, std::string& param) { return 1; }
+int		Commands::whowas(ftClient& client, std::string& param) { return 1; }
+
+bool Commands::sendCommandResponse(const std::string & code, const ftClient & clt) const
+{
+	std::ostringstream	tosend;
+	std::string			go;
+
+	if (code !="001")
+			return false;
+	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :welcome\x0d\x0a";
+	go = tosend.str();
+	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
+		perror("sendCommandResponse");
+	usleep(100); 
+	return true;
+}
+
+bool Commands::sendErrorResponse(const std::string & code, const ftClient & clt) const
+{
+		//todo
+}
+
+void Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+{
+		std::string	tosend;
+
+		if (prefix.length() == 0)
+				prefix = IRCSERVNAME;
+		if (trl.length() == 0)
+				trl = IRCSERVNAME;
+
+		tosend = ":" + prefix + " " + msg + " :" + trl + "\x0d\x0a";
+		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
+				perror("serverSend");
+		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
+}
+
+int		Commands::cap(ftClient& client, Message& msg) { return true; }

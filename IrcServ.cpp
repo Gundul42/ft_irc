@@ -13,6 +13,7 @@ IrcServ::IrcServ(const char *port)
 {
 	int yes=1;
 	int rv;
+	std::ostringstream oss;
 
 	addrinfo hints, *ai, *p;
 
@@ -23,7 +24,8 @@ IrcServ::IrcServ(const char *port)
     hints.ai_flags = AI_PASSIVE;
 	if ((rv = getaddrinfo(NULL, port, &hints, &ai)) != 0) 
 	{
-    	std::cerr << "selectserver: " << gai_strerror(rv) << std::endl;
+    	oss << "selectserver: " << gai_strerror(rv);
+		_logAction(oss.str());
 	    exit(1);
     }
 	for(p = ai; p != NULL; p = p->ai_next)
@@ -41,27 +43,33 @@ IrcServ::IrcServ(const char *port)
 	}
 	if (p == NULL)
 	{
-		std::cerr << "Error: socket could not bind" << std::endl;
+		_logAction("Error: socket could not bind: exiting");
         exit(1);
 	}
 	freeaddrinfo(ai);
 	if (listen(_socketfd, 10) == -1)
 	{
-		std::cerr << "Error: socket could not listen" << std::endl;
+		_logAction("Error: socket could not listen: exiting");
         exit(1);
 	}
-	std::cout << "Success: Socket opened and listening at FD#" <<_socketfd << std::endl;
+	oss << "Success: Socket opened and listening at FD#" << _socketfd;
+	_logAction(oss.str());
 }
 
 IrcServ::~IrcServ(void)
 {
 		close(_socketfd);
-		std::cout << "Byebye" << std::endl;
+		_logAction("Server closing: Byebye");
 }
 
 int	IrcServ::getSocketFd(void) const
 {
 		return (_socketfd);
+}
+
+void IrcServ::_logAction(const std::string & log) const
+{
+		std::cout << "[" << this->_printTime() << "] " << log << std::endl;
 }
 
 //
@@ -120,24 +128,26 @@ void IrcServ::loop(void)
 	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
 	std::string								addrStr;
 	std::string								emptynick;//emptynick.clear() is better than ""
+	bool									block;
 
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
 	fd_count = 1;
 	addrlen = sizeof remoteaddr;
 	emptynick.clear();
+	std::ostringstream oss;
 
 	while(true)
 	{
+		oss.str("");
 		poll_count = poll(pfds, fd_count, -1);
 
 		if (poll_count == -1)
 		{
-			std::cerr << "Error while poll" << std::endl;
+			_logAction("Error while poll: exiting");
 			exit(1);
 		}
-		check_valid_client(pfds, &fd_count);
-		std::cout << "Connected hosts: " << _connections.size() << std::endl;
+		//check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
 		for (int i = 0; i < fd_count; i++)
 		{
 			if (pfds[i].revents & POLLIN)
@@ -146,16 +156,15 @@ void IrcServ::loop(void)
 				{
 					newfd = accept(_socketfd, (sockaddr*)&remoteaddr, &addrlen);
 					if (newfd == -1)
-						std::cerr << "Error while accept" << std::endl;
+						_logAction("Error while accept");
 					else
 					{
-						std::cout << _printTime() << ":";
 						_add_to_pfds(&pfds, newfd, &fd_count, &fd_size);
 						addrStr = inet_ntop(remoteaddr.ss_family, _get_in_addr(
 									(sockaddr*)&remoteaddr), remoteIP, INET6_ADDRSTRLEN);
-						//inet_ntop() not allowed?
-						//looks like not, but I am a bit lost in all those socket structs
-						//and functions XD
+						oss << "New connection from " << addrStr << " with FD#" << newfd;
+						_logAction(oss.str());
+						oss.str("");
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
 									new ftClient(newfd, emptynick, addrStr)));
 					}
@@ -164,28 +173,37 @@ void IrcServ::loop(void)
 				{
 					memset(buf, 0, sizeof(buf));
 					int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
+					ftClient *client = _connections.find(pfds[i].fd)->second;
 					if (nbytes <= 0)
 					{
 						//Got error or connection closed by client
 						if (nbytes < 0)
-							std::cerr << "Error while receiving" << std::endl;
-						std::cout << "Connection time was: ";
-						std::cout << (_connections.find(pfds[i].fd)->second)->getTimeConnected();
-						std::cout << " Seconds" << std::endl;
-						std::cout << _printTime() << ":";
+							_logAction("Error while receiving");
+						oss << client->get_name() << ":" << client->get_addr();
+						oss << " has left the server. " << "Connection time: ";
+						oss << client->getTimeConnected();
+						oss << " sec" << std::endl;
+						_logAction(oss.str());
+						oss.str("");
 						_del_from_pfds(pfds, i, &fd_count);
 					}
 					else
 					{
-						std::cout << "Last action before " << updateTimeDiff(*(_connections.find(
-							pfds[i].fd)->second)) << " seconds ";
-						std::cout << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
-						this->_commands.handle_command(_connections, pfds[i].fd, buf);
-						//we have received something
-						// client fd is pfds[i].fd
-						// string is buf
-						// nbytes is size of string
-						// here is where the string should enter parsing.
+						block = false;
+						//we got something in -> parse command
+						//IRC adds CR,LF to each end of a buffer line, remove it first !
+						memset(buf + strlen(buf) - 2, 0, 2);
+						if (getTimeDiff(*(_connections.find(pfds[i].fd)->second)) < IRCFLOODCONTROL)
+								block = true;
+						if (!block)
+						{
+							oss << "Last action " << updateTimeDiff(*(_connections.find(
+								pfds[i].fd)->second)) << " seconds ago ";
+							oss << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
+							_logAction(oss.str());
+							oss.str("");
+							this->_commands.handle_command(_connections, pfds[i].fd, buf);
+						}
 					}
 				}
 			}
@@ -212,7 +230,7 @@ int		IrcServ::updateTimeDiff(ftClient & start)
 		return (rst);
 }
 
-std::string	IrcServ::_printTime(void)
+std::string	IrcServ::_printTime(void) const
 {
    time_t now = time(0);
    std::string	mytime(ctime(&now));
@@ -223,6 +241,7 @@ std::string	IrcServ::_printTime(void)
 void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 {
 		std::map<int, ftClient*>::iterator	it = this->_connections.begin();
+		std::ostringstream					oss;
 		int									distance;
 
 		while (it != this->_connections.end())
@@ -231,8 +250,9 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 			{
 					if (it->second->getTimeConnected() > FT_IRC_TIMEOUT)
 					{
-						std::cout << "Timeout of FD#" << it->first << std::endl;
-						//todo send timeout err to client FD
+						oss << "Timeout of FD#" << it->first;
+						_logAction(oss.str());
+						_commands.serverSend(it->first, "", "Auth failed. Connection timed out", "");
 						distance = 1 + std::distance(this->_connections.begin(), it);
 						it++;
 						_del_from_pfds(pfds, distance, fd_count);
@@ -241,7 +261,6 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 			}
 			it++;
 		}
-
 }
 
 bool IrcServ::NickExists(const std::string & nick) const
@@ -257,3 +276,15 @@ bool IrcServ::NickExists(const std::string & nick) const
 		return false;
 }
 
+void IrcServ::_debugBuffer(const char *buf) const
+{
+		int		i = 0;
+
+		std::cout << "BUFFER dumped:" << std::endl;
+		while (buf[i])
+		{
+				std::cout << static_cast<int>(buf[i]) << ", ";
+				i++;
+		}
+		std::cout << std::endl;
+}
