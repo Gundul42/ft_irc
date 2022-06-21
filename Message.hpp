@@ -1,9 +1,6 @@
 #pragma once
 
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <vector>
+#include "lib.hpp"
 
 class Message
 {
@@ -16,6 +13,7 @@ public:
 	const std::string&	getPrefix();
 	const std::string&	getCommand();
 	const std::string&	getParam();
+	const std::string&	getTrailing();
 
 private:
 	std::string			_input;

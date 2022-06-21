@@ -1,24 +1,14 @@
-#include <string>
-#include <stdio.h> //needed for perror
-#include <unistd.h> //usleep
-#include <sstream>
-#include <map>
-#include <sys/socket.h>
+#pragma once
+
+#include "config.hpp"
+#include "lib.hpp"
 #include "ftClient.hpp"
-#include <iostream>
 #include "Message.hpp"
 
 #define ERR_COMMAND "Command does not exits\n"
 #define ERR_NOTOPER "User must be an operator to use the command\n"
 #define ERR_NULLPARAM "Command incomplete\n"
 #define ERR_NICKEXIST "Nickname already existed\n"
-
-#define IRCSERVNAME "ftIrcServ.nowhere.xy"
-#define IRCSERVWLC "Welcome to ft_IrcServ V 0.1beta"
-#define IRCSERVVERSION "V0.1beta"
-#define IRCSERVCDATE "180622"
-#define IRCSERVUSERMODES "aiwroOs"
-#define IRCSERVCHANMODES "birkfsmqz"
 
 class Commands
 {

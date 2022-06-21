@@ -130,28 +130,74 @@ int		Commands::ping(ftClient& client, Message& msg)
 		return true;
 	}
 }
-int		Commands::pong(ftClient& client, std::string& param) { return 1; }
-int		Commands::privmsg(ftClient& client, std::string& param) { return 1; }
-int		Commands::quit(ftClient& client, std::string& param) { return 1; }
-int		Commands::rehash(ftClient& client, std::string& param) { return 1; }
-int		Commands::restart(ftClient& client, std::string& param) { return 1; }
-int		Commands::service(ftClient& client, std::string& param) { return 1; }
-int		Commands::servlist(ftClient& client, std::string& param) { return 1; }
-int		Commands::squery(ftClient& client, std::string& param) { return 1; }
-int		Commands::stats(ftClient& client, std::string& param) { return 1; }
-int		Commands::time(ftClient& client, std::string& param) { return 1; }
-int		Commands::topic(ftClient& client, std::string& param) { return 1; }
-int		Commands::user(ftClient& client, std::string& param)
-{ 
-		//std::cout << std::endl << param << std::endl;
+int		Commands::pong(ftClient& client, Message& msg) { return 1; }
+int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
+int		Commands::quit(ftClient& client, Message& msg) { return 1; }
+int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
+int		Commands::restart(ftClient& client, Message& msg) { return 1; }
+int		Commands::service(ftClient& client, Message& msg) { return 1; }
+int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
+int		Commands::squery(ftClient& client, Message& msg) { return 1; }
+int		Commands::stats(ftClient& client, Message& msg) { return 1; }
+int		Commands::time(ftClient& client, Message& msg) { return 1; }
+int		Commands::topic(ftClient& client, Message& msg) { return 1; }
+int		Commands::user(ftClient& client, Message& msg)
+{
+		std::stringstream	str(msg.getParam());
+		std::string			username;
+		std::string			hostname;
+		std::string			servername;
+		std::string			realname;
+		int					i = 0;
+
+		// std::cout << std::endl << param << std::endl;
 		sendCommandResponse("001", client);
-		return 1; 
+
+		if (client.isRegistered())
+		{
+			// std::cout << "1\n";
+			//send ERR_ALREADYREGISTRED
+			return false;
+		}
+		else if (msg.getParam().empty() || msg.getTrailing().empty())
+		{
+			// std::cout << "2\n";
+			//send ERR_NEEDMOREPARAMS
+			return false;
+		}
+		for (std::string line; std::getline(str, line, ' '); )
+		{
+			if (*(line.end() - 1) == ' ')
+				line.erase(line.end() - 1);
+			if (i == 0)
+				username = line;
+			else if (i == 1)
+				hostname = line;
+			else
+				servername = line;
+			i++;
+		}
+		if (i != 3)
+		{
+			// std::cout << "3\n";
+			//send ERR_NEEDMOREPARAMS
+			return false;
+		}
+
+		//need to test below
+		/*Between servers USER must to be prefixed with client's NICKname.
+		Note that hostname and servername are normally ignored by the IRC
+		server when the USER command comes from a directly connected client
+		(for security reasons), but they are used in server to server
+		communication.*/
+		client.validate();
+		return true;
 }
-int		Commands::userhost(ftClient& client, std::string& param) { return 1; }
-int		Commands::version(ftClient& client, std::string& param) { return 1; }
-int		Commands::who(ftClient& client, std::string& param) { return 1; }
-int		Commands::whois(ftClient& client, std::string& param) { return 1; }
-int		Commands::whowas(ftClient& client, std::string& param) { return 1; }
+int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
+int		Commands::version(ftClient& client, Message& msg) { return 1; }
+int		Commands::who(ftClient& client, Message& msg) { return 1; }
+int		Commands::whois(ftClient& client, Message& msg) { return 1; }
+int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
 
 bool Commands::sendCommandResponse(const std::string & code, const ftClient & clt) const
 {
@@ -170,7 +216,8 @@ bool Commands::sendCommandResponse(const std::string & code, const ftClient & cl
 
 bool Commands::sendErrorResponse(const std::string & code, const ftClient & clt) const
 {
-		//todo
+	//todo
+	return true;
 }
 
 void Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)

@@ -1,7 +1,8 @@
 
 #pragma once
-#include <iostream>
-#include <ctime>
+
+#include "config.hpp"
+#include "lib.hpp"
 
 #define FT_IRC_TIMEOUT 20
 

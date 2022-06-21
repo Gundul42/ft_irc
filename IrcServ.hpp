@@ -1,28 +1,10 @@
-#include <stdlib.h>
-#include <unistd.h>	// usleep
-#include <stdio.h>	// perror!
-#include <string.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <poll.h>
-#include <ctime>
-#include <iostream>
-#include <map>
-#include "ftClient.hpp"
+
+#pragma once
+
+#include "lib.hpp"
+#include "config.hpp"
 #include "Commands.hpp"
-
-#define IRCSERVNAME "ftIrcServ.nowhere.xy"
-#define IRCSERVWLC "Welcome to ft_IrcServ V 0.1beta"
-#define IRCSERVVERSION "V0.1beta"
-#define IRCSERVCDATE "180622"
-#define IRCSERVUSERMODES "aiwroOs"
-#define IRCSERVCHANMODES "birkfsmqz"
-#define IRCFLOODCONTROL 2
-
+#include "ftClient.hpp"
 
 class IrcServ
 {

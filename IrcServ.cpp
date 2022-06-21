@@ -44,13 +44,13 @@ IrcServ::IrcServ(const char *port)
 	if (p == NULL)
 	{
 		_logAction("Error: socket could not bind: exiting");
-        exit(1);
+		exit(1);
 	}
 	freeaddrinfo(ai);
 	if (listen(_socketfd, 10) == -1)
 	{
 		_logAction("Error: socket could not listen: exiting");
-        exit(1);
+		exit(1);
 	}
 	oss << "Success: Socket opened and listening at FD#" << _socketfd;
 	_logAction(oss.str());
