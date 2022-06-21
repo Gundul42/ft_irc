@@ -21,6 +21,7 @@
 #define IRCSERVCDATE "180622"
 #define IRCSERVUSERMODES "aiwroOs"
 #define IRCSERVCHANMODES "birkfsmqz"
+#define IRCFLOODCONTROL 2
 
 
 class IrcServ

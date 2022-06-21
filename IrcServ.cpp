@@ -127,6 +127,7 @@ void IrcServ::loop(void)
 	int										poll_count = 0;
 	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
 	std::string								addrStr;
+	bool									block;
 
 	pfds[0].fd=_socketfd;
 	pfds[0].events = POLLIN;
@@ -136,6 +137,7 @@ void IrcServ::loop(void)
 
 	while(true)
 	{
+		oss.str("");
 		poll_count = poll(pfds, fd_count, -1);
 
 		if (poll_count == -1)
@@ -143,10 +145,7 @@ void IrcServ::loop(void)
 			_logAction("Error while poll: exiting");
 			exit(1);
 		}
-		//check_valid_client(pfds, &fd_count);
-		oss << "Connected hosts: " << _connections.size();
-		_logAction(oss.str());
-		oss.str("");
+		//check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
 		for (int i = 0; i < fd_count; i++)
 		{
 			if (pfds[i].revents & POLLIN)
@@ -188,16 +187,21 @@ void IrcServ::loop(void)
 					}
 					else
 					{
+						block = false;
 						//we got something in -> parse command
 						//IRC adds CR,LF to each end of a buffer line, remove it first !
 						memset(buf + strlen(buf) - 2, 0, 2);
-
-						oss << "Last action " << updateTimeDiff(*(_connections.find(
-							pfds[i].fd)->second)) << " seconds ago ";
-						oss << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
-						_logAction(oss.str());
-						oss.str("");
-						this->_commands.handle_command(*client, buf);
+						if (getTimeDiff(*(_connections.find(pfds[i].fd)->second)) < IRCFLOODCONTROL)
+								block = true;
+						if (!block)
+						{
+							oss << "Last action " << updateTimeDiff(*(_connections.find(
+								pfds[i].fd)->second)) << " seconds ago ";
+							oss << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
+							_logAction(oss.str());
+							oss.str("");
+							this->_commands.handle_command(*client, buf);
+						}
 					}
 				}
 			}
