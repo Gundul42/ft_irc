@@ -5,19 +5,23 @@
 #include <sys/socket.h>
 #include "ftClient.hpp"
 #include <iostream>
+#include "Message.hpp"
 
 #define ERR_COMMAND "Command does not exits\n"
 #define ERR_NOTOPER "User must be an operator to use the command\n"
 #define ERR_NULLPARAM "Command incomplete\n"
+#define ERR_NICKEXIST "Nickname already existed\n"
 
 class Commands
 {
-		typedef int (Commands::*UserCommandPointer)(ftClient&, std::string& param);
-		typedef std::map<std::string, UserCommandPointer> userCommandsMap;
-		typedef std::map<std::string, UserCommandPointer> serviceCommandsMap;
+		typedef int (Commands::*UserCommandPointer)(ftClient&, Message& msg);
+		typedef std::map<std::string, UserCommandPointer>	userCommandsMap;
+		typedef std::map<std::string, UserCommandPointer>	serviceCommandsMap;
+		typedef std::map<int, ftClient*>					userMap;
 
 		userCommandsMap		userCommands;
 		serviceCommandsMap	serviceCommands;
+		userMap				users;
 		static const		size_t maxLineSize;
 
 		Commands(const Commands& other);
@@ -26,44 +30,44 @@ class Commands
 		public:
 					Commands();
 					~Commands();
-					void	read_command(int socket, std::stringstream& str, std::string& command,
-									std::string& message);
-					void	handle_command(ftClient& client, const void* buf);
+					void	handle_command(const std::map<int, ftClient*>& usermap, int socket, const char* buf);
 
 					//commands, to be implemented
-					int		away(ftClient& client, std::string& param);
-					int		die(ftClient& client, std::string& param);
-					int		info(ftClient& client, std::string& param);
-					int		invite(ftClient& client, std::string& param);
-					int		join(ftClient& client, std::string& param);
-					int		kick(ftClient& client, std::string& param);
-					int		kill(ftClient& client, std::string& param);
-					int		list(ftClient& client, std::string& param);
-					int		lusers(ftClient& client, std::string& param);
-					int		mode(ftClient& client, std::string& param);
-					int		motd(ftClient& client, std::string& param);
-					int		names(ftClient& client, std::string& param);
-					int		nick(ftClient& client, std::string& param);
-					int		notice(ftClient& client, std::string& param);
-					int		oper(ftClient& client, std::string& param);
-					int		part(ftClient& client, std::string& param);
-					int		pass(ftClient& client, std::string& param);
-					int		ping(ftClient& client, std::string& param);
-					int		pong(ftClient& client, std::string& param);
-					int		privmsg(ftClient& client, std::string& param);
-					int		quit(ftClient& client, std::string& param);
-					int		rehash(ftClient& client, std::string& param);
-					int		restart(ftClient& client, std::string& param);
-					int		service(ftClient& client, std::string& param);
-					int		servlist(ftClient& client, std::string& param);
-					int		squery(ftClient& client, std::string& param);
-					int		stats(ftClient& client, std::string& param);
-					int		time(ftClient& client, std::string& param);
-					int		topic(ftClient& client, std::string& param);
-					int		user(ftClient& client, std::string& param);
-					int		userhost(ftClient& client, std::string& param);
-					int		version(ftClient& client, std::string& param);
-					int		who(ftClient& client, std::string& param);
-					int		whois(ftClient& client, std::string& param);
-					int		whowas(ftClient& client, std::string& param);
+					int		away(ftClient& client, Message& msg);
+					int		die(ftClient& client, Message& msg);
+					int		info(ftClient& client, Message& msg);
+					int		invite(ftClient& client, Message& msg);
+					int		join(ftClient& client, Message& msg);
+					int		kick(ftClient& client, Message& msg);
+					int		kill(ftClient& client, Message& msg);
+					int		list(ftClient& client, Message& msg);
+					int		lusers(ftClient& client, Message& msg);
+					int		mode(ftClient& client, Message& msg);
+					int		motd(ftClient& client, Message& msg);
+					int		names(ftClient& client, Message& msg);
+					int		nick(ftClient& client, Message& msg);
+					int		notice(ftClient& client, Message& msg);
+					int		oper(ftClient& client, Message& msg);
+					int		part(ftClient& client, Message& msg);
+					int		pass(ftClient& client, Message& msg);
+					int		ping(ftClient& client, Message& msg);
+					int		pong(ftClient& client, Message& msg);
+					int		privmsg(ftClient& client, Message& msg);
+					int		quit(ftClient& client, Message& msg);
+					int		rehash(ftClient& client, Message& msg);
+					int		restart(ftClient& client, Message& msg);
+					int		service(ftClient& client, Message& msg);
+					int		servlist(ftClient& client, Message& msg);
+					int		squery(ftClient& client, Message& msg);
+					int		stats(ftClient& client, Message& msg);
+					int		time(ftClient& client, Message& msg);
+					int		topic(ftClient& client, Message& msg);
+					int		user(ftClient& client, Message& msg);
+					int		userhost(ftClient& client, Message& msg);
+					int		version(ftClient& client, Message& msg);
+					int		who(ftClient& client, Message& msg);
+					int		whois(ftClient& client, Message& msg);
+					int		whowas(ftClient& client, Message& msg);
+					int		cap(ftClient& client, Message& msg);
+
 };

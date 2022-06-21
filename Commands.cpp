@@ -38,65 +38,86 @@ Commands::Commands()
 	userCommands["TOPIC"] = &Commands::topic;
 	userCommands["USERHOST"] = &Commands::userhost;
 	userCommands["VERSION"] = &Commands::version;
+	userCommands["CAP"] = &Commands::cap;
+
 }
 
 Commands::~Commands() {}
 
-
-void	Commands::read_command(int socket, std::stringstream& str, std::string& command,
-				std::string& param)
+void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, const char* buf)
 {
-	//pending: add buf size exceed limit test
-	std::getline(str, command, ' ');
-	if (*(command.end() - 1) == '\n')
-	{
-		command.erase(command.find('\n'));
-		param = ""; //Segfaults + compiler telling me nullptr is C++11 
-		return ;
-	}
-	std::getline(str, param, '\n');
-	if (*(param.end() - 1) == '\n')
-		param.erase(param.find('\n'));
-}
+	std::stringstream	str(buf);
+	this->users = usermap;
 
-void	Commands::handle_command(ftClient& client, const void* buf)
-{
-	std::string			command;
-	std::string			param;
-	std::stringstream	str(static_cast<const char*>(buf));
-
-	this->read_command(client.get_fd(), str, command, param);
-	userCommandsMap::const_iterator it = userCommands.find(command);
-	if (it == userCommands.end())
+	for (std::string line; std::getline(str, line, '\n'); )
 	{
-		if (send(client.get_fd(), ERR_COMMAND, sizeof(ERR_COMMAND), 0) == -1)
-			perror(ERR_COMMAND);
-	}
+		Message msg(line);
+		userCommandsMap::const_iterator it = userCommands.find(msg.getCommand());
+		if (it == userCommands.end())
+		{
+			if (send(socket, ERR_COMMAND, sizeof(ERR_COMMAND), 0) == -1)
+				perror(ERR_COMMAND);
+		}
 	else
-		(this->*(it->second))(client, param);
+		(this->*(it->second))(*(users.find(socket)->second), msg);
+	}
 }
 
-int		Commands::away(ftClient& client, std::string& param) { return 1; }
-int		Commands::die(ftClient& client, std::string& param) { return 1; }
-int		Commands::info(ftClient& client, std::string& param) { return 1; }
-int		Commands::invite(ftClient& client, std::string& param) { return 1; }
-int		Commands::join(ftClient& client, std::string& param) { return 1; }
-int		Commands::kick(ftClient& client, std::string& param) { return 1; }
-int		Commands::kill(ftClient& client, std::string& param) { return 1; }
-int		Commands::list(ftClient& client, std::string& param) { return 1; }
-int		Commands::lusers(ftClient& client, std::string& param) { return 1; }
-int		Commands::mode(ftClient& client, std::string& param) { return 1; }
-int		Commands::motd(ftClient& client, std::string& param) { return 1; }
-int		Commands::names(ftClient& client, std::string& param) { return 1; }
-int		Commands::nick(ftClient& client, std::string& param) { return 1; }
-int		Commands::notice(ftClient& client, std::string& param) { return 1; }
-int		Commands::oper(ftClient& client, std::string& param) { return 1; }
-int		Commands::part(ftClient& client, std::string& param) { return 1; }
-int		Commands::pass(ftClient& client, std::string& param) { return 1; }
-int		Commands::ping(ftClient& client, std::string& param)
+int		Commands::away(ftClient& client, Message& msg) { return 1; }
+int		Commands::die(ftClient& client, Message& msg) { return 1; }
+int		Commands::info(ftClient& client, Message& msg) { return 1; }
+int		Commands::invite(ftClient& client, Message& msg) { return 1; }
+int		Commands::join(ftClient& client, Message& msg) { return 1; }
+int		Commands::kick(ftClient& client, Message& msg) { return 1; }
+int		Commands::kill(ftClient& client, Message& msg) { return 1; }
+int		Commands::list(ftClient& client, Message& msg) { return 1; }
+int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
+int		Commands::mode(ftClient& client, Message& msg) { return 1; }
+int		Commands::motd(ftClient& client, Message& msg) { return 1; }
+int		Commands::names(ftClient& client, Message& msg) { return 1; }
+int		Commands::nick(ftClient& client, Message& msg)
 {
-	std::string pong = "PONG " + param + "\n";
-	if (param.empty())
+	if (msg.getParam().empty())
+	{
+		std::cout << "1\n";
+		//send ERR_NONICKNAMEGIVEN
+		return false;
+	}
+	else if (msg.getParam().size() > 9 || msg.getParam()[0] < 64 || msg.getParam().find(' ') != std::string::npos)
+	{
+		std::cout << "2\n";
+		//send ERR_ERRONEUSNICKNAME
+		return false;
+	}
+
+	std::map<int, ftClient*>::const_iterator it = this->users.begin();
+	for (; it != this->users.end(); it++)
+	{
+		if (msg.getParam() == (*it).second->get_name())
+		{
+			std::cout << "3\n";
+			//send ERR_NICKNAMEINUSE
+			return false;
+		}
+	}
+
+	//check collision - not sure if we need to implement...
+	/*Returned by a server to a client when it detects a
+	nickname collision (registered of a NICK that
+	already exists by another server).*/
+
+	client.set_name(msg.getParam());
+	// std::cout << "Name is " << client.get_name() << "\n";
+	return true;
+}
+int		Commands::notice(ftClient& client, Message& msg) { return 1; }
+int		Commands::oper(ftClient& client, Message& msg) { return 1; }
+int		Commands::part(ftClient& client, Message& msg) { return 1; }
+int		Commands::pass(ftClient& client, Message& msg) { return 1; }
+int		Commands::ping(ftClient& client, Message& msg)
+{
+	std::string pong = "PONG " + msg.getParam() + "\n";
+	if (msg.getParam().empty())
 	{
 		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
 			perror("ping param empty");
@@ -109,20 +130,24 @@ int		Commands::ping(ftClient& client, std::string& param)
 		return true;
 	}
 }
-int		Commands::pong(ftClient& client, std::string& param) { return 1; }
-int		Commands::privmsg(ftClient& client, std::string& param) { return 1; }
-int		Commands::quit(ftClient& client, std::string& param) { return 1; }
-int		Commands::rehash(ftClient& client, std::string& param) { return 1; }
-int		Commands::restart(ftClient& client, std::string& param) { return 1; }
-int		Commands::service(ftClient& client, std::string& param) { return 1; }
-int		Commands::servlist(ftClient& client, std::string& param) { return 1; }
-int		Commands::squery(ftClient& client, std::string& param) { return 1; }
-int		Commands::stats(ftClient& client, std::string& param) { return 1; }
-int		Commands::time(ftClient& client, std::string& param) { return 1; }
-int		Commands::topic(ftClient& client, std::string& param) { return 1; }
-int		Commands::user(ftClient& client, std::string& param) { return 1; }
-int		Commands::userhost(ftClient& client, std::string& param) { return 1; }
-int		Commands::version(ftClient& client, std::string& param) { return 1; }
-int		Commands::who(ftClient& client, std::string& param) { return 1; }
-int		Commands::whois(ftClient& client, std::string& param) { return 1; }
-int		Commands::whowas(ftClient& client, std::string& param) { return 1; }
+int		Commands::pong(ftClient& client, Message& msg) { return 1; }
+int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
+int		Commands::quit(ftClient& client, Message& msg) { return 1; }
+int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
+int		Commands::restart(ftClient& client, Message& msg) { return 1; }
+int		Commands::service(ftClient& client, Message& msg) { return 1; }
+int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
+int		Commands::squery(ftClient& client, Message& msg) { return 1; }
+int		Commands::stats(ftClient& client, Message& msg) { return 1; }
+int		Commands::time(ftClient& client, Message& msg) { return 1; }
+int		Commands::topic(ftClient& client, Message& msg) { return 1; }
+int		Commands::user(ftClient& client, Message& msg)
+{
+	
+}
+int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
+int		Commands::version(ftClient& client, Message& msg) { return 1; }
+int		Commands::who(ftClient& client, Message& msg) { return 1; }
+int		Commands::whois(ftClient& client, Message& msg) { return 1; }
+int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
+int		Commands::cap(ftClient& client, Message& msg) {return true;}

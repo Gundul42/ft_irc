@@ -15,6 +15,13 @@ class ftClient
 				bool		_oper;			// if the client is an operator
 				time_t		_connect;		// time of connection
 				time_t		_lastAction;	// when was the last action
+				/*In addition to the nickname, all servers must have the
+				following information about all clients: the real name of the host
+				that the client is running on, the username of the client on that
+				host, and the server to which the client is connected.*/
+				std::string _host;
+				std::string _username;
+				std::string _server;
 				//maybe more to come, at least a timestamp
 
 				ftClient(const ftClient & cpy);
@@ -27,7 +34,7 @@ class ftClient
 				void			validate(void);
 
 				std::string		get_name(void) const;
-				void			set_name(const std::string nname);
+				void			set_name(const std::string& name);
 				std::string 	get_addr(void) const;
 				int				get_fd(void) const;
 

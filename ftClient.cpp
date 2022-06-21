@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/16 11:46:34 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/16 20:31:42 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ std::string	ftClient::get_name(void) const {return this->_name;}
 //
 // set NICK of client
 //
-void ftClient::set_name(std::string nname) {_name = nname;}
+void ftClient::set_name(const std::string& name) {_name = name;}
 
 //
 // get address string of client

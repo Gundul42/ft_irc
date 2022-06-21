@@ -114,16 +114,18 @@ void IrcServ::loop(void)
 	socklen_t								addrlen;
 	char									buf[512];
 	char									remoteIP[INET6_ADDRSTRLEN];
-	int										fd_count=0;
-	int										fd_size=5;
+	int										fd_count = 0;
+	int										fd_size = 5;
 	int										poll_count = 0;
 	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
 	std::string								addrStr;
+	std::string								emptynick;//emptynick.clear() is better than ""
 
-	pfds[0].fd=_socketfd;
+	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
-	fd_count=1;
+	fd_count = 1;
 	addrlen = sizeof remoteaddr;
+	emptynick.clear();
 
 	while(true)
 	{
@@ -155,11 +157,12 @@ void IrcServ::loop(void)
 						//looks like not, but I am a bit lost in all those socket structs
 						//and functions XD
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
-									new ftClient(newfd, "", addrStr)));
+									new ftClient(newfd, emptynick, addrStr)));
 					}
 				}
 				else //clients
 				{
+					memset(buf, 0, sizeof(buf));
 					int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
 					if (nbytes <= 0)
 					{
@@ -177,13 +180,12 @@ void IrcServ::loop(void)
 						std::cout << "Last action before " << updateTimeDiff(*(_connections.find(
 							pfds[i].fd)->second)) << " seconds ";
 						std::cout << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
-						this->_commands.handle_command(*(_connections.find(pfds[i].fd)->second), buf);
+						this->_commands.handle_command(_connections, pfds[i].fd, buf);
 						//we have received something
 						// client fd is pfds[i].fd
 						// string is buf
 						// nbytes is size of string
 						// here is where the string should enter parsing.
-						memset(buf, 0, sizeof(buf));
 					}
 				}
 			}
