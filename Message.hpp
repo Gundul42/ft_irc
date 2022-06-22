@@ -4,6 +4,7 @@
 //# include "lib.hpp"
 # include <string.h>
 # include <iostream>
+# include <sstream>
 
 class Message
 {
