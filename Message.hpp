@@ -1,6 +1,7 @@
-#pragma once
+#ifndef MESSAGE_H
+# define MESSAGE_H
 
-#include "lib.hpp"
+# include "lib.hpp"
 
 class Message
 {
@@ -24,3 +25,5 @@ private:
 
 	void				parse(const std::string& buf);
 };
+
+#endif

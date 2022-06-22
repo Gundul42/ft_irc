@@ -1,14 +1,15 @@
-#pragma once
+#ifndef COMMANDS_H
+# define COMMANDS_H
 
-#include "config.hpp"
-#include "lib.hpp"
-#include "ftClient.hpp"
-#include "Message.hpp"
+# include "config.hpp"
+# include "lib.hpp"
+# include "ftClient.hpp"
+# include "Message.hpp"
 
-#define ERR_COMMAND "Command does not exits\n"
-#define ERR_NOTOPER "User must be an operator to use the command\n"
-#define ERR_NULLPARAM "Command incomplete\n"
-#define ERR_NICKEXIST "Nickname already existed\n"
+# define ERR_COMMAND "Command does not exits\n"
+# define ERR_NOTOPER "User must be an operator to use the command\n"
+# define ERR_NULLPARAM "Command incomplete\n"
+# define ERR_NICKEXIST "Nickname already existed\n"
 
 class Commands
 {
@@ -28,7 +29,8 @@ class Commands
 		public:
 					Commands();
 					~Commands();
-					void	handle_command(const std::map<int, ftClient*>& usermap, int socket, const char* buf);
+					void	handle_command(const std::map<int, ftClient*>& usermap, int socket, 
+									const char* buf);
 
 					bool	sendCommandResponse(const std::string & code, const ftClient & clt) const;
 					bool	sendErrorResponse(const std::string & code, const ftClient & clt) const;
@@ -73,3 +75,5 @@ class Commands
 					int		cap(ftClient& client, Message& msg);
 
 };
+
+#endif

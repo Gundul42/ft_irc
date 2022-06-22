@@ -1,10 +1,10 @@
+#ifndef FTCLIENT_H
+# define FTCLIENT_H
 
-#pragma once
+# include "config.hpp"
+# include "lib.hpp"
 
-#include "config.hpp"
-#include "lib.hpp"
-
-#define FT_IRC_TIMEOUT 20
+# define FT_IRC_TIMEOUT 20
 
 class ftClient
 {
@@ -48,3 +48,5 @@ class ftClient
 
 				//to be continued
 };
+
+#endif

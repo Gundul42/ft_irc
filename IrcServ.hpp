@@ -1,10 +1,10 @@
+#ifndef IRCSERV_H
+# define IRCSERV_H
 
-#pragma once
-
-#include "lib.hpp"
-#include "config.hpp"
-#include "Commands.hpp"
-#include "ftClient.hpp"
+# include "lib.hpp"
+# include "config.hpp"
+# include "Commands.hpp"
+# include "ftClient.hpp"
 
 class IrcServ
 {
@@ -37,3 +37,5 @@ class IrcServ
 				bool	NickExists(const std::string & nick) const;
 
 };
+
+#endif
