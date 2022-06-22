@@ -6,7 +6,7 @@
 #    By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/12/27 14:36:06 by graja             #+#    #+#              #
-#    Updated: 2022/06/22 12:42:22 by graja            ###   ########.fr        #
+#    Updated: 2022/06/22 13:32:08 by graja            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,7 +21,7 @@ CC		=	c++
 FLAGS	=	#-Wextra -Werror -Wall -std=c++98 -g
 
 $(NAME)	:	$(OBJ)	$(SRCS)
-	$(CC) $(FLAGS) $(SRCS) -o $(NAME) $(OBJ)
+	$(CC) $(FLAGS) -o $(NAME) $(OBJ)
 
 all	:	$(NAME)
 
