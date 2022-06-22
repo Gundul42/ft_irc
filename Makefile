@@ -6,13 +6,13 @@
 #    By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/12/27 14:36:06 by graja             #+#    #+#              #
-#    Updated: 2022/06/22 12:23:39 by graja            ###   ########.fr        #
+#    Updated: 2022/06/22 12:42:22 by graja            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 NAME	=	ft_irc
 
-SRCS	=	Commands.cpp ftClient.cpp IrcServ.cpp Message.cpp run.cpp
+SRCS	=	IrcServ.cpp ftClient.cpp run.cpp Commands.cpp Message.cpp 
 
 OBJ		=	${SRCS:.cpp=.o}
 

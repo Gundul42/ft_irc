@@ -1,4 +1,5 @@
 #include "Message.hpp"
+
 Message::Message(std::string input)
 {
 	_input.clear();

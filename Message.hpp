@@ -1,7 +1,9 @@
 #ifndef MESSAGE_H
 # define MESSAGE_H
 
-# include "lib.hpp"
+//# include "lib.hpp"
+# include <string.h>
+# include <iostream>
 
 class Message
 {
