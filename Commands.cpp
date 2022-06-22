@@ -54,10 +54,7 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 		Message msg(line);
 		userCommandsMap::const_iterator it = userCommands.find(msg.getCommand());
 		if (it == userCommands.end())
-		{
-			if (send(socket, ERR_COMMAND, sizeof(ERR_COMMAND), 0) == -1)
-				perror(ERR_COMMAND);
-		}
+			sendCommandResponse(*(users.find(socket)->second), ERR_UNKNOWNCOMMAND, "Unknown command");
 	else
 		(this->*(it->second))(*(users.find(socket)->second), msg);
 	}
@@ -119,8 +116,7 @@ int		Commands::ping(ftClient& client, Message& msg)
 	std::string pong = ":ftIrcServ.nowhere.xy PONG " + msg.getParam() + "\x0d\x0a";
 	if (msg.getParam().empty())
 	{
-		if (send(client.get_fd(), ERR_NULLPARAM, sizeof(ERR_NULLPARAM), 0) == -1)
-			perror("ping param empty");
+		sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		return false;
 	}
 	else
@@ -151,7 +147,7 @@ int		Commands::user(ftClient& client, Message& msg)
 		int					i = 0;
 
 		// std::cout << std::endl << param << std::endl;
-		sendCommandResponse("001", client);
+		sendCommandResponse(client, "001", "welcome");
 
 		if (client.isRegistered())
 		{
@@ -199,24 +195,28 @@ int		Commands::who(ftClient& client, Message& msg) { return 1; }
 int		Commands::whois(ftClient& client, Message& msg) { return 1; }
 int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
 
-bool Commands::sendCommandResponse(const std::string & code, const ftClient & clt) const
+
+bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
+				const std::string & trailer) const
+{
+	std::ostringstream	tosend;
+
+	tosend << code;
+	return sendCommandResponse(clt, tosend.str(), trailer);
+}
+
+bool Commands::sendCommandResponse(const ftClient & clt, const std::string & code, 
+				const std::string & trailer) const
 {
 	std::ostringstream	tosend;
 	std::string			go;
 
-	if (code !="001")
-			return false;
-	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :welcome\x0d\x0a";
+	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :";
+	tosend << trailer << "\x0d\x0a";
 	go = tosend.str();
 	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
 		perror("sendCommandResponse");
 	usleep(100); 
-	return true;
-}
-
-bool Commands::sendErrorResponse(const std::string & code, const ftClient & clt) const
-{
-	//todo
 	return true;
 }
 

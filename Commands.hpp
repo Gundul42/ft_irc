@@ -5,18 +5,14 @@
 # include "lib.hpp"
 # include "ftClient.hpp"
 # include "Message.hpp"
-
-# define ERR_COMMAND "Command does not exits\n"
-# define ERR_NOTOPER "User must be an operator to use the command\n"
-# define ERR_NULLPARAM "Command incomplete\n"
-# define ERR_NICKEXIST "Nickname already existed\n"
+# include "NumCodes.hpp"
 
 class Commands
 {
 		typedef int (Commands::*UserCommandPointer)(ftClient&, Message& msg);
-		typedef std::map<std::string, UserCommandPointer>	userCommandsMap;
-		typedef std::map<std::string, UserCommandPointer>	serviceCommandsMap;
-		typedef std::map<int, ftClient*>					userMap;
+		typedef std::map<std::string, UserCommandPointer>				userCommandsMap;
+		typedef std::map<std::string, UserCommandPointer>				serviceCommandsMap;
+		typedef std::map<int, ftClient*>								userMap;
 
 		userCommandsMap		userCommands;
 		serviceCommandsMap	serviceCommands;
@@ -31,9 +27,9 @@ class Commands
 					~Commands();
 					void	handle_command(const std::map<int, ftClient*>& usermap, int socket, 
 									const char* buf);
-
-					bool	sendCommandResponse(const std::string & code, const ftClient & clt) const;
-					bool	sendErrorResponse(const std::string & code, const ftClient & clt) const;
+					bool 	sendCommandResponse(const ftClient & clt, const std::string & code, 
+									const std::string & trailer) const;
+					bool 	sendCommandResponse(const ftClient & clt, const int & code, const std::string & trailer) const;
 					void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 
 					//commands, to be implemented
