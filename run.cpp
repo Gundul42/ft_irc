@@ -6,11 +6,12 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 18:52:50 by graja             #+#    #+#             */
-/*   Updated: 2022/06/17 17:47:57 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/22 18:34:55 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "IrcServ.hpp"
+#include "Channel.hpp"
 
 int	main(void)
 {
