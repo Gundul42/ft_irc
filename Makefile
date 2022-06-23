@@ -7,8 +7,7 @@ OBJ		=	${SRCS:.cpp=.o}
 
 CC		=	c++
 
-FLAGS	=	#-Wextra -Werror -Wall -std=c++98 -g
-
+FLAGS	=	-std=c++98 -g -Wextra -Wall #-Werror  
 $(NAME)	:	$(OBJ)	$(SRCS)
 	$(CC) $(FLAGS) -o $(NAME) $(OBJ)
 
