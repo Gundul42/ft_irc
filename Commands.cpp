@@ -64,7 +64,15 @@ int		Commands::away(ftClient& client, Message& msg) { return 1; }
 int		Commands::die(ftClient& client, Message& msg) { return 1; }
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
-int		Commands::join(ftClient& client, Message& msg) { return 1; }
+int		Commands::join(ftClient& client, Message& msg) 
+{
+		servChannel::const_iterator it;
+		if (channels.size() > 0 && channels.find(msg.getParam()) != channels.end())
+				return 1;
+		channels.insert(std::pair<std::string, IrcChannel>(msg.getParam(), IrcChannel(msg.getParam)));
+		return 0; 
+}
+
 int		Commands::kick(ftClient& client, Message& msg) { return 1; }
 int		Commands::kill(ftClient& client, Message& msg) { return 1; }
 int		Commands::list(ftClient& client, Message& msg) { return 1; }

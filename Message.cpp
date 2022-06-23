@@ -38,8 +38,8 @@ void				Message::parse(const std::string& input)
 			this->_param = this->_param + component + " ";
 		i++;
 	}
-	// std::cout << "*prefix: " << this->_prefix << "\n";
-	// std::cout << "*command: " << this->_command << "\n";
-	// std::cout << "*param: " << this->_param << "\n";
-	// std::cout << "*trailing: " << this->_trailing << "\n";
+	 std::cout << "*prefix: " << this->_prefix << "\n";
+	 std::cout << "*command: " << this->_command << "\n";
+	 std::cout << "*param: " << this->_param << "\n";
+	 std::cout << "*trailing: " << this->_trailing << "\n";
 }

@@ -6,6 +6,7 @@
 # include "ftClient.hpp"
 # include "Message.hpp"
 # include "NumCodes.hpp"
+# include "Channel.hpp"
 
 class Commands
 {
@@ -13,10 +14,12 @@ class Commands
 		typedef std::map<std::string, UserCommandPointer>				userCommandsMap;
 		typedef std::map<std::string, UserCommandPointer>				serviceCommandsMap;
 		typedef std::map<int, ftClient*>								userMap;
+		typedef std::map<std::string, IrcChannel>						servChannel;
 
 		userCommandsMap		userCommands;
 		serviceCommandsMap	serviceCommands;
 		userMap				users;
+		servChannel			channels;
 		static const		size_t maxLineSize;
 
 		Commands(const Commands& other);
