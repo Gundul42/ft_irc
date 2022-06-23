@@ -150,6 +150,7 @@ void IrcServ::loop(void)
 		//check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
 		for (int i = 0; i < fd_count; i++)
 		{
+			ftClient *client = _connections.find(pfds[i].fd)->second; //local copy for less find calls
 			if (pfds[i].revents & POLLIN)
 			{
 				if (pfds[i].fd == _socketfd) //server
@@ -173,7 +174,6 @@ void IrcServ::loop(void)
 				{
 					memset(buf, 0, sizeof(buf));
 					int nbytes = recv(pfds[i].fd, buf, sizeof buf, 0);
-					ftClient *client = _connections.find(pfds[i].fd)->second;
 					if (nbytes <= 0)
 					{
 						//Got error or connection closed by client
@@ -193,16 +193,20 @@ void IrcServ::loop(void)
 						//we got something in -> parse command
 						//IRC adds CR,LF to each end of a buffer line, remove it first !
 						memset(buf + strlen(buf) - 2, 0, 2);
-						if (getTimeDiff(*(_connections.find(pfds[i].fd)->second)) < IRCFLOODCONTROL)
+						if (client->get_msgs() > IRCMAXMSGCOUNT)
 								block = true;
 						if (!block)
 						{
-							oss << "Last action " << updateTimeDiff(*(_connections.find(
-								pfds[i].fd)->second)) << " seconds ago ";
-							oss << "fd#" << pfds[i].fd << " - " << nbytes << ": " << buf;
+							client->add_msgsCount(1);
+							oss << "Last action " << updateTimeDiff(*client) << 
+									" seconds ago " << client->get_msgs();
+							oss << "fd#" << pfds[i].fd << " - " << nbytes << " Bytes" << std::endl;
+							oss << ">>> " << buf;
 							_logAction(oss.str());
 							oss.str("");
 							this->_commands.handle_command(_connections, pfds[i].fd, buf);
+							if (getTimeDiff(*client) < IRCFLOODCONTROL)
+									client->set_msgsZero();
 						}
 					}
 				}

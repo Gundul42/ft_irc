@@ -16,14 +16,14 @@ class ftClient
 				bool		_oper;			// if the client is an operator
 				time_t		_connect;		// time of connection
 				time_t		_lastAction;	// when was the last action
+				int			_msgs;			// nbr of messages sent
 				/*In addition to the nickname, all servers must have the
 				following information about all clients: the real name of the host
 				that the client is running on, the username of the client on that
 				host, and the server to which the client is connected.*/
-				std::string _host;
+				std::string _host; //same as addr ??? or rather string of rDNS ?
 				std::string _username;
 				std::string _server;
-				//maybe more to come, at least a timestamp
 
 				ftClient(const ftClient & cpy);
 				ftClient operator=(const ftClient & rgt);
@@ -38,10 +38,13 @@ class ftClient
 				void			set_name(const std::string& name);
 				std::string 	get_addr(void) const;
 				int				get_fd(void) const;
+				int				get_msgs(void) const;
 
 				int				getTimeConnected(void) const;
 				time_t			getLastAction(void) const;
 				void			setLastAction(time_t newT);
+				void			add_msgsCount(int nbr);
+				void			set_msgsZero(void);
 
 				bool			isRegistered(void) const;
 				bool			isOperator(void) const;
