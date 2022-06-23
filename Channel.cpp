@@ -2,7 +2,7 @@
 
 IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newName)
 {
-		_topic == "";
+		_topic = "";
 		_limit = -1;
 		_passwd = "";
 		_chop.push_back(&crt);
@@ -118,7 +118,7 @@ void IrcChannel::setSafe(void) {_safe = true;}
 
 void IrcChannel::setBuffer(const std::string & buffer) {_chanBuffer = buffer;}
 
-void IrcChannel::notSafe(void) {_safe == false;}
+void IrcChannel::notSafe(void) {_safe = false;}
 
 bool IrcChannel::unbanMember(const ftClient & member)
 {

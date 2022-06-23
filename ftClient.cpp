@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/23 13:11:18 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/23 23:17:27 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_connect = rgt._connect;
 		_lastAction = rgt._lastAction;
 		_msgs = rgt._msgs;
-		_host = rgt._host;
+		_realname = rgt._realname;
 		_username = rgt._username;
 		_server = rgt._server;
 		return (*this);
@@ -117,3 +117,7 @@ int ftClient::get_fd(void) const { return _fd; }
 bool			ftClient::isRegistered(void) const { return _val==true; }
 
 bool			ftClient::isOperator(void) const { return _oper==true; }
+
+void			ftClient::set_realname(const std::string& name) { this->_realname = name; }
+void			ftClient::set_username(const std::string& name) { this->_username = name; }
+void			ftClient::set_pass(const std::string& pass) { this->_password = pass; }

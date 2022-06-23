@@ -1,5 +1,5 @@
 #ifndef NUMCODES_H
-# define NUMCODE_H
+# define NUMCODES_H
 
 # define ERR_NOSUCHNICK 401
 # define ERR_NOSUCHSERVER 402

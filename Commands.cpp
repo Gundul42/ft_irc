@@ -67,9 +67,9 @@ int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 int		Commands::join(ftClient& client, Message& msg) 
 {
 		servChannel::const_iterator it;
-		if (channels.size() > 0 && channels.find(msg.getParam()) != channels.end())
-				return 1;
-		channels.insert(std::pair<std::string, IrcChannel>(msg.getParam(), IrcChannel(msg.getParam)));
+		if (channels.size() > 0 && channels.find(msg.getParam().front()) != channels.end())
+			return 1;
+		channels.insert(std::pair<std::string, IrcChannel*>(msg.getParam().front(), IrcChannel(msg.getParam().front())));
 		return 0; 
 }
 
@@ -82,51 +82,47 @@ int		Commands::motd(ftClient& client, Message& msg) { return 1; }
 int		Commands::names(ftClient& client, Message& msg) { return 1; }
 int		Commands::nick(ftClient& client, Message& msg)
 {
+	std::string oldnick = client.get_name();
+	std::string	newnick = msg.getParam().front();
+
 	if (msg.getParam().empty())
-	{
-		std::cout << "1\n";
-		//send ERR_NONICKNAMEGIVEN
-		return false;
-	}
-	else if (msg.getParam().size() > 9 || msg.getParam()[0] < 64 || msg.getParam().find(' ') != std::string::npos)
-	{
-		std::cout << "2\n";
-		//send ERR_ERRONEUSNICKNAME
-		return false;
-	}
+		return !sendCommandResponse(client, ERR_NONICKNAMEGIVEN, "No nickname given");
+	else if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
+		return !sendCommandResponse(client, ERR_ERRONEUSNICKNAME, "Erroneus nickname");
 
 	std::map<int, ftClient*>::const_iterator it = this->users.begin();
 	for (; it != this->users.end(); it++)
 	{
-		if (msg.getParam() == (*it).second->get_name())
-		{
-			std::cout << "3\n";
-			//send ERR_NICKNAMEINUSE
-			return false;
-		}
+		if (newnick == (*it).second->get_name())
+			return !sendCommandResponse(client, ERR_NICKNAMEINUSE, "Nickname is already in use");
 	}
-
-	//check collision - not sure if we need to implement...
-	/*Returned by a server to a client when it detects a
-	nickname collision (registered of a NICK that
-	already exists by another server).*/
-
-	client.set_name(msg.getParam());
-	// std::cout << "Name is " << client.get_name() << "\n";
+	//check collision?
+	client.set_name(msg.getParam().front());
+	if (oldnick.empty())
+		oldnick = newnick;
+	std::string response = ":" + oldnick + " " + msg.getCommand() + " " + newnick + "\x0d\x0a";
+	if (send(client.get_fd(), response.c_str(), response.length(), 0) == -1)
+		perror("sendNickResponse");
 	return true;
 }
 int		Commands::notice(ftClient& client, Message& msg) { return 1; }
 int		Commands::oper(ftClient& client, Message& msg) { return 1; }
 int		Commands::part(ftClient& client, Message& msg) { return 1; }
-int		Commands::pass(ftClient& client, Message& msg) { return 1; }
+int		Commands::pass(ftClient& client, Message& msg)
+{
+	if (client.isRegistered())
+		return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
+	else if (msg.getParam().empty())
+		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+	client.set_pass(msg.getParam().front());
+	return true;
+}
+
 int		Commands::ping(ftClient& client, Message& msg)
 {
-	std::string pong = ":ftIrcServ.nowhere.xy PONG " + msg.getParam() + "\x0d\x0a";
+	std::string pong = ":ftIrcServ.nowhere.xy PONG " + msg.getParam().front() + "\x0d\x0a";
 	if (msg.getParam().empty())
-	{
-		sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-		return false;
-	}
+		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 	else
 	{
 		if (send(client.get_fd(), pong.c_str(), pong.length(), 0) == -1)
@@ -147,53 +143,24 @@ int		Commands::time(ftClient& client, Message& msg) { return 1; }
 int		Commands::topic(ftClient& client, Message& msg) { return 1; }
 int		Commands::user(ftClient& client, Message& msg)
 {
-		std::stringstream	str(msg.getParam());
-		std::string			username;
-		std::string			hostname;
-		std::string			servername;
-		std::string			realname;
+		std::string			username = msg.getParam().front();
+		std::string			realname = msg.getTrailing();
 		int					i = 0;
 
-		// std::cout << std::endl << param << std::endl;
 		sendCommandResponse(client, "001", "welcome");
 
 		if (client.isRegistered())
-		{
-			// std::cout << "1\n";
-			//send ERR_ALREADYREGISTRED
-			return false;
-		}
-		else if (msg.getParam().empty() || msg.getTrailing().empty())
-		{
-			// std::cout << "2\n";
-			//send ERR_NEEDMOREPARAMS
-			return false;
-		}
-		for (std::string line; std::getline(str, line, ' '); )
-		{
-			if (*(line.end() - 1) == ' ')
-				line.erase(line.end() - 1);
-			if (i == 0)
-				username = line;
-			else if (i == 1)
-				hostname = line;
-			else
-				servername = line;
-			i++;
-		}
-		if (i != 3)
-		{
-			// std::cout << "3\n";
-			//send ERR_NEEDMOREPARAMS
-			return false;
-		}
-
+			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
+		else if (msg.getParam().size() < 3)
+			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		//need to test below
 		/*Between servers USER must to be prefixed with client's NICKname.
 		Note that hostname and servername are normally ignored by the IRC
 		server when the USER command comes from a directly connected client
 		(for security reasons), but they are used in server to server
 		communication.*/
+		client.set_username(username);
+		client.set_realname(realname);
 		client.validate();
 		return true;
 }
