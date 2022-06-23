@@ -7,6 +7,7 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 		_passwd = "";
 		_chop.push_back(&crt);
 		_ban.clear();
+		_member.clear();
 		_creator = &crt;
 		_safe = false;
 		_chanBuffer = "";
@@ -16,7 +17,10 @@ IrcChannel::~IrcChannel(void)
 {
 		_chop.clear();
 		_ban.clear();
+		_member.clear();
 }
+
+std::vector<ftClient*> IrcChannel::getMembers(void) const {return _member;}
 
 std::string IrcChannel::getName(void) const {return _name;}
 
@@ -67,6 +71,29 @@ bool IrcChannel::isBanned(const ftClient & member) const
 				in++;
 		}
 		return false;
+}
+
+bool IrcChannel::isMember(const ftClient & candid) const
+{
+		std::vector<ftClient*>::const_iterator	in;
+
+		if (_member.size() == 0)
+				return false;
+		in = _member.begin();
+		while (in != _member.end())
+		{
+				if ((*in)->get_name() == candid.get_name())
+						return true;
+				in++;
+		}
+		return false;
+}
+
+bool IrcChannel::addMember(ftClient & member)
+{
+		if (isMember(member) == true)
+				return false;
+		_member.push_back(&member);
 }
 
 void IrcChannel::setName(const std::string newName) {_name = newName;}
@@ -132,6 +159,25 @@ bool IrcChannel::removeChop(ftClient & member)
 				if ((*in)->get_name() == member.get_name())
 				{
 						_chop.erase(in);
+						return true;
+				}
+				in++;
+		}
+		return false;
+}
+
+bool IrcChannel::removeMember(ftClient & member)
+{
+		std::vector<ftClient*>::const_iterator	in;
+
+		if (_member.size() == 0 || isMember(member) == false)
+				return false;
+		in = _member.begin();
+		while (in != _member.end())
+		{
+				if ((*in)->get_name() == member.get_name())
+				{
+						_member.erase(in);
 						return true;
 				}
 				in++;
