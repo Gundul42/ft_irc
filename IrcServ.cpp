@@ -117,7 +117,7 @@ void* IrcServ::_get_in_addr(sockaddr *sa)
 //
 void IrcServ::loop(void)
 {
-	int										newfd;
+	int										newfd, i = 0;
 	sockaddr_storage						remoteaddr;
 	socklen_t								addrlen;
 	char									buf[512];
@@ -148,7 +148,7 @@ void IrcServ::loop(void)
 			exit(1);
 		}
 		//check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
-		for (int i = 0; i < fd_count; i++)
+		for (i = 0; i < fd_count; i++)
 		{
 			ftClient *client = _connections.find(pfds[i].fd)->second; //local copy for less find calls
 			if (pfds[i].revents & POLLIN)

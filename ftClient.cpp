@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/23 12:02:37 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/23 13:11:18 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 //
 ftClient::ftClient(const ftClient & cpy) {*this = cpy;}
 
-ftClient ftClient::operator=(const ftClient & rgt)
+ftClient & ftClient::operator=(const ftClient & rgt)
 {
 		_fd = rgt._fd;
 		_name = rgt._name;
@@ -28,6 +28,9 @@ ftClient ftClient::operator=(const ftClient & rgt)
 		_connect = rgt._connect;
 		_lastAction = rgt._lastAction;
 		_msgs = rgt._msgs;
+		_host = rgt._host;
+		_username = rgt._username;
+		_server = rgt._server;
 		return (*this);
 }
 

@@ -26,7 +26,7 @@ class ftClient
 				std::string _server;
 
 				ftClient(const ftClient & cpy);
-				ftClient operator=(const ftClient & rgt);
+				ftClient & operator=(const ftClient & rgt);
 
 		public:
 				ftClient(int fd,const std::string name, const std::string addr);
