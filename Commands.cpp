@@ -87,10 +87,14 @@ int		Commands::join(ftClient& client, Message& msg)
 		if (isnew)
 		{
 			_channels.insert(std::pair<std::string, IrcChannel*>(params[0], newChan));
-			std::cout << "NewChannel\n";
+			serverSend(client.get_fd(),client.get_name(), "JOIN " + params[0], "");
+			serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[0] + " +Cnst", "");
+			sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[0], "@" + client.get_name());
+			sendCommandResponse(client, RPL_ENDOFNAMES, params[0], "End of /NAMES list.");
+			return 0;
 		}
 		else
-			std::cout << "Existing Channel\n";
+			std::cout << "Existing Channel -- to be continued\n";
 		return 0;
 
 }
