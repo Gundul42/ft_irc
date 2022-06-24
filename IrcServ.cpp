@@ -200,14 +200,14 @@ void IrcServ::loop(void)
 							client->add_msgsCount(1);
 							oss << "Last action " << updateTimeDiff(*client) << 
 									" seconds ago " << client->get_msgs();
-							oss << "fd#" << pfds[i].fd << " - " << nbytes << " Bytes" << std::endl;
+							oss << " fd#" << pfds[i].fd << " - " << nbytes << " Bytes" << std::endl;
 							oss << ">>> " << buf;
 							_logAction(oss.str());
 							oss.str("");
 							this->_commands.handle_command(_connections, pfds[i].fd, buf);
-							if (getTimeDiff(*client) < IRCFLOODCONTROL)
-									client->set_msgsZero();
 						}
+						if (getTimeDiff(*client) > IRCFLOODCONTROL)
+							client->set_msgsZero();
 					}
 				}
 			}
