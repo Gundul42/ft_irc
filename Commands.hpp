@@ -19,7 +19,7 @@ class Commands
 		userCommandsMap		userCommands;
 		serviceCommandsMap	serviceCommands;
 		userMap				users;
-		servChannel			channels;
+		servChannel			_channels;
 		static const		size_t maxLineSize;
 
 		Commands(const Commands& other);
@@ -32,7 +32,10 @@ class Commands
 									const char* buf);
 					bool 	sendCommandResponse(const ftClient & clt, const std::string & code, 
 									const std::string & trailer) const;
-					bool 	sendCommandResponse(const ftClient & clt, const int & code, const std::string & trailer) const;
+					bool 	sendCommandResponse(const ftClient & clt, const int & code,
+									const std::string & trailer) const;
+					bool	sendCommandResponse(const ftClient & clt, const int & code, 
+									const std::string & argument, const std::string & trailer) const;
 					void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 
 					//commands, to be implemented

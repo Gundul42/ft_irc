@@ -66,13 +66,14 @@ int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 int		Commands::join(ftClient& client, Message& msg) 
 {
-		/*
-		servChannel::const_iterator it;
-		if (channels.size() > 0 && channels.find(msg.getParam().front()) != channels.end())
-			return 1;
-		channels.insert(std::pair<std::string, IrcChannel*>(msg.getParam().front(), IrcChannel(msg.getParam().front())));
-		return 0; 
-		*/
+		std::vector<std::string>					params = msg.getParam();
+		std::vector<std::string>::const_iterator	itpar;
+		std::map<std::string, IrcChannel>::iterator	itchan;
+
+		if (params.size() == 0)
+			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		if (_channels.find(params[0]) == _channels.end())
+			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
 }
 
 int		Commands::kick(ftClient& client, Message& msg) { return 1; }
@@ -189,6 +190,21 @@ bool Commands::sendCommandResponse(const ftClient & clt, const std::string & cod
 	std::string			go;
 
 	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :";
+	tosend << trailer << "\x0d\x0a";
+	go = tosend.str();
+	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
+		perror("sendCommandResponse");
+	usleep(100); 
+	return true;
+}
+
+bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
+				const std::string & argument, const std::string & trailer) const
+{
+	std::ostringstream	tosend;
+	std::string			go;
+
+	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " " << argument << " :";
 	tosend << trailer << "\x0d\x0a";
 	go = tosend.str();
 	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
