@@ -151,6 +151,11 @@ void IrcServ::loop(void)
 		for (i = 0; i < fd_count; i++)
 		{
 			ftClient *client = _connections.find(pfds[i].fd)->second; //local copy for less find calls
+			if (pfds[i].fd != _socketfd) //reset msgs counter after time has passed
+			{
+				if (getTimeDiff(*client) > IRCFLOODCONTROL)
+						client->set_msgsZero();
+			}
 			if (pfds[i].revents & POLLIN)
 			{
 				if (pfds[i].fd == _socketfd) //server
@@ -206,8 +211,6 @@ void IrcServ::loop(void)
 							oss.str("");
 							this->_commands.handle_command(_connections, pfds[i].fd, buf);
 						}
-						if (getTimeDiff(*client) > IRCFLOODCONTROL)
-							client->set_msgsZero();
 					}
 				}
 			}
