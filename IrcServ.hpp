@@ -34,8 +34,6 @@ class IrcServ
 				int		getTimeDiff(ftClient & start);
 				int		updateTimeDiff(ftClient & start);
 				void	check_valid_client(pollfd *pfds,int *fd_count);
-				bool	NickExists(const std::string & nick) const;
-
 };
 
 #endif

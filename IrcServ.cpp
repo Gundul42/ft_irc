@@ -270,19 +270,6 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 		}
 }
 
-bool IrcServ::NickExists(const std::string & nick) const
-{
-		std::map<int, ftClient*>::const_iterator	it = this->_connections.begin();
-
-		while (it != this->_connections.end())
-		{
-			if (nick == it->second->get_name())
-					return true;
-			it++;
-		}
-		return false;
-}
-
 void IrcServ::_debugBuffer(const char *buf) const
 {
 		int		i = 0;
