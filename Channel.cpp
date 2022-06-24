@@ -13,6 +13,37 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 		_chanBuffer = "";
 }
 
+IrcChannel::IrcChannel(void)
+{
+		_name.clear();
+		_topic.clear();
+		_limit = -1;
+		_passwd.clear();
+		_chop.clear();
+		_ban.clear();
+		_member.clear();
+		_creator = NULL;
+		_safe = false;
+		_chanBuffer.clear();
+}
+
+IrcChannel::IrcChannel(const IrcChannel & cpy) {*this = cpy;}
+
+IrcChannel & IrcChannel::operator=(const IrcChannel & cpy)
+{
+		_name = cpy._name;
+		_topic = cpy._topic;
+		_limit = cpy._limit;
+		_passwd = cpy._passwd;
+		_chop = cpy._chop;
+		_ban = cpy._ban;
+		_member = cpy._member;
+		_creator = cpy._creator;
+		_safe = cpy._safe;
+		_chanBuffer = cpy._chanBuffer;
+		return (*this);
+}
+
 IrcChannel::~IrcChannel(void)
 {
 		_chop.clear();
@@ -183,4 +214,21 @@ bool IrcChannel::removeMember(ftClient & member)
 				in++;
 		}
 		return false;
+}
+		
+bool IrcChannel::valChanName(const std::string name) const
+{
+		std::string::const_iterator	it = name.begin();
+
+		if (name.length() > 50)
+			return false;
+		if (name[0] != '#' && name[0] != '!' && name[0] != '+' && name[0] != '&')
+			return false;
+		while (it != name.end())
+		{
+				if (*it == '\x07' || *it == ' ' || *it == ',' || *it == ':')
+					return false;
+				it++;
+		}
+		return true;
 }

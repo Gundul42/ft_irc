@@ -19,12 +19,15 @@ class IrcChannel
 		bool									_safe;
 		std::string								_chanBuffer;
 
-		IrcChannel(const std::string & newName, ftClient & crt);
-		IrcChannel & operator=(const IrcChannel & cpy);
 
 	public:
-		IrcChannel(const std::string & newName);
+		IrcChannel(void);
+		IrcChannel(const std::string & newName, ftClient & crt);
+		
 		~IrcChannel(void);
+		
+		IrcChannel(const IrcChannel & cpy);
+		IrcChannel & operator=(const IrcChannel & cpy);
 
 		//getters
 		std::string  			getName(void) const;
@@ -56,6 +59,9 @@ class IrcChannel
 		bool					addChop(ftClient & member);
 		bool					removeChop(ftClient & member);
 		bool					removeMember(ftClient & member);
+
+		//other
+		bool					valChanName(const std::string name) const;
 };
 
 #endif

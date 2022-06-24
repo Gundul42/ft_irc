@@ -68,12 +68,31 @@ int		Commands::join(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
 		std::vector<std::string>::const_iterator	itpar;
-		std::map<std::string, IrcChannel>::iterator	itchan;
+		servChannel::iterator						itchan;
+		bool										isnew = false;
+		IrcChannel*									newChan;
 
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (_channels.find(params[0]) == _channels.end())
-			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+		{
+			newChan = new IrcChannel(params[0], client);
+			if (newChan->valChanName(params[0]) == false)
+			{
+				delete newChan;
+				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+			}
+			isnew = true;
+		}
+		if (isnew)
+		{
+			_channels.insert(std::pair<std::string, IrcChannel*>(params[0], newChan));
+			std::cout << "NewChannel\n";
+		}
+		else
+			std::cout << "Existing Channel\n";
+		return 0;
+
 }
 
 int		Commands::kick(ftClient& client, Message& msg) { return 1; }
