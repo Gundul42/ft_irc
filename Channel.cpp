@@ -140,6 +140,7 @@ bool IrcChannel::addMember(ftClient & member)
 		if (isMember(member) == true)
 				return false;
 		_member.push_back(&member);
+		return true;
 }
 
 void IrcChannel::setName(const std::string newName) {_name = newName;}

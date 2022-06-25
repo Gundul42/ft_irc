@@ -126,7 +126,23 @@ int		Commands::mode(ftClient& client, Message& msg)
 		}
 		return 1;
 }
-int		Commands::motd(ftClient& client, Message& msg) { return 1; }
+int		Commands::motd(ftClient& client, Message& msg)
+{
+		std::fstream		motd;
+		std::ostringstream	tosend;
+		std::string			str;
+
+		motd.open(IRCMOTDFILE, std::ios::in);
+		if (!motd.is_open())
+			return (1);
+		tosend << IRCSERVNAME << " Message of the day";
+		sendCommandResponse(client, RPL_MOTDSTART, client.get_name(), tosend.str());
+		while (getline(motd, str))
+			sendCommandResponse(client, RPL_MOTD, client.get_name(), str);
+		sendCommandResponse(client, RPL_ENDOFMOTD, client.get_name(), "End of /MOTD command.");
+		motd.close();
+		return 1;
+}
 int		Commands::names(ftClient& client, Message& msg) { return 1; }
 int		Commands::nick(ftClient& client, Message& msg)
 {

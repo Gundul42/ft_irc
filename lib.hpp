@@ -15,6 +15,7 @@
 # include <iostream>
 # include <map>
 # include <sstream>
+# include <fstream>
 # include "NumCodes.hpp"
 # include "config.hpp"
 
