@@ -168,7 +168,7 @@ int		Commands::user(ftClient& client, Message& msg)
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
 		else if (msg.getParam().size() < 3)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-		//need to test below
+		//need to test below: 
 		/*Between servers USER must to be prefixed with client's NICKname.
 		Note that hostname and servername are normally ignored by the IRC
 		server when the USER command comes from a directly connected client
