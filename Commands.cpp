@@ -112,24 +112,18 @@ int		Commands::nick(ftClient& client, Message& msg)
 	std::string	newnick = msg.getParam().front();
 
 	if (msg.getParam().empty())
-		return !sendCommandResponse(client, ERR_NONICKNAMEGIVEN, "No nickname given");
+			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick, "No nickname given");
 	else if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
-		return !sendCommandResponse(client, ERR_ERRONEUSNICKNAME, "Erroneus nickname");
-
+			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick, "Erroneus nickname");
 	std::map<int, ftClient*>::const_iterator it = this->users.begin();
 	for (; it != this->users.end(); it++)
-	{
 		if (newnick == (*it).second->get_name())
-			return !sendCommandResponse(client, ERR_NICKNAMEINUSE, "Nickname is already in use");
-	}
+			return !serverSend(client.get_fd(), "", "433 " + oldnick + " " + newnick, "Nickname is already in use");
 	//check collision?
 	client.set_name(msg.getParam().front());
 	if (oldnick.empty())
 		oldnick = newnick;
-	std::string response = ":" + oldnick + " " + msg.getCommand() + " " + newnick + "\x0d\x0a";
-	if (send(client.get_fd(), response.c_str(), response.length(), 0) == -1)
-		perror("sendNickResponse");
-	return true;
+	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
 int		Commands::notice(ftClient& client, Message& msg) { return 1; }
 int		Commands::oper(ftClient& client, Message& msg) { return 1; }
@@ -137,26 +131,21 @@ int		Commands::part(ftClient& client, Message& msg) { return 1; }
 int		Commands::pass(ftClient& client, Message& msg)
 {
 	if (client.isRegistered())
-		return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
+		return !serverSend(client.get_fd(), "", "462 ", "You may not reregister");
 	else if (msg.getParam().empty())
-		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	client.set_pass(msg.getParam().front());
 	return true;
 }
 
 int		Commands::ping(ftClient& client, Message& msg)
 {
-	std::string pong = ":ftIrcServ.nowhere.xy PONG " + msg.getParam().front() + "\x0d\x0a";
 	if (msg.getParam().empty())
-		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	else
-	{
-		if (send(client.get_fd(), pong.c_str(), pong.length(), 0) == -1)
-			perror("ping send");
-		return true;
-	}
+		return serverSend(client.get_fd(), "", "PONG ftIrcServ.nowhere.xy", msg.getParam().front());
 }
-int		Commands::pong(ftClient& client, Message& msg) { return 1; }
+int		Commands::pong(ftClient& client, Message& msg) { return true; }
 int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
 int		Commands::quit(ftClient& client, Message& msg) { return 1; }
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
@@ -236,7 +225,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 	return true;
 }
 
-void Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
 {
 		std::string	tosend;
 
@@ -249,6 +238,7 @@ void Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
 				perror("serverSend");
 		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
+		return true;
 }
 
 int		Commands::cap(ftClient& client, Message& msg) { return true; }

@@ -41,7 +41,7 @@ class Commands
 								const std::string & trailer) const;
 				bool	sendCommandResponse(const ftClient & clt, const int & code, 
 								const std::string & argument, const std::string & trailer) const;
-				void	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
+				bool	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 
 				//commands, to be implemented
 				int		away(ftClient& client, Message& msg);

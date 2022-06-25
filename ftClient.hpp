@@ -40,6 +40,7 @@ class ftClient
 				std::string 	get_addr(void) const;
 				int				get_fd(void) const;
 				int				get_msgs(void) const;
+				std::string		get_prefix(void) const; //get usermask
 
 				void			set_realname(const std::string& name);
 				void			set_username(const std::string& name);

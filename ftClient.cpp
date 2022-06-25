@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/23 23:17:27 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/24 21:05:20 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,3 +121,14 @@ bool			ftClient::isOperator(void) const { return _oper==true; }
 void			ftClient::set_realname(const std::string& name) { this->_realname = name; }
 void			ftClient::set_username(const std::string& name) { this->_username = name; }
 void			ftClient::set_pass(const std::string& pass) { this->_password = pass; }
+
+std::string		ftClient::get_prefix(void) const
+{
+	std::string _prefix;
+
+	_prefix = this->_name;
+	if (this->_username.size())
+		_prefix += "!" + this->_username;
+	_prefix += "@" + this->_addr;
+	return _prefix;
+}
