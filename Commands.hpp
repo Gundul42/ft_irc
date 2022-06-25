@@ -71,7 +71,7 @@ class Commands
 				int		servlist(ftClient& client, Message& msg);
 				int		squery(ftClient& client, Message& msg);
 				int		stats(ftClient& client, Message& msg);
-				int		time(ftClient& client, Message& msg);
+				int		ustime(ftClient& client, Message& msg);
 				int		topic(ftClient& client, Message& msg);
 				int		user(ftClient& client, Message& msg);
 				int		userhost(ftClient& client, Message& msg);

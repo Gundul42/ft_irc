@@ -34,7 +34,7 @@ Commands::Commands()
 	userCommands["REHASH"] = &Commands::rehash;
 	userCommands["RESTART"] = &Commands::restart;
 	userCommands["STATS"] = &Commands::stats;
-	userCommands["TIME"] = &Commands::time;
+	userCommands["TIME"] = &Commands::ustime;
 	userCommands["TOPIC"] = &Commands::topic;
 	userCommands["USERHOST"] = &Commands::userhost;
 	userCommands["VERSION"] = &Commands::version;
@@ -203,11 +203,39 @@ int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
 int		Commands::quit(ftClient& client, Message& msg) { return 1; }
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
 int		Commands::restart(ftClient& client, Message& msg) { return 1; }
+
+//SERVICE
+//should not be allowed from client rfc2813, 4.1.4
 int		Commands::service(ftClient& client, Message& msg) { return 1; }
+
+//SERVLIST
+//bonus would be a service ? a bot ?
 int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
+
+//SQUERY
+//this would be a PM to a service
 int		Commands::squery(ftClient& client, Message& msg) { return 1; }
+
+//STATS
+//all stats about the server, this would mean to register each byte going in and out !
 int		Commands::stats(ftClient& client, Message& msg) { return 1; }
-int		Commands::time(ftClient& client, Message& msg) { return 1; }
+
+//TIME
+int		Commands::ustime(ftClient& client, Message& msg)
+{
+		std::vector<std::string>	params = msg.getParam();
+   		time_t 						now;
+		time(&now);
+   		std::string					mytime(ctime(&now));
+		std::ostringstream			oss;
+
+		if (!params.empty() && params[0] != IRCSERVNAME)
+			return !sendCommandResponse(client, ERR_NOSUCHSERVER, params[0], "No such server");
+		oss << "391 " << IRCSERVNAME;
+   		mytime =  mytime.substr(0, mytime.size() - 1);
+		return serverSend(client.get_fd(), "", oss.str(), mytime);
+}
+
 int		Commands::topic(ftClient& client, Message& msg) { return 1; }
 
 //USER
