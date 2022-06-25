@@ -64,6 +64,8 @@ int		Commands::away(ftClient& client, Message& msg) { return 1; }
 int		Commands::die(ftClient& client, Message& msg) { return 1; }
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
+
+//JOIN
 int		Commands::join(ftClient& client, Message& msg) 
 {
 		std::vector<std::string>					params = msg.getParam();
@@ -103,6 +105,8 @@ int		Commands::kick(ftClient& client, Message& msg) { return 1; }
 int		Commands::kill(ftClient& client, Message& msg) { return 1; }
 int		Commands::list(ftClient& client, Message& msg) { return 1; }
 int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
+
+//MODE
 int		Commands::mode(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
@@ -126,6 +130,8 @@ int		Commands::mode(ftClient& client, Message& msg)
 		}
 		return 1;
 }
+
+//MOTD
 int		Commands::motd(ftClient& client, Message& msg)
 {
 		std::fstream		motd;
@@ -136,27 +142,34 @@ int		Commands::motd(ftClient& client, Message& msg)
 		if (!motd.is_open())
 			return (1);
 		tosend << IRCSERVNAME << " Message of the day";
-		sendCommandResponse(client, RPL_MOTDSTART, client.get_name(), tosend.str());
+		sendCommandResponse(client, RPL_MOTDSTART, tosend.str());
 		while (getline(motd, str))
-			sendCommandResponse(client, RPL_MOTD, client.get_name(), str);
-		sendCommandResponse(client, RPL_ENDOFMOTD, client.get_name(), "End of /MOTD command.");
+			sendCommandResponse(client, RPL_MOTD, str);
+		sendCommandResponse(client, RPL_ENDOFMOTD, "End of /MOTD command.");
 		motd.close();
 		return 1;
 }
+
+//NAMES
 int		Commands::names(ftClient& client, Message& msg) { return 1; }
+
+//NICK
 int		Commands::nick(ftClient& client, Message& msg)
 {
 	std::string oldnick = client.get_name();
 	std::string	newnick = msg.getParam().front();
 
 	if (msg.getParam().empty())
-			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick, "No nickname given");
+			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick,
+							"No nickname given");
 	else if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
-			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick, "Erroneus nickname");
+			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick,
+							"Erroneus nickname");
 	std::map<int, ftClient*>::const_iterator it = this->users.begin();
 	for (; it != this->users.end(); it++)
 		if (newnick == (*it).second->get_name())
-			return !serverSend(client.get_fd(), "", "433 " + oldnick + " " + newnick, "Nickname is already in use");
+			return !serverSend(client.get_fd(), "", "433 " + oldnick + " " + newnick,
+							"Nickname is already in use");
 	//check collision?
 	client.set_name(msg.getParam().front());
 	if (oldnick.empty())
@@ -166,6 +179,8 @@ int		Commands::nick(ftClient& client, Message& msg)
 int		Commands::notice(ftClient& client, Message& msg) { return 1; }
 int		Commands::oper(ftClient& client, Message& msg) { return 1; }
 int		Commands::part(ftClient& client, Message& msg) { return 1; }
+
+//PASS
 int		Commands::pass(ftClient& client, Message& msg)
 {
 	if (client.isRegistered())
@@ -194,6 +209,8 @@ int		Commands::squery(ftClient& client, Message& msg) { return 1; }
 int		Commands::stats(ftClient& client, Message& msg) { return 1; }
 int		Commands::time(ftClient& client, Message& msg) { return 1; }
 int		Commands::topic(ftClient& client, Message& msg) { return 1; }
+
+//USER
 int		Commands::user(ftClient& client, Message& msg)
 {
 		std::string			username = msg.getParam().front();
@@ -215,13 +232,25 @@ int		Commands::user(ftClient& client, Message& msg)
 		client.set_username(username);
 		client.set_realname(realname);
 		client.validate();
+		motd(client, msg); //show motd
 		return true;
 }
 int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
-int		Commands::version(ftClient& client, Message& msg) { return 1; }
+
+//VERSION
+int		Commands::version(ftClient& client, Message& msg)
+{
+		std::vector<std::string>					params = msg.getParam();
+
+		if (!params.empty() && params[0] != IRCSERVNAME)
+			return !sendCommandResponse(client, ERR_NOSUCHSERVER, params[0], "No such server");
+		return !sendCommandResponse(client, RPL_VERSION, IRCSERVVERSION, "");
+}
+
 int		Commands::who(ftClient& client, Message& msg) { return 1; }
 int		Commands::whois(ftClient& client, Message& msg) { return 1; }
 int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
+int		Commands::cap(ftClient& client, Message& msg) { return true; }
 
 
 bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
@@ -279,4 +308,3 @@ bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 		return true;
 }
 
-int		Commands::cap(ftClient& client, Message& msg) { return true; }
