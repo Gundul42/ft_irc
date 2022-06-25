@@ -103,7 +103,29 @@ int		Commands::kick(ftClient& client, Message& msg) { return 1; }
 int		Commands::kill(ftClient& client, Message& msg) { return 1; }
 int		Commands::list(ftClient& client, Message& msg) { return 1; }
 int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
-int		Commands::mode(ftClient& client, Message& msg) { return 1; }
+int		Commands::mode(ftClient& client, Message& msg)
+{
+		std::vector<std::string>					params = msg.getParam();
+		std::vector<std::string>::const_iterator	itpar;
+		servChannel::iterator						itchan;
+
+		if (params.size() == 0)
+			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		itchan =_channels.find(params[0]);
+		if (itchan == _channels.end())
+		{
+			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+		}
+		if (params.size() == 1)
+		{
+			serverSend(client.get_fd(),IRCSERVNAME, "324 " +
+				(*itchan).second->getCreator()->get_name() + " " + params[0] + " +Cnst", "");
+			serverSend(client.get_fd(),IRCSERVNAME, "329 " +
+				(*itchan).second->getCreator()->get_name() + " " + params[0] + " " +
+				(*itchan).second->getCtime(), "");
+		}
+		return 1;
+}
 int		Commands::motd(ftClient& client, Message& msg) { return 1; }
 int		Commands::names(ftClient& client, Message& msg) { return 1; }
 int		Commands::nick(ftClient& client, Message& msg)

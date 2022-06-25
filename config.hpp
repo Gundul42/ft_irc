@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 # define CONFIG_H
 
-# define IRCSERVNAME "ftIrcServ.nowhere.xy"
+# define IRCSERVNAME "irc.gundul.net"
 # define IRCSERVWLC "Welcome to ft_IrcServ V 0.1beta"
 # define IRCSERVVERSION "V0.1beta"
 # define IRCSERVCDATE "180622"

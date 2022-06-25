@@ -46,6 +46,7 @@ void							Message::parse(const std::string& input)
 			this->_param.push_back(component);
 		i++;
 	}
+	/*
 	 std::cout << "*prefix: " << this->_prefix << "~\n";
 	 std::cout << "*command: " << this->_command << "~\n";
 	 std::cout << "*param: ";
@@ -53,4 +54,5 @@ void							Message::parse(const std::string& input)
 	 	std::cout << *it << " ";
 	 std::cout << "~\n";
 	 std::cout << "*trailing: " << this->_trailing << "~\n";
+	 */
 }

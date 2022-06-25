@@ -2,6 +2,8 @@
 
 IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newName)
 {
+		time(&_ctime);
+
 		_topic = "";
 		_limit = -1;
 		_passwd = "";
@@ -15,6 +17,8 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 
 IrcChannel::IrcChannel(void)
 {
+		time(&_ctime);
+
 		_name.clear();
 		_topic.clear();
 		_limit = -1;
@@ -32,6 +36,7 @@ IrcChannel::IrcChannel(const IrcChannel & cpy) {*this = cpy;}
 IrcChannel & IrcChannel::operator=(const IrcChannel & cpy)
 {
 		_name = cpy._name;
+		_ctime = cpy._ctime;
 		_topic = cpy._topic;
 		_limit = cpy._limit;
 		_passwd = cpy._passwd;
@@ -54,8 +59,18 @@ IrcChannel::~IrcChannel(void)
 std::vector<ftClient*> IrcChannel::getMembers(void) const {return _member;}
 
 std::string IrcChannel::getName(void) const {return _name;}
+		
+std::string IrcChannel::getCtime(void) const
+{
+		std::ostringstream	ost;
+
+		ost << _ctime;
+		return ost.str();
+}
 
 std::string IrcChannel::getTopic(void) const {return _topic;}
+
+ftClient* IrcChannel::getCreator(void) const {return _creator;}
 
 int IrcChannel::getLimit(void) const {return _limit;}
 
