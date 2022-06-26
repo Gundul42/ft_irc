@@ -194,17 +194,23 @@ int		Commands::pass(ftClient& client, Message& msg)
 	return true;
 }
 
+//PING
 int		Commands::ping(ftClient& client, Message& msg)
 {
+	std::ostringstream oss;
+
+	oss << "PONG " << IRCSERVNAME;
 	if (msg.getParam().empty())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	else
-		return serverSend(client.get_fd(), "", "PONG ftIrcServ.nowhere.xy", msg.getParam().front());
+		return serverSend(client.get_fd(), "", oss.str(), msg.getParam().front());
 }
 int		Commands::pong(ftClient& client, Message& msg) { return true; }
 int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
 int		Commands::quit(ftClient& client, Message& msg) { return 1; }
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
+
+//RESTART - RFC2812 4.4 ... this message is optional ...
 int		Commands::restart(ftClient& client, Message& msg) { return 1; }
 
 //SERVICE
@@ -239,6 +245,7 @@ int		Commands::ustime(ftClient& client, Message& msg)
 		return serverSend(client.get_fd(), "", oss.str(), mytime);
 }
 
+//TOPIC
 int		Commands::topic(ftClient& client, Message& msg) { return 1; }
 
 //USER
