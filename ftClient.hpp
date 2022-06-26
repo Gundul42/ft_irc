@@ -21,27 +21,30 @@ class ftClient
 				following information about all clients: the real name of the host
 				that the client is running on, the username of the client on that
 				host, and the server to which the client is connected.*/
+				std::string	_hostname;	//rDNS name of connected client IPv4 ONLY
 				std::string _realname;
 				std::string _username;
-				std::string _server;
+				std::string _server;	//server is static and saved in the macro IRCSERVNAME
 				std::string _password;
 
 				ftClient(const ftClient & cpy);
 				ftClient & operator=(const ftClient & rgt);
 
 		public:
-				ftClient(int fd,const std::string name, const std::string addr);
+				ftClient(int fd,const std::string name, const std::string addr,
+								const std::string host);
 				~ftClient(void);
 
 				void			validate(void);
 
 				std::string		get_name(void) const;
-				void			set_name(const std::string& name);
 				std::string 	get_addr(void) const;
+				std::string		get_hostname(void) const;
 				int				get_fd(void) const;
 				int				get_msgs(void) const;
 				std::string		get_prefix(void) const; //get usermask
 
+				void			set_name(const std::string& name);
 				void			set_realname(const std::string& name);
 				void			set_username(const std::string& name);
 				void			set_pass(const std::string& pass);

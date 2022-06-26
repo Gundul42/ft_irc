@@ -10,6 +10,7 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <netdb.h>
+# include <errno.h>
 # include <poll.h>
 # include <ctime>
 # include <iostream>
