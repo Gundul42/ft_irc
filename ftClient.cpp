@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/26 14:35:34 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/26 15:20:17 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,6 +136,6 @@ std::string		ftClient::get_prefix(void) const
 	_prefix = this->_name;
 	if (this->_username.size())
 		_prefix += "!" + this->_username;
-	_prefix += "@" + this->_hostname;
+	_prefix += "@" + this->_addr;
 	return _prefix;
 }
