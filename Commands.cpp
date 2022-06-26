@@ -140,7 +140,10 @@ int		Commands::motd(ftClient& client, Message& msg)
 
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
+		{
+			sendCommandResponse(client, ERR_NOMOTD, "MOTD File is missing");
 			return (1);
+		}
 		tosend << IRCSERVNAME << " Message of the day";
 		sendCommandResponse(client, RPL_MOTDSTART, tosend.str());
 		while (getline(motd, str))
