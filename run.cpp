@@ -3,21 +3,20 @@
 /*                                                        :::      ::::::::   */
 /*   run.cpp                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
+/*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/13 18:52:50 by graja             #+#    #+#             */
-/*   Updated: 2022/06/22 18:34:55 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/27 21:08:27 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "IrcServ.hpp"
-#include "Channel.hpp"
 
 int	main(void)
 {
-		IrcServ	srv("6667");
+	IrcServ	srv("6667");
 
-		srv.loop();
+	srv.loop();
 
-		return(0);
+	return(0);
 }

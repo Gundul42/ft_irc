@@ -7,6 +7,7 @@
 # include "Message.hpp"
 # include "NumCodes.hpp"
 # include "Channel.hpp"
+# include "Oper.hpp"
 
 class Commands
 {
@@ -15,19 +16,16 @@ class Commands
 				
 				typedef int (Commands::*UserCommandPointer)(ftClient&, Message& msg);
 				typedef std::map<std::string, UserCommandPointer>				userCommandsMap;
-				typedef std::map<std::string, UserCommandPointer>				serviceCommandsMap;
 				typedef std::map<int, ftClient*>								userMap;
 				typedef std::map<std::string, IrcChannel*>						servChannel;
-        
-				userCommandsMap		userCommands;
-				serviceCommandsMap	serviceCommands;
-				userMap				users;
+
+				userCommandsMap		_userCommands;
+				userMap				_users;
 				servChannel			_channels;
-				static const		size_t maxLineSize;
-        
+				OperList			_operList;
+
 				Commands(const Commands& other);
 				Commands& operator=(const Commands& other);
-
 
 		public:
 
