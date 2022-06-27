@@ -9,6 +9,7 @@ class IrcChannel
 {
 	private:
 		std::string								_name;
+		time_t									_ctime;
 		std::string								_topic;
 		int										_limit;
 		std::string								_passwd;
@@ -31,9 +32,11 @@ class IrcChannel
 
 		//getters
 		std::string  			getName(void) const;
+		std::string				getCtime(void) const;
 		std::string  			getTopic(void) const;
 		int 					getLimit(void) const;
 		std::vector<ftClient*>	getMembers(void) const;
+		ftClient*				getCreator(void) const;
 		std::string  			getPasswd(void) const;
 		std::string 			getBuffer(void) const;
 		bool					isChop(const ftClient & member) const;

@@ -10,12 +10,13 @@
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <netdb.h>
+# include <errno.h>
 # include <poll.h>
 # include <ctime>
 # include <iostream>
 # include <map>
 # include <sstream>
-
+# include <fstream>
 # include "NumCodes.hpp"
 # include "config.hpp"
 

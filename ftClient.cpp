@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/24 21:05:20 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/26 15:20:17 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_realname = rgt._realname;
 		_username = rgt._username;
 		_server = rgt._server;
+		_hostname = rgt._hostname;
 		return (*this);
 }
 
@@ -38,8 +39,9 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 // Constructor needs a FD, a string for the name, a string for it's address
 // val will be false until server checks validity of the client
 //
-ftClient::ftClient(int fd, std::string name, const std::string addr): _fd(fd), _name(name), 
-		_addr(addr), _val(false), _oper(false)
+ftClient::ftClient(int fd, std::string name, const std::string addr,
+	const std::string host): _fd(fd), _name(name), _addr(addr), _val(false),
+	_oper(false), _hostname(host)
 {
 		_msgs = 0;
 		time(&_connect);
@@ -58,6 +60,11 @@ ftClient::~ftClient(void)
 // Call once after the client has been validated after login
 //
 void ftClient::validate(void) {_val = true;}
+
+//
+// get Hostname (rDNS) of connected client
+//
+std::string ftClient::get_hostname(void) const {return _hostname;}
 
 //
 // get NICK of client

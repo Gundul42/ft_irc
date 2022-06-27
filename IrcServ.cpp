@@ -1,6 +1,27 @@
 
 #include "IrcServ.hpp"
 
+std::string	IrcServ::_rdns(std::string addr)
+{
+	struct sockaddr_in sa;
+	int res = inet_pton(AF_INET, addr.c_str(), &sa.sin_addr);
+	if (res == -1)
+		return ("Illegal IPv4, please check your debug");
+	else if (res == 0)
+	{
+		if (inet_pton(AF_INET6, addr.c_str(), &sa.sin_addr) != 1)
+			return ("Illegal IPv6, please check your debug");
+		return (addr);
+	}
+	sa.sin_family = AF_INET;
+	char node[NI_MAXHOST];
+	memset(node, 0, NI_MAXHOST);
+	res = getnameinfo((struct sockaddr *)&sa, sizeof sa, node, sizeof node, NULL, 0, 0);
+	if (res)
+        return (gai_strerror(res));
+	return (node);
+}
+
 //these are private, no use of copying
 IrcServ::IrcServ(const IrcServ & cpy) {*this = cpy;}
 IrcServ & IrcServ::operator=(const IrcServ & rgt) 
@@ -172,7 +193,7 @@ void IrcServ::loop(void)
 						_logAction(oss.str());
 						oss.str("");
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
-									new ftClient(newfd, emptynick, addrStr)));
+									new ftClient(newfd, emptynick, addrStr, _rdns(addrStr))));
 					}
 				}
 				else //clients

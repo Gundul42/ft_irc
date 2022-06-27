@@ -20,6 +20,7 @@ class IrcServ
 				void		_add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_size);
 				void		_del_from_pfds(pollfd pfds[], int i, int *fd_count);
 				void		*_get_in_addr(sockaddr *sa);
+				std::string	_rdns(std::string addr);
 
 				std::string	_printTime(void) const;
 				void		_logAction(const std::string & log) const;
