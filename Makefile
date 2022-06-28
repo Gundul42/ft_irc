@@ -7,7 +7,7 @@ OBJ		=	${SRCS:.cpp=.o}
 
 CC		=	c++
 
-FLAGS	=	-std=c++98 -g -Wextra -Wall #-Werror  
+FLAGS	=	-std=c++98 -pedantic-errors -g -Wextra -Wall #-Werror  
 $(NAME)	:	$(OBJ)	$(SRCS)
 	$(CC) $(FLAGS) -o $(NAME) $(OBJ)
 	@echo "\033[0;36m*****************"
