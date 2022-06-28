@@ -22,7 +22,7 @@ class Commands
 				userCommandsMap		_userCommands;
 				userMap				_users;
 				servChannel			_channels;
-				OperList			_operList;
+				// OperList			_operList;
 
 				Commands(const Commands& other);
 				Commands& operator=(const Commands& other);

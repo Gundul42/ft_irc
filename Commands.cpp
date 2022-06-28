@@ -183,11 +183,11 @@ int		Commands::oper(ftClient& client, Message& msg)
 		return !serverSend(client.get_fd(), "", "451 ", "You have not registered");
 	else if (msg.getParam().size() < 2)
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
-	std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
-	if ( it == this->_operList.getOperList().end() || (*it).second->getPass() != msg.getParam()[1])
-		return !serverSend(client.get_fd(), "", "464 ", ":Password incorrect");
-	if ((*it).second->getHost() != client.get_addr())
-		return !serverSend(client.get_fd(), "", "491 ", ":No O-lines for your host");
+	// std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
+	// if ( it == this->_operList.getOperList().end() || (*it).second->getPass() != msg.getParam()[1])
+	// 	return !serverSend(client.get_fd(), "", "464 ", ":Password incorrect");
+	// if ((*it).second->getHost() != client.get_addr())
+	// 	return !serverSend(client.get_fd(), "", "491 ", ":No O-lines for your host");
 	//set usermode
 }
 int		Commands::part(ftClient& client, Message& msg) { return 1; }
