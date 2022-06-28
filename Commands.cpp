@@ -32,7 +32,7 @@ Commands::Commands()
 	_userCommands["REHASH"] = &Commands::rehash;
 	_userCommands["RESTART"] = &Commands::restart;
 	_userCommands["STATS"] = &Commands::stats;
-	_userCommands["TIME"] = &Commands::time;
+	_userCommands["TIME"] = &Commands::ustime;
 	_userCommands["TOPIC"] = &Commands::topic;
 	_userCommands["USERHOST"] = &Commands::userhost;
 	_userCommands["VERSION"] = &Commands::version;
