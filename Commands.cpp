@@ -2,43 +2,41 @@
 
 Commands::Commands()
 {
-	serviceCommands["KILL"] = &Commands::kill;
-	serviceCommands["NICK"] = &Commands::nick;
-	serviceCommands["NOTICE"] = &Commands::notice;
-	serviceCommands["OPER"] = &Commands::oper;
-	serviceCommands["PASS"] = &Commands::pass;
-	serviceCommands["PING"] = &Commands::ping;
-	serviceCommands["PONG"] = &Commands::pong;
-	serviceCommands["PRIVMSG"] = &Commands::privmsg;
-	serviceCommands["QUIT"] = &Commands::quit;
-	serviceCommands["SERVICE"] = &Commands::service;
-	serviceCommands["SERVLIST"] = &Commands::servlist;
-	serviceCommands["SQUERY"] = &Commands::squery;
-	serviceCommands["USER"] = &Commands::user;
-	serviceCommands["WHO"] = &Commands::who;
-	serviceCommands["WHOIS"] = &Commands::whois;
-	serviceCommands["WHOWAS"] = &Commands::whowas;
-	userCommands = serviceCommands;
-	userCommands["AWAY"] = &Commands::away;
-	userCommands["DIE"] = &Commands::die;
-	userCommands["INFO"] = &Commands::info;
-	userCommands["INVITE"] = &Commands::invite;
-	userCommands["JOIN"] = &Commands::join;
-	userCommands["KICK"] = &Commands::kick;
-	userCommands["LIST"] = &Commands::list;
-	userCommands["LUSERS"] = &Commands::lusers;
-	userCommands["MODE"] = &Commands::mode;
-	userCommands["MOTD"] = &Commands::motd;
-	userCommands["NAMES"] = &Commands::names;
-	userCommands["PART"] = &Commands::part;
-	userCommands["REHASH"] = &Commands::rehash;
-	userCommands["RESTART"] = &Commands::restart;
-	userCommands["STATS"] = &Commands::stats;
-	userCommands["TIME"] = &Commands::ustime;
-	userCommands["TOPIC"] = &Commands::topic;
-	userCommands["USERHOST"] = &Commands::userhost;
-	userCommands["VERSION"] = &Commands::version;
-	userCommands["CAP"] = &Commands::cap;
+	_userCommands["KILL"] = &Commands::kill;
+	_userCommands["NICK"] = &Commands::nick;
+	_userCommands["NOTICE"] = &Commands::notice;
+	_userCommands["OPER"] = &Commands::oper;
+	_userCommands["PASS"] = &Commands::pass;
+	_userCommands["PING"] = &Commands::ping;
+	_userCommands["PONG"] = &Commands::pong;
+	_userCommands["PRIVMSG"] = &Commands::privmsg;
+	_userCommands["QUIT"] = &Commands::quit;
+	_userCommands["SERVICE"] = &Commands::service;
+	_userCommands["SERVLIST"] = &Commands::servlist;
+	_userCommands["SQUERY"] = &Commands::squery;
+	_userCommands["USER"] = &Commands::user;
+	_userCommands["WHO"] = &Commands::who;
+	_userCommands["WHOIS"] = &Commands::whois;
+	_userCommands["WHOWAS"] = &Commands::whowas;
+	_userCommands["AWAY"] = &Commands::away;
+	_userCommands["DIE"] = &Commands::die;
+	_userCommands["INFO"] = &Commands::info;
+	_userCommands["INVITE"] = &Commands::invite;
+	_userCommands["JOIN"] = &Commands::join;
+	_userCommands["KICK"] = &Commands::kick;
+	_userCommands["LIST"] = &Commands::list;
+	_userCommands["MODE"] = &Commands::mode;
+	_userCommands["MOTD"] = &Commands::motd;
+	_userCommands["NAMES"] = &Commands::names;
+	_userCommands["PART"] = &Commands::part;
+	_userCommands["REHASH"] = &Commands::rehash;
+	_userCommands["RESTART"] = &Commands::restart;
+	_userCommands["STATS"] = &Commands::stats;
+	_userCommands["TIME"] = &Commands::time;
+	_userCommands["TOPIC"] = &Commands::topic;
+	_userCommands["USERHOST"] = &Commands::userhost;
+	_userCommands["VERSION"] = &Commands::version;
+	_userCommands["CAP"] = &Commands::cap;
 
 }
 
@@ -47,16 +45,16 @@ Commands::~Commands() {}
 void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, const char* buf)
 {
 	std::stringstream	str(buf);
-	this->users = usermap;
+	this->_users = usermap;
 
 	for (std::string line; std::getline(str, line, '\n'); )
 	{
 		Message msg(line);
-		userCommandsMap::const_iterator it = userCommands.find(msg.getCommand());
-		if (it == userCommands.end())
-			sendCommandResponse(*(users.find(socket)->second), ERR_UNKNOWNCOMMAND, "Unknown command");
+		userCommandsMap::const_iterator it = _userCommands.find(msg.getCommand());
+		if (it == _userCommands.end())
+			sendCommandResponse(*(_users.find(socket)->second), ERR_UNKNOWNCOMMAND, "Unknown command");
 	else
-		(this->*(it->second))(*(users.find(socket)->second), msg);
+		(this->*(it->second))(*(_users.find(socket)->second), msg);
 	}
 }
 
@@ -166,10 +164,9 @@ int		Commands::nick(ftClient& client, Message& msg)
 			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick,
 							"No nickname given");
 	else if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
-			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick,
-							"Erroneus nickname");
-	std::map<int, ftClient*>::const_iterator it = this->users.begin();
-	for (; it != this->users.end(); it++)
+			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick, "Erroneus nickname");
+	std::map<int, ftClient*>::const_iterator it = this->_users.begin();
+	for (; it != this->_users.end(); it++)
 		if (newnick == (*it).second->get_name())
 			return !serverSend(client.get_fd(), "", "433 " + oldnick + " " + newnick,
 							"Nickname is already in use");
@@ -180,7 +177,19 @@ int		Commands::nick(ftClient& client, Message& msg)
 	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
 int		Commands::notice(ftClient& client, Message& msg) { return 1; }
-int		Commands::oper(ftClient& client, Message& msg) { return 1; }
+int		Commands::oper(ftClient& client, Message& msg)
+{
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "451 ", "You have not registered");
+	else if (msg.getParam().size() < 2)
+		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
+	std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
+	if ( it == this->_operList.getOperList().end() || (*it).second->getPass() != msg.getParam()[1])
+		return !serverSend(client.get_fd(), "", "464 ", ":Password incorrect");
+	if ((*it).second->getHost() != client.get_addr())
+		return !serverSend(client.get_fd(), "", "491 ", ":No O-lines for your host");
+	//set usermode
+}
 int		Commands::part(ftClient& client, Message& msg) { return 1; }
 
 //PASS
@@ -255,7 +264,7 @@ int		Commands::user(ftClient& client, Message& msg)
 		std::string			realname = msg.getTrailing();
 		int					i = 0;
 
-		sendCommandResponse(client, "001", "welcome");
+		serverSend(client.get_fd(), "", "001 " + client.get_name(), "Welcome to the Internet Relay Network " + client.get_prefix());
 
 		if (client.isRegistered())
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
