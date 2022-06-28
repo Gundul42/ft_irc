@@ -56,3 +56,30 @@ void							Message::parse(const std::string& input)
 	 std::cout << "*trailing: " << this->_trailing << "~\n";
 	 */
 }
+
+Target::Target() {}
+
+Target::~Target() {}
+
+bool	Target::isMask(const std::string& target)
+{
+	if ((target[0] == '#' || target[0] == '$') && target[1] == '.')
+	{
+		std::string::size_type pos = target.find_last_of(".");
+		if (target[pos + 1] != '*' && target[pos + 1] != '?')
+			return true;
+	}
+	return false;
+}
+bool	Target::isNickname(const std::string& target)
+{
+	if (target[0] != '#' && target[0] != '$')
+		return true;
+	return false;
+}
+bool	Target::isChannel(const std::string& target)
+{
+	if ((target[0] == '#' && target[1] != '.') || target[0] == '&')
+		return true;
+	return false;
+}

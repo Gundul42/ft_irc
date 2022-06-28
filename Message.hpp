@@ -4,27 +4,39 @@
 # include "lib.hpp"
 # include <vector>
 
-class Message
+class Target
 {
-public:
-	Message(std::string input);
-	~Message();
+	protected:
+		Target();
+		~Target();
 
-	//returns input read from buf from socket from client
-	const std::string&				getInput();
-	const std::string&				getPrefix();
-	const std::string&				getCommand();
-	const std::vector<std::string>&	getParam();
-	const std::string&				getTrailing();
+	public:
+		bool	isMask(const std::string& target);
+		bool	isNickname(const std::string& target);
+		bool	isChannel(const std::string& target);
+};
 
-private:
-	std::string					_input;
-	std::string					_prefix;
-	std::string					_command;
-	std::vector<std::string>	_param;
-	std::string					_trailing;
+class Message : public Target
+{
+	public:
+		Message(std::string input);
+		~Message();
 
-	void				parse(const std::string& buf);
+		//returns input read from buf from socket from client
+		const std::string&				getInput();
+		const std::string&				getPrefix();
+		const std::string&				getCommand();
+		const std::vector<std::string>&	getParam();
+		const std::string&				getTrailing();
+
+	private:
+		std::string					_input;
+		std::string					_prefix;
+		std::string					_command;
+		std::vector<std::string>	_param;
+		std::string					_trailing;
+
+		void				parse(const std::string& buf);
 };
 
 #endif

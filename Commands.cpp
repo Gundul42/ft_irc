@@ -111,21 +111,24 @@ int		Commands::mode(ftClient& client, Message& msg)
 		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
 
+
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-		itchan =_channels.find(params[0]);
-		if (itchan == _channels.end())
+		if (msg.isChannel(params[0]))
 		{
-			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+			itchan =_channels.find(params[0]);
+			if (itchan == _channels.end())
+				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+			if (params.size() == 1)
+			{
+				serverSend(client.get_fd(),IRCSERVNAME, "324 " +
+					(*itchan).second->getCreator()->get_name() + " " + params[0] + " +Cnst", "");
+				serverSend(client.get_fd(),IRCSERVNAME, "329 " +
+					(*itchan).second->getCreator()->get_name() + " " + params[0] + " " +
+					(*itchan).second->getCtime(), "");
+			}
 		}
-		if (params.size() == 1)
-		{
-			serverSend(client.get_fd(),IRCSERVNAME, "324 " +
-				(*itchan).second->getCreator()->get_name() + " " + params[0] + " +Cnst", "");
-			serverSend(client.get_fd(),IRCSERVNAME, "329 " +
-				(*itchan).second->getCreator()->get_name() + " " + params[0] + " " +
-				(*itchan).second->getCtime(), "");
-		}
+		//MODE USER
 		return 1;
 }
 
@@ -189,6 +192,7 @@ int		Commands::oper(ftClient& client, Message& msg)
 	// if ((*it).second->getHost() != client.get_addr())
 	// 	return !serverSend(client.get_fd(), "", "491 ", ":No O-lines for your host");
 	//set usermode
+	return true;
 }
 int		Commands::part(ftClient& client, Message& msg) { return 1; }
 
@@ -215,7 +219,44 @@ int		Commands::ping(ftClient& client, Message& msg)
 		return serverSend(client.get_fd(), "", oss.str(), msg.getParam().front());
 }
 int		Commands::pong(ftClient& client, Message& msg) { return true; }
-int		Commands::privmsg(ftClient& client, Message& msg) { return 1; }
+int		Commands::privmsg(ftClient& client, Message& msg)
+{
+	std::string target = msg.getParam().front();
+
+	if (!msg.getParam().size())
+		return !serverSend(client.get_fd(), "", "412 ", "No text to send");
+	if (msg.isNickname(target))
+	{
+		std::map<int, ftClient*>::const_iterator it = this->_users.begin();
+		for (; it != this->_users.end(); it++)
+		{
+			if (target == (*it).second->get_name())
+			{
+				if (UserMode::AWAY & (*it).second->get_flags())
+					return !serverSend(client.get_fd(), "", "301 " + target, "User is away");
+				// return serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+			}
+		}
+		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
+	}
+	else if (msg.isChannel(target))
+	{
+		servChannel::iterator it = _channels.find(target);
+
+		if (it != _channels.end())
+		{
+			//check if can send to channel
+			std::vector<ftClient*> members = (*it).second->getMembers();
+			int size = members.size();
+			for (int i = 0; i != size; i++)
+				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+		}
+		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
+	}
+	//else if (msg.isMask(target))
+	return true;
+}
 int		Commands::quit(ftClient& client, Message& msg) { return 1; }
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
 

@@ -193,7 +193,7 @@ void IrcServ::loop(void)
 						_logAction(oss.str());
 						oss.str("");
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
-									new ftClient(newfd, emptynick, addrStr, _rdns(addrStr))));
+									new ftClient(newfd, emptynick, addrStr, "")));
 					}
 				}
 				else //clients

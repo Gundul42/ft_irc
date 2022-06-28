@@ -3,10 +3,41 @@
 
 # include "config.hpp"
 # include "lib.hpp"
+# include <cctype>
 
 # define FT_IRC_TIMEOUT 20
 
-class ftClient
+class UserMode
+{
+public:
+	enum Flag
+	{
+		/** 'a' - User is flagged as away */
+		AWAY = 1,
+		/* 'i' - Marks a User as invisible */
+		INVISIBLE = 1 << 1,
+		/* 's' - Marks a User for receipt of server notices */
+		MARK = 1 << 2,
+		/* 'w' - User receives wallops */
+		WALLOPS = 1 << 3,
+		/* 'o' - Operator flag */
+		OPERATOR = 1 << 4,
+	};
+
+	UserMode(unsigned flags = 0);
+	~UserMode();
+
+	static Flag	parse(char c);
+
+protected:
+	unsigned					_flags;
+
+private:
+	/** Quick lookup table for lower alphabet */
+	static const unsigned short	_lowerFlagTable[26];
+};
+
+class ftClient : public UserMode
 {
 		private:
 				int			_fd;			// File descriptor
@@ -43,6 +74,7 @@ class ftClient
 				int				get_fd(void) const;
 				int				get_msgs(void) const;
 				std::string		get_prefix(void) const; //get usermask
+				unsigned		get_flags(void);
 
 				void			set_name(const std::string& name);
 				void			set_realname(const std::string& name);

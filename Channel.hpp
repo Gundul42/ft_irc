@@ -3,6 +3,7 @@
 
 # include "ftClient.hpp"
 # include "lib.hpp"
+# include "Message.hpp"
 # include <vector>
 
 class IrcChannel
@@ -19,7 +20,6 @@ class IrcChannel
 		ftClient*								_creator;
 		bool									_safe;
 		std::string								_chanBuffer;
-
 
 	public:
 		IrcChannel(void);

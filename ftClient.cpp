@@ -6,12 +6,29 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/26 15:20:17 by graja            ###   ########.fr       */
+/*   Updated: 2022/06/28 23:12:33 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "ftClient.hpp"
 #include <unistd.h>
+
+UserMode::UserMode(unsigned flags) : _flags(flags) {}
+
+UserMode::~UserMode() {}
+
+UserMode::Flag UserMode::parse(char c)
+{
+	unsigned f;
+	f = std::islower(c) ? _lowerFlagTable[c - 'a'] : 0;
+	return (static_cast<Flag>(f));
+}
+
+const unsigned short UserMode::_lowerFlagTable[] =
+{
+	AWAY, 0, 0, 0, 0, 0, 0, 0, INVISIBLE, 0, 0, 0, 0, 0, OPERATOR, 0, 0,
+	0, MARK, 0, 0, 0, WALLOPS, 0, 0, 0
+};
 
 //
 // it makes no sense to copy clients, FDs are unique
@@ -139,3 +156,5 @@ std::string		ftClient::get_prefix(void) const
 	_prefix += "@" + this->_addr;
 	return _prefix;
 }
+
+unsigned		ftClient::get_flags(void) { return _flags; }
