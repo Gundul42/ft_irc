@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/29 17:48:11 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/29 20:54:54 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,48 +165,6 @@ void			ftClient::set_flags(const std::string& add_remove, unsigned flag)
 		_flags |= flag;
 	else
 		_flags = _flags & ~flag;
-	// if (flag == "away")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= AWAY;
-	// 	else
-	// 		_flags = _flags & ~AWAY;
-	// }
-	// else if (flag == "invisible")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= INVISIBLE;
-	// 	else
-	// 		_flags = _flags & ~INVISIBLE;
-	// }
-	// else if (flag == "wallops")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= WALLOPS;
-	// 	else
-	// 		_flags = _flags & ~WALLOPS;
-	// }
-	// else if (flag == "restricted")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= RESTRICTED;
-	// 	else
-	// 		_flags = _flags & ~RESTRICTED;
-	// }
-	// else if (flag == "operator")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= OPERATOR;
-	// 	else
-	// 		_flags = _flags & ~OPERATOR;
-	// }
-	// else if (flag == "mark")
-	// {
-	// 	if (add_remove == "+")
-	// 		_flags |= MARK;
-	// 	else
-	// 		_flags = _flags & ~MARK;
-	// }
 }
 
 std::string		ftClient::get_awaymsg(void) { return this->_awayMsg; }

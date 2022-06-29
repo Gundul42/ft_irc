@@ -11,28 +11,47 @@ class ChannelMode
 public:
 	enum Flag
 	{
+		/* 'a' - Anonymous channel flag*/
+		ANONYMOUS = 1,
 		/* 'i' - Invite-only Channel flag */
 		INVITE_ONLY = 1 << 1,
 		/* 'm' - Moderated Channel flag */
 		MODERATED = 1 << 2,
 		/* 'n' - No IRC::Messages to Channel from User on the outside */
 		NO_OUTSIDE_MSG = 1 << 3,
+		/* 'q' - Quiet channel flag */
+		QUIET = 1 << 4,
 		/* 'p' - Private channel flag */
 		PRIVATE = 1 << 5,
 		/* 's' - Secret channel flag */
 		SECRET = 1 << 6,
 		/* 't' - Topic settable by Channel operator only flag */
-		TOPIC_SETTABLE_BY_CHANOP = 1 << 8,
+		TOPIC_SETTABLE_BY_CHANOP = 1 << 7,
 		/* 'k' - Channel key */
-		KEY = 1 << 9,
+		KEY = 1 << 8,
 		/* 'l' - User limit */
-		LIMIT = 1 << 10,
+		LIMIT = 1 << 9,
 		/* 'b' - Ban mask */
-		BAN_MASK = 1 << 11,
+		BAN_MASK = 1 << 10,
 		/* 'e' - Exception mask */
-		EXCEPTION_MASK = 1 << 12,
+		EXCEPTION_MASK = 1 << 11,
 		/* 'I' - Invitation mask */
-		INVITATION_MASK = 1 << 13
+		INVITATION_MASK = 1 << 12,
+		/* 'z' - Operator moderated flag */
+		OP_MODERATED = 1 << 13,
+	};
+
+	struct Masks
+	{
+		std::string	_key;
+		std::string	_limit;
+		std::string	_ban;
+		std::string	_exception;
+		std::string	_invitation;
+
+		Masks();
+		~Masks();
+		void	setMasks(unsigned flag, const std::string& str);
 	};
 
 	ChannelMode(unsigned flags = 0);
@@ -87,6 +106,7 @@ class IrcChannel : public ChannelMode
 		bool					isSafe(void) const;
 		bool					isBanned(const ftClient & member) const;
 		bool					isMember(const ftClient & candid) const;
+		bool					isInviteOnly() const;
 
 		//setters
 		bool					addMember(ftClient & member);

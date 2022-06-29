@@ -93,7 +93,9 @@ int		Commands::join(ftClient& client, Message& msg)
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		//check multiple channel
-		if (_channels.find(params[0]) == _channels.end())
+		//if (params[0] == '0')
+			//leave all channels
+		if ((itchan = _channels.find(params[0])) == _channels.end())
 		{
 			newChan = new IrcChannel(params[0], client);
 			if (newChan->valChanName(params[0]) == false)
@@ -102,7 +104,6 @@ int		Commands::join(ftClient& client, Message& msg)
 				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
 			}
 			isnew = true;
-			//set
 		}
 		if (isnew)
 		{
@@ -114,7 +115,16 @@ int		Commands::join(ftClient& client, Message& msg)
 			return 0;
 		}
 		else
-			std::cout << "Existing Channel -- to be continued\n";
+		{
+			if (!(*itchan).second->isMember(client) 
+				&& !(*itchan).second->isBanned(client)
+				&& !(*itchan).second->isInviteOnly())
+			{
+				(*itchan).second->addMember(client);
+				//respond 332 333 353
+				return serverSend(client.get_fd(),client.get_name(), "JOIN " + params[0], "");
+			}
+		}
 		return 0;
 
 }

@@ -1,5 +1,16 @@
 #include "Channel.hpp"
 
+ChannelMode::Masks::Masks()
+{
+	_key.clear();
+	_limit.clear();
+	_ban.clear();
+	_exception.clear();
+	_invitation.clear();
+}
+
+ChannelMode::Masks::~Masks() {}
+
 ChannelMode::ChannelMode(unsigned flags) : _flags(flags) {}
 
 ChannelMode::~ChannelMode() {}
@@ -13,9 +24,9 @@ ChannelMode::Flag ChannelMode::parse(char c)
 
 const unsigned short ChannelMode::_lowerFlagTable[] =
 {
-	0, BAN_MASK, 0, 0, EXCEPTION_MASK, 0, 0, 0, INVITE_ONLY, 0, KEY,
-	LIMIT, MODERATED, NO_OUTSIDE_MSG, 0, PRIVATE, 0, 0, SECRET,
-	TOPIC_SETTABLE_BY_CHANOP, 0, 0, 0, 0, 0, 0
+	ANONYMOUS, BAN_MASK, 0, 0, EXCEPTION_MASK, 0, 0, 0, INVITE_ONLY, 0, KEY,
+	LIMIT, MODERATED, NO_OUTSIDE_MSG, 0, PRIVATE, QUIET, 0, SECRET,
+	TOPIC_SETTABLE_BY_CHANOP, 0, 0, 0, 0, 0, OP_MODERATED
 };
 
 IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newName)
@@ -31,6 +42,9 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 		_creator = &crt;
 		_safe = false;
 		_chanBuffer = "";
+		setFlags("+", NO_OUTSIDE_MSG);
+		setFlags("+", SECRET);
+		setFlags("+", TOPIC_SETTABLE_BY_CHANOP);
 }
 
 IrcChannel::IrcChannel(void)
@@ -267,3 +281,15 @@ bool IrcChannel::valChanName(const std::string name) const
 		}
 		return true;
 }
+
+void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
+{
+	if (add_remove == "+")
+		_flags |= flag;
+	else
+		_flags = _flags & ~flag;
+}
+
+unsigned	IrcChannel::getFlags(void) { return _flags; }
+
+bool		IrcChannel::isInviteOnly() const { return _flags & INVITE_ONLY; }
