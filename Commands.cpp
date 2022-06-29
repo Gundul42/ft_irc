@@ -64,12 +64,12 @@ int		Commands::away(ftClient& client, Message& msg)
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 	if (!msg.getTrailing().size())
 	{
-		client.set_flags("-", "away");
+		client.set_flags("-", UserMode::AWAY);
 		return serverSend(client.get_fd(), "", "305 ", "You are no longer marked as being away");
 	}
 	else
 	{
-		client.set_flags("+", "away");
+		client.set_flags("+", UserMode::AWAY);
 		client.set_awaymsg(msg.getTrailing());
 		return serverSend(client.get_fd(), "", "306 ", "You have been marked as being away");
 	}
