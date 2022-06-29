@@ -184,8 +184,6 @@ int		Commands::nick(ftClient& client, Message& msg)
 	std::string oldnick = client.get_name();
 	std::string	newnick = msg.getParam().front();
 
-	if (client.get_name().empty())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 	if (msg.getParam().empty())
 			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick,
 							"No nickname given");
@@ -304,8 +302,8 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 		{
 			if (target == (*it).second->get_name())
 			{
-				if (UserMode::AWAY & (*it).second->get_flags())
-					return !serverSend(client.get_fd(), "", "301 " + target, "User is away");
+				if (!!(UserMode::AWAY & (*it).second->get_flags()))
+					return !serverSend(client.get_fd(), "", "301 " + target, (*it).second->get_awaymsg());
 				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 			}
@@ -376,9 +374,9 @@ int		Commands::user(ftClient& client, Message& msg)
 {
 		std::string			username = msg.getParam()[0];
 		std::string			realname = msg.getTrailing();
+		std::string			servername = IRCSERVNAME;
+		std::string			serverversion = IRCSERVVERSION;
 		int					i = 0;
-
-		serverSend(client.get_fd(), "", "001 " + client.get_name(), "Welcome to the Internet Relay Network " + client.get_prefix());
 
 		if (client.isRegistered())
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
@@ -393,7 +391,9 @@ int		Commands::user(ftClient& client, Message& msg)
 		client.set_names(username, realname);
 		client.validate();
 		motd(client, msg); //show motd
-		return true;
+		serverSend(client.get_fd(), "", "001 " + client.get_name(), "Welcome to the Internet Relay Network " + client.get_name());
+		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is " + servername + ", running version " + serverversion);
+		return serverSend(client.get_fd(), "", "003 " + client.get_name(), "The server was created on I don't know how long...");
 }
 int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
 

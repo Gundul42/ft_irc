@@ -222,11 +222,11 @@ void IrcServ::loop(void)
 								block = true;
 						if (!block)
 						{
-							std::cout << "connection:\n";
-							std::map<int, ftClient*>::iterator it = _connections.begin();
-							for (; it != _connections.end(); it++)
-								std::cout << (*it).second->get_name() << "\n";
-							std::cout << "****\n";
+							// std::cout << "connection:\n";
+							// std::map<int, ftClient*>::iterator it = _connections.begin();
+							// for (; it != _connections.end(); it++)
+							// 	std::cout << (*it).second->get_name() << "\n";
+							// std::cout << "****\n";
 							client->add_msgsCount(1);
 							oss << "Last action " << updateTimeDiff(*client) << 
 									" seconds ago " << client->get_msgs();
