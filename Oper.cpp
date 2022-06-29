@@ -46,14 +46,14 @@ OperList::~OperList()
 
 const OperList::operMap&	OperList::getOperList() const { return this->_operList; }
 
-bool	OperList::getOper(std::string& oper_info)
+void	OperList::getOper(std::string& oper_info)
 {
 	std::string *nick = getString(oper_info, "nickname");
 	std::string *pass = getString(oper_info, "password");
 	std::string *host = getString(oper_info, "hostname");
 
 	Oper op(*nick, *pass, *host);
-	this->_operList.insert(std::pair<std::string, Oper*>(op.getNick(), &op));
+	_operList.insert(std::pair<std::string, Oper*>(op.getNick(), &op));
 	delete[] nick;
 	delete[] pass;
 	delete[] host;

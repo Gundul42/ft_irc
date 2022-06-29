@@ -44,7 +44,7 @@ class OperList
 		const operMap&	getOperList() const;
 
 	private:
-		bool			getOper(std::string& oper);
+		void			getOper(std::string& oper);
 		std::string*	getString(const std::string& from, const std::string& tofind) const;
 
 };

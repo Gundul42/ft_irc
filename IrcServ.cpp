@@ -148,14 +148,12 @@ void IrcServ::loop(void)
 	int										poll_count = 0;
 	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
 	std::string								addrStr;
-	std::string								emptynick;//emptynick.clear() is better than ""
 	bool									block;
 
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
 	fd_count = 1;
 	addrlen = sizeof remoteaddr;
-	emptynick.clear();
 	std::ostringstream oss;
 
 	while(true)
@@ -193,7 +191,7 @@ void IrcServ::loop(void)
 						_logAction(oss.str());
 						oss.str("");
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
-									new ftClient(newfd, emptynick, addrStr, "")));
+									new ftClient(newfd, "", addrStr, "")));
 					}
 				}
 				else //clients
@@ -218,11 +216,17 @@ void IrcServ::loop(void)
 						block = false;
 						//we got something in -> parse command
 						//IRC adds CR,LF to each end of a buffer line, remove it first !
-						memset(buf + strlen(buf) - 2, 0, 2);
+						if (buf[strlen(buf) - 2] == '\x0d' && buf[strlen(buf) - 1] == '\x0a')
+							memset(buf + strlen(buf) - 2, 0, 2);
 						if (client->get_msgs() > IRCMAXMSGCOUNT)
 								block = true;
 						if (!block)
 						{
+							std::cout << "connection:\n";
+							std::map<int, ftClient*>::iterator it = _connections.begin();
+							for (; it != _connections.end(); it++)
+								std::cout << (*it).second->get_name() << "\n";
+							std::cout << "****\n";
 							client->add_msgsCount(1);
 							oss << "Last action " << updateTimeDiff(*client) << 
 									" seconds ago " << client->get_msgs();

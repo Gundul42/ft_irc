@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/28 23:12:33 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/29 12:43:15 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 // Constructor needs a FD, a string for the name, a string for it's address
 // val will be false until server checks validity of the client
 //
-ftClient::ftClient(int fd, std::string name, const std::string addr,
-	const std::string host): _fd(fd), _name(name), _addr(addr), _val(false),
+ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false),
 	_oper(false), _hostname(host)
 {
 		_msgs = 0;
@@ -142,8 +141,12 @@ bool			ftClient::isRegistered(void) const { return _val==true; }
 
 bool			ftClient::isOperator(void) const { return _oper==true; }
 
-void			ftClient::set_realname(const std::string& name) { this->_realname = name; }
-void			ftClient::set_username(const std::string& name) { this->_username = name; }
+void			ftClient::set_names(const std::string& username, const std::string& realname)
+{
+	this->_username = username;
+	this->_realname = realname;
+	this->_hostname = this->_addr;
+}
 void			ftClient::set_pass(const std::string& pass) { this->_password = pass; }
 
 std::string		ftClient::get_prefix(void) const

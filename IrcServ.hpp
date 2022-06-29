@@ -30,11 +30,11 @@ class IrcServ
 				IrcServ(const char *port);
 				~IrcServ(void);
 
-				int		getSocketFd(void) const;
-				void	loop(void);
-				int		getTimeDiff(ftClient & start);
-				int		updateTimeDiff(ftClient & start);
-				void	check_valid_client(pollfd *pfds,int *fd_count);
+				int			getSocketFd(void) const;
+				void		loop(void);
+				int			getTimeDiff(ftClient & start);
+				int			updateTimeDiff(ftClient & start);
+				void		check_valid_client(pollfd *pfds,int *fd_count);
 };
 
 #endif

@@ -77,8 +77,7 @@ class ftClient : public UserMode
 				unsigned		get_flags(void);
 
 				void			set_name(const std::string& name);
-				void			set_realname(const std::string& name);
-				void			set_username(const std::string& name);
+				void			set_names(const std::string& username, const std::string& realname);
 				void			set_pass(const std::string& pass);
 
 				int				getTimeConnected(void) const;

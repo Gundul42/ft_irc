@@ -223,7 +223,9 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 {
 	std::string target = msg.getParam().front();
 
-	if (!msg.getParam().size())
+	if (client.get_name().empty())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!msg.getTrailing().size() || !msg.getParam().size())
 		return !serverSend(client.get_fd(), "", "412 ", "No text to send");
 	if (msg.isNickname(target))
 	{
@@ -234,7 +236,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 			{
 				if (UserMode::AWAY & (*it).second->get_flags())
 					return !serverSend(client.get_fd(), "", "301 " + target, "User is away");
-				// return serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 			}
 		}
@@ -251,6 +253,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 			int size = members.size();
 			for (int i = 0; i != size; i++)
 				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+			return true;
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
 	}
@@ -301,7 +304,7 @@ int		Commands::topic(ftClient& client, Message& msg) { return 1; }
 //USER
 int		Commands::user(ftClient& client, Message& msg)
 {
-		std::string			username = msg.getParam().front();
+		std::string			username = msg.getParam()[0];
 		std::string			realname = msg.getTrailing();
 		int					i = 0;
 
@@ -317,8 +320,7 @@ int		Commands::user(ftClient& client, Message& msg)
 		server when the USER command comes from a directly connected client
 		(for security reasons), but they are used in server to server
 		communication.*/
-		client.set_username(username);
-		client.set_realname(realname);
+		client.set_names(username, realname);
 		client.validate();
 		motd(client, msg); //show motd
 		return true;
