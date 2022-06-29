@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/29 12:43:15 by mwen             ###   ########.fr       */
+/*   Updated: 2022/06/29 15:42:41 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ UserMode::Flag UserMode::parse(char c)
 const unsigned short UserMode::_lowerFlagTable[] =
 {
 	AWAY, 0, 0, 0, 0, 0, 0, 0, INVISIBLE, 0, 0, 0, 0, 0, OPERATOR, 0, 0,
-	0, MARK, 0, 0, 0, WALLOPS, 0, 0, 0
+	RESTRICTED, MARK, 0, 0, 0, WALLOPS, 0, 0, 0
 };
 
 //
@@ -41,7 +41,6 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_name = rgt._name;
 		_addr = rgt._addr;
 		_val = rgt._val;
-		_oper = rgt._oper;
 		_connect = rgt._connect;
 		_lastAction = rgt._lastAction;
 		_msgs = rgt._msgs;
@@ -56,8 +55,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 // Constructor needs a FD, a string for the name, a string for it's address
 // val will be false until server checks validity of the client
 //
-ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false),
-	_oper(false), _hostname(host)
+ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false), _hostname(host)
 {
 		_msgs = 0;
 		time(&_connect);
@@ -139,7 +137,7 @@ int ftClient::get_fd(void) const { return _fd; }
 
 bool			ftClient::isRegistered(void) const { return _val==true; }
 
-bool			ftClient::isOperator(void) const { return _oper==true; }
+bool			ftClient::isOperator(void) const { return _flags & OPERATOR; }
 
 void			ftClient::set_names(const std::string& username, const std::string& realname)
 {
@@ -161,3 +159,51 @@ std::string		ftClient::get_prefix(void) const
 }
 
 unsigned		ftClient::get_flags(void) { return _flags; }
+void			ftClient::set_flags(const std::string& add_remove, const std::string& flag)
+{
+	if (flag == "away")
+	{
+		if (add_remove == "+")
+			_flags |= AWAY;
+		else
+			_flags = _flags & ~AWAY;
+	}
+	else if (flag == "invisible")
+	{
+		if (add_remove == "+")
+			_flags |= INVISIBLE;
+		else
+			_flags = _flags & ~INVISIBLE;
+	}
+	else if (flag == "wallops")
+	{
+		if (add_remove == "+")
+			_flags |= WALLOPS;
+		else
+			_flags = _flags & ~WALLOPS;
+	}
+	else if (flag == "restricted")
+	{
+		if (add_remove == "+")
+			_flags |= RESTRICTED;
+		else
+			_flags = _flags & ~RESTRICTED;
+	}
+	else if (flag == "operator")
+	{
+		if (add_remove == "+")
+			_flags |= OPERATOR;
+		else
+			_flags = _flags & ~OPERATOR;
+	}
+	else if (flag == "mark")
+	{
+		if (add_remove == "+")
+			_flags |= MARK;
+		else
+			_flags = _flags & ~MARK;
+	}
+}
+
+std::string		ftClient::get_awaymsg(void) { return this->_awayMsg; }
+void			ftClient::set_awaymsg(const std::string& msg) { this->_awayMsg = msg; }

@@ -58,7 +58,23 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 	}
 }
 
-int		Commands::away(ftClient& client, Message& msg) { return 1; }
+int		Commands::away(ftClient& client, Message& msg)
+{
+	if (client.get_name().empty())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!msg.getParam().size())
+	{
+		client.set_flags("-", "away");
+		return serverSend(client.get_fd(), "", "305 ", "You are no longer marked as being away");
+	}
+	else
+	{
+		client.set_flags("+", "away");
+		client.set_awaymsg(msg.getTrailing());
+		return serverSend(client.get_fd(), "", "306 ", "You have been marked as being away");
+	}
+
+}
 int		Commands::die(ftClient& client, Message& msg) { return 1; }
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
@@ -72,6 +88,8 @@ int		Commands::join(ftClient& client, Message& msg)
 		bool										isnew = false;
 		IrcChannel*									newChan;
 
+		if (client.get_name().empty())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (_channels.find(params[0]) == _channels.end())
@@ -111,7 +129,8 @@ int		Commands::mode(ftClient& client, Message& msg)
 		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
 
-
+		if (client.get_name().empty())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (msg.isChannel(params[0]))
@@ -139,6 +158,8 @@ int		Commands::motd(ftClient& client, Message& msg)
 		std::ostringstream	tosend;
 		std::string			str;
 
+		if (client.get_name().empty())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
 		{
@@ -163,6 +184,8 @@ int		Commands::nick(ftClient& client, Message& msg)
 	std::string oldnick = client.get_name();
 	std::string	newnick = msg.getParam().front();
 
+	if (client.get_name().empty())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 	if (msg.getParam().empty())
 			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick,
 							"No nickname given");
@@ -179,11 +202,53 @@ int		Commands::nick(ftClient& client, Message& msg)
 		oldnick = newnick;
 	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
-int		Commands::notice(ftClient& client, Message& msg) { return 1; }
+int		Commands::notice(ftClient& client, Message& msg)
+{
+	std::string target = msg.getParam().front();
+	int			pos = 0;
+
+	if (!client.get_name().size() || msg.getParam().size() < 2)
+		return false;
+	if (msg.isNickname(target))
+	{
+		if ((pos = target.find('@')) || (pos = target.find('%')))
+			target = target.substr(0, pos - 1);
+		std::map<int, ftClient*>::const_iterator it = this->_users.begin();
+		for (; it != this->_users.end(); it++)
+		{
+			if (target == (*it).second->get_name())
+			{
+				if (UserMode::AWAY & (*it).second->get_flags())
+					return false;
+				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+			}
+		}
+		return false;
+	}
+	else if (msg.isChannel(target))
+	{
+		servChannel::iterator it = _channels.find(target);
+
+		if (it != _channels.end())
+		{
+			//check if can send to channel
+			std::vector<ftClient*> members = (*it).second->getMembers();
+			int size = members.size();
+			for (int i = 0; i != size; i++)
+				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+			return true;
+		}
+		return false;
+	}
+	//else if (msg.isMask(target))
+	return false;
+
+}
 int		Commands::oper(ftClient& client, Message& msg)
 {
-	if (!client.isRegistered())
-		return !serverSend(client.get_fd(), "", "451 ", "You have not registered");
+	if (client.get_name().empty())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 	else if (msg.getParam().size() < 2)
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	// std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
@@ -222,13 +287,18 @@ int		Commands::pong(ftClient& client, Message& msg) { return true; }
 int		Commands::privmsg(ftClient& client, Message& msg)
 {
 	std::string target = msg.getParam().front();
+	int			pos = 0;
 
 	if (client.get_name().empty())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
-	if (!msg.getTrailing().size() || !msg.getParam().size())
+	else if (!msg.getParam().size())
+		return !serverSend(client.get_fd(), "", "411 ", "No recipient given " + msg.getCommand());
+	else if (!msg.getTrailing().size())
 		return !serverSend(client.get_fd(), "", "412 ", "No text to send");
 	if (msg.isNickname(target))
 	{
+		if ((pos = target.find('@')) || (pos = target.find('%')))
+			target = target.substr(0, pos - 1);
 		std::map<int, ftClient*>::const_iterator it = this->_users.begin();
 		for (; it != this->_users.end(); it++)
 		{
