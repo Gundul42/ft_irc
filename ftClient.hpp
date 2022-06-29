@@ -35,7 +35,7 @@ protected:
 	unsigned					_flags;
 
 private:
-	/** Quick lookup table for lower alphabet */
+	/* Quick lookup table for lower alphabet */
 	static const unsigned short	_lowerFlagTable[26];
 };
 

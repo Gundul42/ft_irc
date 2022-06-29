@@ -6,7 +6,48 @@
 # include "Message.hpp"
 # include <vector>
 
-class IrcChannel
+class ChannelMode
+{
+public:
+	enum Flag
+	{
+		/* 'i' - Invite-only Channel flag */
+		INVITE_ONLY = 1 << 1,
+		/* 'm' - Moderated Channel flag */
+		MODERATED = 1 << 2,
+		/* 'n' - No IRC::Messages to Channel from User on the outside */
+		NO_OUTSIDE_MSG = 1 << 3,
+		/* 'p' - Private channel flag */
+		PRIVATE = 1 << 5,
+		/* 's' - Secret channel flag */
+		SECRET = 1 << 6,
+		/* 't' - Topic settable by Channel operator only flag */
+		TOPIC_SETTABLE_BY_CHANOP = 1 << 8,
+		/* 'k' - Channel key */
+		KEY = 1 << 9,
+		/* 'l' - User limit */
+		LIMIT = 1 << 10,
+		/* 'b' - Ban mask */
+		BAN_MASK = 1 << 11,
+		/* 'e' - Exception mask */
+		EXCEPTION_MASK = 1 << 12,
+		/* 'I' - Invitation mask */
+		INVITATION_MASK = 1 << 13
+	};
+
+	ChannelMode(unsigned flags = 0);
+	~ChannelMode();
+
+	static Flag	parse(char c);
+protected:
+	unsigned					_flags;
+
+private:
+	/* Quick lookup table for lower alphabet */
+	static const unsigned short _lowerFlagTable[26];
+};
+
+class IrcChannel : public ChannelMode
 {
 	private:
 		std::string								_name;
@@ -20,6 +61,7 @@ class IrcChannel
 		ftClient*								_creator;
 		bool									_safe;
 		std::string								_chanBuffer;
+		std::string								_key;
 
 	public:
 		IrcChannel(void);
@@ -39,6 +81,7 @@ class IrcChannel
 		ftClient*				getCreator(void) const;
 		std::string  			getPasswd(void) const;
 		std::string 			getBuffer(void) const;
+		unsigned				getFlags(void);
 		bool					isChop(const ftClient & member) const;
 		bool					isCreator(const ftClient & member) const;
 		bool					isSafe(void) const;
@@ -55,7 +98,8 @@ class IrcChannel
 		bool					banMember(ftClient & member);
 		void					setSafe(void);
 		void					setBuffer(const std::string & buffer);
-		
+		void					setFlags(const std::string& add_remove, unsigned flag);
+
 		//manipulators
 		void					notSafe(void);
 		bool					unbanMember(const ftClient & member);

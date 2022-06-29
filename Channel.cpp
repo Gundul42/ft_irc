@@ -1,5 +1,23 @@
 #include "Channel.hpp"
 
+ChannelMode::ChannelMode(unsigned flags) : _flags(flags) {}
+
+ChannelMode::~ChannelMode() {}
+
+ChannelMode::Flag ChannelMode::parse(char c)
+{
+	unsigned f;
+	f = islower(c) ? _lowerFlagTable[c - 'a'] : (c == 'I') * INVITATION_MASK;
+	return (static_cast<Flag>(f));
+}
+
+const unsigned short ChannelMode::_lowerFlagTable[] =
+{
+	0, BAN_MASK, 0, 0, EXCEPTION_MASK, 0, 0, 0, INVITE_ONLY, 0, KEY,
+	LIMIT, MODERATED, NO_OUTSIDE_MSG, 0, PRIVATE, 0, 0, SECRET,
+	TOPIC_SETTABLE_BY_CHANOP, 0, 0, 0, 0, 0, 0
+};
+
 IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newName)
 {
 		time(&_ctime);
@@ -46,6 +64,7 @@ IrcChannel & IrcChannel::operator=(const IrcChannel & cpy)
 		_creator = cpy._creator;
 		_safe = cpy._safe;
 		_chanBuffer = cpy._chanBuffer;
+		_flags = cpy._flags;
 		return (*this);
 }
 

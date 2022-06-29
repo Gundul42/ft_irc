@@ -92,6 +92,7 @@ int		Commands::join(ftClient& client, Message& msg)
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		//check multiple channel
 		if (_channels.find(params[0]) == _channels.end())
 		{
 			newChan = new IrcChannel(params[0], client);
@@ -101,6 +102,7 @@ int		Commands::join(ftClient& client, Message& msg)
 				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
 			}
 			isnew = true;
+			//set
 		}
 		if (isnew)
 		{
