@@ -42,6 +42,7 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 		_creator = &crt;
 		_safe = false;
 		_chanBuffer = "";
+		addMember(crt);
 		setFlags("+", NO_OUTSIDE_MSG);
 		setFlags("+", SECRET);
 		setFlags("+", TOPIC_SETTABLE_BY_CHANOP);
@@ -157,13 +158,13 @@ bool IrcChannel::isMember(const ftClient & candid) const
 		std::vector<ftClient*>::const_iterator	in;
 
 		if (_member.size() == 0)
-				return false;
+			return false;
 		in = _member.begin();
 		while (in != _member.end())
 		{
-				if ((*in)->get_name() == candid.get_name())
-						return true;
-				in++;
+			if ((*in)->get_name() == candid.get_name())
+				return true;
+			in++;
 		}
 		return false;
 }
@@ -255,12 +256,12 @@ bool IrcChannel::removeMember(ftClient & member)
 		in = _member.begin();
 		while (in != _member.end())
 		{
-				if ((*in)->get_name() == member.get_name())
-				{
-						_member.erase(in);
-						return true;
-				}
-				in++;
+			if ((*in)->get_name() == member.get_name())
+			{
+				_member.erase(in);
+				return true;
+			}
+			in++;
 		}
 		return false;
 }
@@ -275,9 +276,9 @@ bool IrcChannel::valChanName(const std::string name) const
 			return false;
 		while (it != name.end())
 		{
-				if (*it == '\x07' || *it == ' ' || *it == ',' || *it == ':')
-					return false;
-				it++;
+			if (*it == '\x07' || *it == ' ' || *it == ',' || *it == ':')
+				return false;
+			it++;
 		}
 		return true;
 }
@@ -291,5 +292,3 @@ void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
 }
 
 unsigned	IrcChannel::getFlags(void) { return _flags; }
-
-bool		IrcChannel::isInviteOnly() const { return _flags & INVITE_ONLY; }

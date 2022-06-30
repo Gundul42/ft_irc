@@ -106,7 +106,6 @@ class IrcChannel : public ChannelMode
 		bool					isSafe(void) const;
 		bool					isBanned(const ftClient & member) const;
 		bool					isMember(const ftClient & candid) const;
-		bool					isInviteOnly() const;
 
 		//setters
 		bool					addMember(ftClient & member);

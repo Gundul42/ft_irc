@@ -2,7 +2,6 @@
 # define MESSAGE_H
 
 # include "lib.hpp"
-# include <vector>
 
 class Target
 {
@@ -19,10 +18,12 @@ class Target
 class Message : public Target
 {
 	public:
+		Message();
 		Message(std::string input);
+		Message(const Message& cpy);
 		~Message();
+		Message& operator=(const Message& cpy);
 
-		//returns input read from buf from socket from client
 		const std::string&				getInput();
 		const std::string&				getPrefix();
 		const std::string&				getCommand();
@@ -37,6 +38,7 @@ class Message : public Target
 		std::string					_trailing;
 
 		void				parse(const std::string& buf);
+		void				split(void);
 };
 
 #endif

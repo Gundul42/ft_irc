@@ -17,6 +17,8 @@
 # include <map>
 # include <sstream>
 # include <fstream>
+# include <vector>
+# include <cctype>
 # include "NumCodes.hpp"
 # include "config.hpp"
 

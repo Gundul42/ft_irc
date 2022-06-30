@@ -73,8 +73,8 @@ int		Commands::away(ftClient& client, Message& msg)
 		client.set_awaymsg(msg.getTrailing());
 		return serverSend(client.get_fd(), "", "306 ", "You have been marked as being away");
 	}
-
 }
+
 int		Commands::die(ftClient& client, Message& msg) { return 1; }
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
@@ -83,7 +83,6 @@ int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 int		Commands::join(ftClient& client, Message& msg) 
 {
 		std::vector<std::string>					params = msg.getParam();
-		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
 		bool										isnew = false;
 		IrcChannel*									newChan;
@@ -92,41 +91,56 @@ int		Commands::join(ftClient& client, Message& msg)
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-		//check multiple channel
-		//if (params[0] == '0')
-			//leave all channels
-		if ((itchan = _channels.find(params[0])) == _channels.end())
+		if (params[0] == "0")
 		{
-			newChan = new IrcChannel(params[0], client);
-			if (newChan->valChanName(params[0]) == false)
+			if (_channels.size())
 			{
-				delete newChan;
-				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+				itchan = _channels.begin();
+				for (; itchan != _channels.end();)
+				{
+					Message m((*itchan).second->getName());
+					if ((*itchan).second->isMember(client))
+					{
+						itchan++;
+						part(client, m);
+					}
+				}
 			}
-			isnew = true;
+			return true;
 		}
-		if (isnew)
+		for (int i = 0; i != params.size(); i++)
 		{
-			_channels.insert(std::pair<std::string, IrcChannel*>(params[0], newChan));
-			serverSend(client.get_fd(),client.get_name(), "JOIN " + params[0], "");
-			serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[0] + " +Cnst", "");
-			sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[0], "@" + client.get_name());
-			sendCommandResponse(client, RPL_ENDOFNAMES, params[0], "End of /NAMES list.");
-			return 0;
-		}
-		else
-		{
-			if (!(*itchan).second->isMember(client) 
-				&& !(*itchan).second->isBanned(client)
-				&& !(*itchan).second->isInviteOnly())
+			if ((itchan = _channels.find(params[i])) == _channels.end())
 			{
-				(*itchan).second->addMember(client);
-				//respond 332 333 353
-				return serverSend(client.get_fd(),client.get_name(), "JOIN " + params[0], "");
+				newChan = new IrcChannel(params[i], client);
+				if (newChan->valChanName(params[i]) == false)
+				{
+					delete newChan;
+					return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
+				}
+				isnew = true;
+			}
+			if (isnew)
+			{
+				_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
+				serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
+				serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[i] + " +Cnst", "");
+				sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[i], "@" + client.get_name());
+				sendCommandResponse(client, RPL_ENDOFNAMES, params[i], "End of /NAMES list.");
+			}
+			else
+			{
+				if (!(*itchan).second->isMember(client) 
+					&& !(*itchan).second->isBanned(client)
+					&& !((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY))
+				{
+					(*itchan).second->addMember(client);
+					//respond 332 333 353
+					return serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
+				}
 			}
 		}
-		return 0;
-
+		return true;
 }
 
 int		Commands::kick(ftClient& client, Message& msg) { return 1; }
@@ -174,10 +188,7 @@ int		Commands::motd(ftClient& client, Message& msg)
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
-		{
-			sendCommandResponse(client, ERR_NOMOTD, "MOTD File is missing");
-			return (1);
-		}
+			return !sendCommandResponse(client, ERR_NOMOTD, "MOTD File is missing");
 		tosend << IRCSERVNAME << " Message of the day";
 		sendCommandResponse(client, RPL_MOTDSTART, tosend.str());
 		while (getline(motd, str))
@@ -206,12 +217,12 @@ int		Commands::nick(ftClient& client, Message& msg)
 		if (newnick == (*it).second->get_name())
 			return !serverSend(client.get_fd(), "", "433 " + oldnick + " " + newnick,
 							"Nickname is already in use");
-	//check collision?
 	client.set_name(msg.getParam().front());
 	if (oldnick.empty())
 		oldnick = newnick;
 	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
+
 int		Commands::notice(ftClient& client, Message& msg)
 {
 	std::string target = msg.getParam().front();
@@ -228,8 +239,6 @@ int		Commands::notice(ftClient& client, Message& msg)
 		{
 			if (target == (*it).second->get_name())
 			{
-				if (UserMode::AWAY & (*it).second->get_flags())
-					return false;
 				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 			}
@@ -253,8 +262,8 @@ int		Commands::notice(ftClient& client, Message& msg)
 	}
 	//else if (msg.isMask(target))
 	return false;
-
 }
+
 int		Commands::oper(ftClient& client, Message& msg)
 {
 	if (client.get_name().empty())
@@ -269,7 +278,34 @@ int		Commands::oper(ftClient& client, Message& msg)
 	//set usermode
 	return true;
 }
-int		Commands::part(ftClient& client, Message& msg) { return 1; }
+int		Commands::part(ftClient& client, Message& msg)
+{
+	std::vector<std::string>					params = msg.getParam();
+	servChannel::iterator						itchan;
+
+	if (client.get_name().empty())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	else if (!msg.getParam().size())
+		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
+	for (int i = 0; i != params.size(); i++)
+	{
+		if ((itchan = _channels.find(params[i])) == _channels.end())
+			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
+		if ((*itchan).second->isMember(client))
+		{
+			if ((*itchan).second->isCreator(client) && (*itchan).second->getMembers().size() == 1)
+			{
+				_channels.erase(itchan);
+				delete (*itchan).second;
+			}
+			else
+				(*itchan).second->removeMember(client);
+			return serverSend(client.get_fd(),client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+		}
+		return !serverSend(client.get_fd(),client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+	}
+	return false;
+}
 
 //PASS
 int		Commands::pass(ftClient& client, Message& msg)
@@ -340,7 +376,14 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 	//else if (msg.isMask(target))
 	return true;
 }
-int		Commands::quit(ftClient& client, Message& msg) { return 1; }
+
+int		Commands::quit(ftClient& client, Message& msg)
+{
+	Message m("0");
+	join(client, m);
+	return true;
+}
+
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
 
 //RESTART - RFC2812 4.4 ... this message is optional ...
@@ -394,12 +437,6 @@ int		Commands::user(ftClient& client, Message& msg)
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
 		else if (msg.getParam().size() < 3)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-		//need to test below: 
-		/*Between servers USER must to be prefixed with client's NICKname.
-		Note that hostname and servername are normally ignored by the IRC
-		server when the USER command comes from a directly connected client
-		(for security reasons), but they are used in server to server
-		communication.*/
 		client.set_names(username, realname);
 		client.validate();
 		motd(client, msg); //show motd
@@ -412,7 +449,7 @@ int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
 //VERSION
 int		Commands::version(ftClient& client, Message& msg)
 {
-		std::vector<std::string>					params = msg.getParam();
+		std::vector<std::string>	params = msg.getParam();
 
 		if (!params.empty() && params[0] != IRCSERVNAME)
 			return !sendCommandResponse(client, ERR_NOSUCHSERVER, params[0], "No such server");

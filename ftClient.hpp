@@ -3,7 +3,6 @@
 
 # include "config.hpp"
 # include "lib.hpp"
-# include <cctype>
 
 # define FT_IRC_TIMEOUT 20
 

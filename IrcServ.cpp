@@ -166,10 +166,12 @@ void IrcServ::loop(void)
 			_logAction("Error while poll: exiting");
 			exit(1);
 		}
+
 		//check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
 		for (i = 0; i < fd_count; i++)
 		{
 			ftClient *client = _connections.find(pfds[i].fd)->second; //local copy for less find calls
+
 			if (pfds[i].fd != _socketfd) //reset msgs counter after time has passed
 			{
 				if (getTimeDiff(*client) > IRCFLOODCONTROL)
