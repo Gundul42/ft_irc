@@ -7,6 +7,8 @@ Message::Message()
 	_command = "";
 	_param.clear();
 	_trailing = "";
+	_keys.clear();
+	_setFlags.clear();
 }
 
 Message::Message(std::string input)
@@ -16,9 +18,12 @@ Message::Message(std::string input)
 	_command = "";
 	_param.clear();
 	_trailing = "";
+	_keys.clear();
+	_setFlags.clear();
 	_input = input;
 	this->parse(_input);
-	this->split();
+	this->split_channels();
+	this->split_flags();
 }
 
 Message::~Message() {};
@@ -30,6 +35,8 @@ Message::Message(const Message& cpy)
 	_command = cpy._command;
 	_param = cpy._param;
 	_trailing = cpy._trailing;
+	_keys = cpy._keys;
+	_setFlags = cpy._setFlags;
 }
 
 Message& Message::operator=(const Message& cpy)
@@ -41,6 +48,8 @@ Message& Message::operator=(const Message& cpy)
 		_command = cpy._command;
 		_param = cpy._param;
 		_trailing = cpy._trailing;
+		_keys = cpy._keys;
+		_setFlags = cpy._setFlags;
 	}
 	return (*this);
 }
@@ -50,6 +59,9 @@ const std::string&				Message::getPrefix() { return _prefix; }
 const std::string&				Message::getCommand() { return _command; }
 const std::vector<std::string>&	Message::getParam() { return _param; }
 const std::string&				Message::getTrailing() { return _trailing; }
+const std::vector<std::string>&	Message::getKeys() { return _keys; }
+const std::vector<std::string>&	Message::getFlags() { return _setFlags; }
+
 
 void							Message::parse(const std::string& input)
 {
@@ -113,24 +125,47 @@ bool	Target::isNickname(const std::string& target)
 
 bool	Target::isChannel(const std::string& target)
 {
-	if ((target[0] == '#' && target[1] != '.') || target[0] == '&')
+	if ((target[0] == '#' && target[1] != '.') || target[0] == '&' ||  target[0] == '!' ||  target[0] == '+')
 		return true;
 	return false;
 }
 
-void	Message::split(void)
+void	Message::split_channels(void)
 {
 	if (_command == "PART" || _command == "JOIN")
 	{
-		std::stringstream	str(_param[0]);
 		std::vector<std::string> newParam;
-		std::string	target;
-		for (std::string component; std::getline(str, component, ','); )
+
+		for(int i = 0; i != _param.size(); i++)
 		{
-			if (*(component.end() - 1) == ',')
-				component.erase(component.end() - 1);
-			newParam.push_back(component);
+			std::stringstream	str(_param[i]);
+			for (std::string component; std::getline(str, component, ','); )
+			{
+				if (*(component.end() - 1) == ',')
+					component.erase(component.end() - 1);
+				newParam.push_back(component);
+			}
+			if (i == 0)
+				_param = newParam;
+			else
+				_keys = newParam;
+			newParam.clear();
 		}
-		_param = newParam;
+	}
+}
+
+void	Message::split_flags(void)
+{
+	std::string	flags;
+	std::string	str;
+
+	if (_command == "MODE" && _param.size() == 2)
+	{
+		flags = _param[1];
+		for (int i = 0; i != flags.size(); i++)
+		{
+			str = flags[i];
+			_setFlags.push_back(str);
+		}
 	}
 }

@@ -58,6 +58,8 @@ public:
 	~ChannelMode();
 
 	static Flag	parse(char c);
+	std::string	toString() const;
+
 protected:
 	unsigned					_flags;
 

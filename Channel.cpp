@@ -18,8 +18,42 @@ ChannelMode::~ChannelMode() {}
 ChannelMode::Flag ChannelMode::parse(char c)
 {
 	unsigned f;
-	f = islower(c) ? _lowerFlagTable[c - 'a'] : (c == 'I') * INVITATION_MASK;
+	f = std::islower(c) ? _lowerFlagTable[c - 'a'] : (c == 'I') * INVITATION_MASK;
 	return (static_cast<Flag>(f));
+}
+
+std::string ChannelMode::toString() const
+{
+	std::string s;
+	if (_flags & ANONYMOUS)
+		s.push_back('a');
+	if (_flags & INVITE_ONLY)
+		s.push_back('i');
+	if (_flags & MODERATED)
+		s.push_back('m');
+	if (_flags & NO_OUTSIDE_MSG)
+		s.push_back('n');
+	if (_flags & QUIET)
+		s.push_back('q');
+	if (_flags & PRIVATE)
+		s.push_back('p');
+	if (_flags & SECRET)
+		s.push_back('s');
+	if (_flags & TOPIC_SETTABLE_BY_CHANOP)
+		s.push_back('t');
+	if (_flags & KEY)
+		s.push_back('k');
+	if (_flags & LIMIT)
+		s.push_back('l');
+	if (_flags & BAN_MASK)
+		s.push_back('b');
+	if (_flags & EXCEPTION_MASK)
+		s.push_back('e');
+	if (_flags & INVITATION_MASK)
+		s.push_back('I');
+	if (_flags & OP_MODERATED)
+		s.push_back('z');
+	return (s);
 }
 
 const unsigned short ChannelMode::_lowerFlagTable[] =
@@ -43,9 +77,6 @@ IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newNa
 		_safe = false;
 		_chanBuffer = "";
 		addMember(crt);
-		setFlags("+", NO_OUTSIDE_MSG);
-		setFlags("+", SECRET);
-		setFlags("+", TOPIC_SETTABLE_BY_CHANOP);
 }
 
 IrcChannel::IrcChannel(void)

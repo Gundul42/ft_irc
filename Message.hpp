@@ -29,6 +29,8 @@ class Message : public Target
 		const std::string&				getCommand();
 		const std::vector<std::string>&	getParam();
 		const std::string&				getTrailing();
+		const std::vector<std::string>&	getKeys();
+		const std::vector<std::string>&	getFlags();
 
 	private:
 		std::string					_input;
@@ -36,9 +38,12 @@ class Message : public Target
 		std::string					_command;
 		std::vector<std::string>	_param;
 		std::string					_trailing;
+		std::vector<std::string>	_keys;
+		std::vector<std::string>	_setFlags;
 
 		void				parse(const std::string& buf);
-		void				split(void);
+		void				split_channels(void);
+		void				split_flags(void);
 };
 
 #endif

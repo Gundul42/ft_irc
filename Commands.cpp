@@ -122,14 +122,21 @@ int		Commands::join(ftClient& client, Message& msg)
 			}
 			if (isnew)
 			{
+				if (params[i][0] == '#')
+				{
+					newChan->setFlags("+", ChannelMode::parse('n'));
+					newChan->setFlags("+", ChannelMode::parse('s'));
+					newChan->setFlags("+", ChannelMode::parse('t'));
+				}
 				_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
 				serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
-				serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[i] + " +Cnst", "");
+				serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[i] + " +" + newChan->toString(), "");
 				sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[i], "@" + client.get_name());
 				sendCommandResponse(client, RPL_ENDOFNAMES, params[i], "End of /NAMES list.");
 			}
 			else
 			{
+				//key handing, need to change parse_channel()
 				if (!(*itchan).second->isMember(client) 
 					&& !(*itchan).second->isBanned(client)
 					&& !((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY))
@@ -167,10 +174,27 @@ int		Commands::mode(ftClient& client, Message& msg)
 			if (params.size() == 1)
 			{
 				serverSend(client.get_fd(),IRCSERVNAME, "324 " +
-					(*itchan).second->getCreator()->get_name() + " " + params[0] + " +Cnst", "");
+					(*itchan).second->getCreator()->get_name() + " " + params[0] + " +" +
+					(*itchan).second->toString(), "");
 				serverSend(client.get_fd(),IRCSERVNAME, "329 " +
 					(*itchan).second->getCreator()->get_name() + " " + params[0] + " " +
 					(*itchan).second->getCtime(), "");
+				return true;
+			}
+			else
+			{
+				for (int i = 1; i != msg.getFlags().size(); i++)
+				{
+					//response not shown on client
+					if (ChannelMode::parse(msg.getFlags()[i][0]) == 0 || msg.getFlags()[i] == "a")
+						return !serverSend(client.get_fd(), "", "472 " +
+								client.get_name() + " " + msg.getFlags()[i] + " ", "is an unknown mode char to me");
+					else if (msg.getFlags()[0] == "+" && (ChannelMode::parse(msg.getFlags()[i][0]) & (*itchan).second->getFlags()))
+						return false;
+					(*itchan).second->setFlags(msg.getFlags()[0], ChannelMode::parse(msg.getFlags()[i][0]));
+						return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + msg.getFlags()[0] + " " + msg.getFlags()[0], "");
+					//set mask, key, limit etc
+				}
 			}
 		}
 		//MODE USER
@@ -364,7 +388,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 
 		if (it != _channels.end())
 		{
-			//check if can send to channel
+			//check if can send to channel: moderated, no_outside_msg, and check client flag
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
