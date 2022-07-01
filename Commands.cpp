@@ -136,10 +136,20 @@ int		Commands::join(ftClient& client, Message& msg)
 			}
 			else
 			{
-				//key handing, need to change parse_channel()
-				if (!(*itchan).second->isMember(client) 
-					&& !(*itchan).second->isBanned(client)
-					&& !((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY))
+				//below error cases need to be tested, hostname check will have problem as ipv4 and ipv6 rDNS problem, currently all hostnames are ""
+				if ((*itchan).second->isBanned(client))
+					return !sendCommandResponse(client, ERR_BANNEDFROMCHAN, params[i],
+								"Cannot join channel (+b)");
+				else if ((*itchan).second->getLimit() > 0 && (*itchan).second->getLimit() <= (*itchan).second->getMembers().size())
+					return !sendCommandResponse(client, ERR_CHANNELISFULL, params[i],
+								"Cannot join channel (+l)");
+				else if ((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY && !(*itchan).second->isInvited(client))
+					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
+								"Cannot join channel (+i)");
+				else if ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i] != (*itchan).second->getKey())
+					return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
+								"Cannot join channel (+k)");
+				else if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
 					//respond 332 333 353
@@ -356,7 +366,7 @@ int		Commands::ping(ftClient& client, Message& msg)
 int		Commands::pong(ftClient& client, Message& msg) { return true; }
 int		Commands::privmsg(ftClient& client, Message& msg)
 {
-	std::string target = msg.getParam().front();
+	std::string target;
 	int			pos = 0;
 
 	if (client.get_name().empty())
@@ -365,6 +375,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 		return !serverSend(client.get_fd(), "", "411 ", "No recipient given " + msg.getCommand());
 	else if (!msg.getTrailing().size())
 		return !serverSend(client.get_fd(), "", "412 ", "No text to send");
+	target = msg.getParam().front();
 	if (msg.isNickname(target))
 	{
 		if ((pos = target.find('@')) || (pos = target.find('%')))
@@ -446,7 +457,35 @@ int		Commands::ustime(ftClient& client, Message& msg)
 }
 
 //TOPIC
-int		Commands::topic(ftClient& client, Message& msg) { return 1; }
+int		Commands::topic(ftClient& client, Message& msg)
+{
+	servChannel::iterator	it;
+
+	if (msg.getParam().empty())
+		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
+	if (msg.getParam().size() > 1)
+		return false;
+	it = _channels.find(msg.getParam()[0]);
+	if (it == _channels.end())
+		return !serverSend(client.get_fd(), "", "403 " + client.get_name() + " " + msg.getParam()[0], "No such channel");//weechat does not react to this response
+	else if ((*it).second->getName()[0] == '+')
+		return !sendCommandResponse(client, ERR_NOCHANMODES, msg.getParam()[0], "Channel doesn't support modes");
+	else if (!msg.getTrailing().size())
+	{
+		if ((*it).second->getTopic().empty())
+			return !sendCommandResponse(client, RPL_NOTOPIC, msg.getParam()[0], "No topic is set");
+		return serverSend(client.get_fd(), "", "332 " + client.get_name() + " " + msg.getParam()[0], (*it).second->getTopic());
+	}
+	else if (!(*it).second->isMember(client))
+		return !sendCommandResponse(client, ERR_NOTONCHANNEL, msg.getParam()[0], "You're not on that channel");
+	else if ((*it).second->getFlags() & ChannelMode::TOPIC_SETTABLE_BY_CHANOP)
+	{
+		if (!(*it).second->isChop(client))
+			return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, msg.getParam()[0], "You're not channel operator");
+	}
+	(*it).second->setTopic(msg.getTrailing());
+	return serverSend(client.get_fd(), client.get_name(), msg.getCommand() + " " + msg.getParam()[0], msg.getTrailing());
+}
 
 //USER
 int		Commands::user(ftClient& client, Message& msg)

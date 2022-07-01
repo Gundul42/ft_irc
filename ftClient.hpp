@@ -77,6 +77,7 @@ class ftClient : public UserMode
 				std::string		get_prefix(void) const; //get usermask
 				unsigned		get_flags(void);
 				std::string		get_awaymsg(void);
+				std::string		get_username(void) const;
 
 				void			set_name(const std::string& name);
 				void			set_names(const std::string& username, const std::string& realname);

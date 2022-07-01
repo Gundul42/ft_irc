@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/29 20:54:54 by mwen             ###   ########.fr       */
+/*   Updated: 2022/07/01 21:43:16 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,3 +169,5 @@ void			ftClient::set_flags(const std::string& add_remove, unsigned flag)
 
 std::string		ftClient::get_awaymsg(void) { return this->_awayMsg; }
 void			ftClient::set_awaymsg(const std::string& msg) { this->_awayMsg = msg; }
+std::string		ftClient::get_username(void) const { return this->_username; }
+

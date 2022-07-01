@@ -6,6 +6,19 @@
 # include "Message.hpp"
 # include <vector>
 
+class Masks
+{
+	public:
+		std::vector<std::string>	_ban;
+		std::vector<std::string>	_exception;
+		std::vector<std::string>	_invitation;
+
+		Masks();
+		~Masks();
+
+		const std::vector<std::string>&	getMasks(unsigned mask, const std::string& str);
+};
+
 class ChannelMode
 {
 public:
@@ -41,19 +54,6 @@ public:
 		OP_MODERATED = 1 << 13,
 	};
 
-	struct Masks
-	{
-		std::string	_key;
-		std::string	_limit;
-		std::string	_ban;
-		std::string	_exception;
-		std::string	_invitation;
-
-		Masks();
-		~Masks();
-		void	setMasks(unsigned flag, const std::string& str);
-	};
-
 	ChannelMode(unsigned flags = 0);
 	~ChannelMode();
 
@@ -83,6 +83,7 @@ class IrcChannel : public ChannelMode
 		bool									_safe;
 		std::string								_chanBuffer;
 		std::string								_key;
+		Masks									masks;
 
 	public:
 		IrcChannel(void);
@@ -102,12 +103,15 @@ class IrcChannel : public ChannelMode
 		ftClient*				getCreator(void) const;
 		std::string  			getPasswd(void) const;
 		std::string 			getBuffer(void) const;
+		std::string				getKey(void) const;
 		unsigned				getFlags(void);
 		bool					isChop(const ftClient & member) const;
 		bool					isCreator(const ftClient & member) const;
 		bool					isSafe(void) const;
 		bool					isBanned(const ftClient & member) const;
+		bool					isInvited(const ftClient & member) const;
 		bool					isMember(const ftClient & candid) const;
+		bool					isException(const ftClient & member) const;
 
 		//setters
 		bool					addMember(ftClient & member);
@@ -120,6 +124,7 @@ class IrcChannel : public ChannelMode
 		void					setSafe(void);
 		void					setBuffer(const std::string & buffer);
 		void					setFlags(const std::string& add_remove, unsigned flag);
+		void					setMasks(unsigned mask, const std::string& str);
 
 		//manipulators
 		void					notSafe(void);

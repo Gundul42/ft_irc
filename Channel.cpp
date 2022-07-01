@@ -1,15 +1,13 @@
 #include "Channel.hpp"
 
-ChannelMode::Masks::Masks()
+Masks::Masks()
 {
-	_key.clear();
-	_limit.clear();
 	_ban.clear();
 	_exception.clear();
 	_invitation.clear();
 }
 
-ChannelMode::Masks::~Masks() {}
+Masks::~Masks() {}
 
 ChannelMode::ChannelMode(unsigned flags) : _flags(flags) {}
 
@@ -45,12 +43,6 @@ std::string ChannelMode::toString() const
 		s.push_back('k');
 	if (_flags & LIMIT)
 		s.push_back('l');
-	if (_flags & BAN_MASK)
-		s.push_back('b');
-	if (_flags & EXCEPTION_MASK)
-		s.push_back('e');
-	if (_flags & INVITATION_MASK)
-		s.push_back('I');
 	if (_flags & OP_MODERATED)
 		s.push_back('z');
 	return (s);
@@ -168,20 +160,35 @@ bool IrcChannel::isSafe(void) const {return _safe;}
 
 std::string IrcChannel::getBuffer(void) const {return _chanBuffer;}
 
+//does not support wildcard such as a* or *.net
 bool IrcChannel::isBanned(const ftClient & member) const
 {
-		std::vector<ftClient*>::const_iterator	in;
+	std::string	nickname;
+	std::string	username;
+	std::string	hostname;
+	std::string	mask;
 
-		if (_ban.size() == 0)
-				return false;
-		in = _ban.begin();
-		while (in != _ban.end())
-		{
-				if ((*in)->get_name() == member.get_name())
-						return true;
-				in++;
-		}
+	if (masks._ban.empty())
 		return false;
+	for (int i = 0; i != masks._ban.size(); i++)
+	{
+		mask = masks._invitation[i];
+		nickname = mask.substr(0, mask.find("i") - 1);
+		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
+		hostname = mask.substr(mask.find("@") + 1);
+		if (hostname == member.get_hostname() || hostname == "*")
+		{
+			if (username == member.get_username() || username == "*")
+			{
+				if (nickname == member.get_name() || nickname == "*")
+				{
+					if (!isException(member))
+						return true;
+				}
+			}
+		}
+	}
+	return false;
 }
 
 bool IrcChannel::isMember(const ftClient & candid) const
@@ -323,3 +330,83 @@ void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
 }
 
 unsigned	IrcChannel::getFlags(void) { return _flags; }
+std::string	IrcChannel::getKey(void) const { return _key; }
+
+void	IrcChannel::setMasks(unsigned mask, const std::string& str)
+{
+	if (mask == ChannelMode::INVITATION_MASK)
+		masks._invitation.push_back(str);
+	else if (mask == ChannelMode::BAN_MASK)
+		masks._ban.push_back(str);
+	else if (mask == ChannelMode::EXCEPTION_MASK)
+		masks._exception.push_back(str);
+}
+
+//flag might be out of the three options
+const std::vector<std::string>&	Masks::getMasks(unsigned mask, const std::string& str)
+{
+	if (mask == ChannelMode::INVITATION_MASK)
+		return _invitation;
+	else if (mask == ChannelMode::BAN_MASK)
+		return _ban;
+	else
+		return _exception;
+}
+
+//does not support wildcard such as a* or *.net
+bool IrcChannel::isInvited(const ftClient & member) const
+{
+	std::string	nickname;
+	std::string	username;
+	std::string	hostname;
+	std::string	mask;
+
+	if (masks._invitation.empty())
+		return false;
+	for (int i = 0; i != masks._invitation.size(); i++)
+	{
+		mask = masks._invitation[i];
+		nickname = mask.substr(0, mask.find("!"));
+		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
+		hostname = mask.substr(mask.find("@") + 1);
+		// std::cout << nickname << " " << username << " " << hostname << "\n";
+
+		if (hostname == member.get_hostname() || hostname == "*")
+		{
+			if (username == member.get_username() || username == "*")
+			{
+				if (nickname == member.get_name() || nickname == "*")
+					return true;
+			}
+		}
+	}
+	return false;
+}
+
+//does not support wildcard such as a* or *.net
+bool	IrcChannel::isException(const ftClient & member) const
+{
+	std::string	nickname;
+	std::string	username;
+	std::string	hostname;
+	std::string	mask;
+
+	if (masks._exception.empty())
+		return false;
+	for (int i = 0; i != masks._exception.size(); i++)
+	{
+		mask = masks._exception[i];
+		nickname = mask.substr(0, mask.find("i") - 1);
+		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
+		hostname = mask.substr(mask.find("@") + 1);
+		if (hostname == member.get_hostname() || hostname == "*")
+		{
+			if (username == member.get_username() || username == "*")
+			{
+				if (nickname == member.get_name() || nickname == "*")
+					return true;
+			}
+		}
+	}
+	return false;
+}

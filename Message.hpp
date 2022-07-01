@@ -38,6 +38,7 @@ class Message : public Target
 		std::string					_command;
 		std::vector<std::string>	_param;
 		std::string					_trailing;
+		std::vector<std::string>	_channels;
 		std::vector<std::string>	_keys;
 		std::vector<std::string>	_setFlags;
 

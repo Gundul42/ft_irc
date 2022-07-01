@@ -9,6 +9,7 @@ Message::Message()
 	_trailing = "";
 	_keys.clear();
 	_setFlags.clear();
+	_channels.clear();
 }
 
 Message::Message(std::string input)
@@ -20,6 +21,7 @@ Message::Message(std::string input)
 	_trailing = "";
 	_keys.clear();
 	_setFlags.clear();
+	_channels.clear();
 	_input = input;
 	this->parse(_input);
 	this->split_channels();
@@ -37,6 +39,7 @@ Message::Message(const Message& cpy)
 	_trailing = cpy._trailing;
 	_keys = cpy._keys;
 	_setFlags = cpy._setFlags;
+	_channels = cpy._channels;
 }
 
 Message& Message::operator=(const Message& cpy)
@@ -50,6 +53,7 @@ Message& Message::operator=(const Message& cpy)
 		_trailing = cpy._trailing;
 		_keys = cpy._keys;
 		_setFlags = cpy._setFlags;
+		_channels = cpy._channels;
 	}
 	return (*this);
 }
@@ -132,7 +136,7 @@ bool	Target::isChannel(const std::string& target)
 
 void	Message::split_channels(void)
 {
-	if (_command == "PART" || _command == "JOIN")
+	if ((_command == "PART" || _command == "JOIN") && _param.size() >= 1)
 	{
 		std::vector<std::string> newParam;
 
@@ -146,11 +150,14 @@ void	Message::split_channels(void)
 				newParam.push_back(component);
 			}
 			if (i == 0)
-				_param = newParam;
+				_channels = newParam;
 			else
 				_keys = newParam;
 			newParam.clear();
 		}
+		// std::vector<std::string>::iterator it = _keys.begin();
+		// for (; it != _keys.end(); it++)
+		// 	std::cout << (*it) << '\n';
 	}
 }
 
@@ -159,7 +166,7 @@ void	Message::split_flags(void)
 	std::string	flags;
 	std::string	str;
 
-	if (_command == "MODE" && _param.size() == 2)
+	if (_command == "MODE" && _param.size() >= 1)
 	{
 		flags = _param[1];
 		for (int i = 0; i != flags.size(); i++)
