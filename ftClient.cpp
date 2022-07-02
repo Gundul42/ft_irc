@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/06/29 17:48:11 by mwen             ###   ########.fr       */
+/*   Updated: 2022/07/02 13:11:02 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ ftClient::ftClient(int fd, std::string name, const std::string addr, const std::
 		_msgs = 0;
 		time(&_connect);
 		time(&_lastAction);
+		tmpBuffer.clear();
 }
 
 //

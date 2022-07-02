@@ -218,6 +218,8 @@ void IrcServ::loop(void)
 						//IRC adds CR,LF to each end of a buffer line, remove it first !
 						if (buf[strlen(buf) - 2] == '\x0d' && buf[strlen(buf) - 1] == '\x0a')
 							memset(buf + strlen(buf) - 2, 0, 2);
+						else
+								client->tmpBuffer.push_back(buf);
 						if (client->get_msgs() > IRCMAXMSGCOUNT)
 								block = true;
 						if (!block)
