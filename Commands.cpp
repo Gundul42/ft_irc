@@ -414,8 +414,21 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 
 int		Commands::quit(ftClient& client, Message& msg)
 {
-	Message m("0");
-	join(client, m);
+	servChannel::iterator	itchan;
+
+	if (_channels.size())
+	{
+		itchan = _channels.begin();
+		for (; itchan != _channels.end();)
+		{
+			Message m((*itchan).second->getName());
+			if ((*itchan).second->isMember(client))
+			{
+				itchan++;
+				part(client, m);
+			}
+		}
+	}
 	return true;
 }
 
