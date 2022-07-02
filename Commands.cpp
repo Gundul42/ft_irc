@@ -429,6 +429,7 @@ int		Commands::quit(ftClient& client, Message& msg)
 			}
 		}
 	}
+	client.set_quit();
 	return true;
 }
 

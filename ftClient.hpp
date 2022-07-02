@@ -58,6 +58,7 @@ class ftClient : public UserMode
 				std::string	_server;	//server is static and saved in the macro IRCSERVNAME
 				std::string	_password;
 				std::string	_awayMsg;
+				int			_quit;
 
 				ftClient(const ftClient & cpy);
 				ftClient & operator=(const ftClient & rgt);
@@ -80,12 +81,14 @@ class ftClient : public UserMode
 				unsigned		get_flags(void);
 				std::string		get_awaymsg(void);
 				std::string		get_username(void) const;
+				int				get_quit(void) const;
 
 				void			set_name(const std::string& name);
 				void			set_names(const std::string& username, const std::string& realname);
 				void			set_pass(const std::string& pass);
 				void			set_flags(const std::string& add_remove, unsigned flag);
 				void			set_awaymsg(const std::string& msg);
+				void			set_quit();
 
 				int				getTimeConnected(void) const;
 				time_t			getLastAction(void) const;

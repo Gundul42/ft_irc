@@ -233,7 +233,7 @@ void IrcServ::loop(void)
 						client->tmpBuffer = oss.str();
 						oss.str("");
 						if (client->get_msgs() > IRCMAXMSGCOUNT)
-								block = true;
+							block = true;
 						if (!block)
 						{
 							// std::cout << "connection:\n";
@@ -249,13 +249,29 @@ void IrcServ::loop(void)
 							_logAction(oss.str());
 							oss.str("");
 							this->_commands.handle_command(_connections, pfds[i].fd, client->tmpBuffer);
+							if (client->get_quit())
+							{
+								oss << client->get_name() << ":" << client->get_addr();
+								oss << " has left the server. " << "Connection time: ";
+								oss << client->getTimeConnected();
+								oss << " sec" << std::endl;
+								_logAction(oss.str());
+								oss.str("");
+								_del_from_pfds(pfds, i, &fd_count);
+							}
 							client->tmpBuffer.clear();
 						}
+						// std::cout << "hi\n";
 					}
+					// std::cout << "hi1\n";
 				}
+				// std::cout << "hi2\n";
 			}
+			// std::cout << "hi3\n";
 		}
+		// std::cout << "hi4\n";
 	}
+	// std::cout << "hi5\n";
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)

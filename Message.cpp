@@ -166,7 +166,7 @@ void	Message::split_flags(void)
 	std::string	flags;
 	std::string	str;
 
-	if (_command == "MODE" && _param.size() >= 1)
+	if (_command == "MODE" && _param.size() > 1)
 	{
 		flags = _param[1];
 		for (int i = 0; i != flags.size(); i++)

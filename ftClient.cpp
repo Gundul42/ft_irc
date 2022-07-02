@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/07/02 16:25:52 by mwen             ###   ########.fr       */
+/*   Updated: 2022/07/02 16:58:45 by mwen             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_username = rgt._username;
 		_server = rgt._server;
 		_hostname = rgt._hostname;
+		_quit = rgt._quit;
 		return (*this);
 }
 
@@ -58,6 +59,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false), _hostname(host)
 {
 		_msgs = 0;
+		_quit = 0;
 		time(&_connect);
 		time(&_lastAction);
 		tmpBuffer.clear();
@@ -171,4 +173,6 @@ void			ftClient::set_flags(const std::string& add_remove, unsigned flag)
 std::string		ftClient::get_awaymsg(void) { return this->_awayMsg; }
 void			ftClient::set_awaymsg(const std::string& msg) { this->_awayMsg = msg; }
 std::string		ftClient::get_username(void) const { return this->_username; }
+int				ftClient::get_quit(void) const { return this->_quit; }
+void			ftClient::set_quit() { this->_quit = 1; }
 
