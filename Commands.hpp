@@ -32,7 +32,7 @@ class Commands
 				Commands();
 				~Commands();
 				void	handle_command(const std::map<int, ftClient*>& usermap, int socket, 
-								const char* buf);
+								std::string buf);
 				bool 	sendCommandResponse(const ftClient & clt, const std::string & code, 
 								const std::string & trailer) const;
 				bool 	sendCommandResponse(const ftClient & clt, const int & code,

@@ -216,10 +216,20 @@ void IrcServ::loop(void)
 						block = false;
 						//we got something in -> parse command
 						//IRC adds CR,LF to each end of a buffer line, remove it first !
+						//std::cout << "Last Char with value: " <<
+						//		static_cast<int>(buf[strlen(buf) - 1]) << std::endl;
 						if (buf[strlen(buf) - 2] == '\x0d' && buf[strlen(buf) - 1] == '\x0a')
 							memset(buf + strlen(buf) - 2, 0, 2);
-						else
-								client->tmpBuffer.push_back(buf);
+						else if (buf[strlen(buf) - 1] != '\x0a')
+						{
+								oss << client->tmpBuffer << buf;
+								client->tmpBuffer = oss.str();
+								oss.str("");
+								continue;
+						}
+						oss << client->tmpBuffer << buf;
+						client->tmpBuffer = oss.str();
+						oss.str("");
 						if (client->get_msgs() > IRCMAXMSGCOUNT)
 								block = true;
 						if (!block)
@@ -231,12 +241,13 @@ void IrcServ::loop(void)
 							// std::cout << "****\n";
 							client->add_msgsCount(1);
 							oss << "Last action " << updateTimeDiff(*client) << 
-									" seconds ago " << client->get_msgs();
-							oss << " fd#" << pfds[i].fd << " - " << nbytes << " Bytes" << std::endl;
-							oss << ">>> " << buf;
+									" seconds ago " << client->get_msgs() << " fd#" << pfds[i].fd <<
+									" - " << client->tmpBuffer.size() << " Bytes" << std::endl <<
+									">>> " << client->tmpBuffer;
 							_logAction(oss.str());
 							oss.str("");
-							this->_commands.handle_command(_connections, pfds[i].fd, buf);
+							this->_commands.handle_command(_connections, pfds[i].fd, client->tmpBuffer);
+							client->tmpBuffer.clear();
 						}
 					}
 				}
