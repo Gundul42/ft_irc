@@ -63,6 +63,8 @@ class ftClient : public UserMode
 				ftClient & operator=(const ftClient & rgt);
 
 		public:
+				std::string		tmpBuffer;	// tmp buffer until we receive a cr and/or lf
+
 				ftClient(int fd,const std::string name, const std::string addr,
 								const std::string host);
 				~ftClient(void);

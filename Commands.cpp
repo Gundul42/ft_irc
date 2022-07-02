@@ -42,7 +42,7 @@ Commands::Commands()
 
 Commands::~Commands() {}
 
-void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, const char* buf)
+void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, std::string buf)
 {
 	std::stringstream	str(buf);
 	this->_users = usermap;
