@@ -23,6 +23,7 @@ ChannelMode::Flag ChannelMode::parse(char c)
 std::string ChannelMode::toString() const
 {
 	std::string s;
+	s.clear();
 	if (_flags & ANONYMOUS)
 		s.push_back('a');
 	if (_flags & INVITE_ONLY)

@@ -152,7 +152,7 @@ int		Commands::join(ftClient& client, Message& msg)
 				else if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
-					//respond 332 333 353
+					//respond 332 353
 					return serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
 				}
 			}
@@ -184,12 +184,11 @@ int		Commands::mode(ftClient& client, Message& msg)
 			if (params.size() == 1)
 			{
 				serverSend(client.get_fd(),IRCSERVNAME, "324 " +
-					(*itchan).second->getCreator()->get_name() + " " + params[0] + " +" +
+					client.get_name() + " " + params[0] + " +" +
 					(*itchan).second->toString(), "");
-				serverSend(client.get_fd(),IRCSERVNAME, "329 " +
-					(*itchan).second->getCreator()->get_name() + " " + params[0] + " " +
+				return serverSend(client.get_fd(),IRCSERVNAME, "329 " +
+					client.get_name() + " " + params[0] + " " +
 					(*itchan).second->getCtime(), "");
-				return true;
 			}
 			else
 			{
@@ -239,12 +238,13 @@ int		Commands::names(ftClient& client, Message& msg) { return 1; }
 int		Commands::nick(ftClient& client, Message& msg)
 {
 	std::string oldnick = client.get_name();
-	std::string	newnick = msg.getParam().front();
+	std::string	newnick;
 
 	if (msg.getParam().empty())
 			return !serverSend(client.get_fd(), "", "431 " + oldnick + " " + newnick,
 							"No nickname given");
-	else if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
+	newnick = msg.getParam().front();
+	if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
 			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick, "Erroneus nickname");
 	std::map<int, ftClient*>::const_iterator it = this->_users.begin();
 	for (; it != this->_users.end(); it++)
