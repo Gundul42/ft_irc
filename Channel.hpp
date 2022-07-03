@@ -77,13 +77,12 @@ class IrcChannel : public ChannelMode
 		int										_limit;
 		std::string								_passwd;
 		std::vector<ftClient*>					_chop;
-		std::vector<ftClient*>					_ban;
 		std::vector<ftClient*>					_member;
 		ftClient*								_creator;
 		bool									_safe;
 		std::string								_chanBuffer;
 		std::string								_key;
-		Masks									masks;
+		Masks									_masks;
 
 	public:
 		IrcChannel(void);
@@ -120,15 +119,14 @@ class IrcChannel : public ChannelMode
 		void					setLimit(const int newLimit);
 		void					setPasswd(const std::string newPasswd);
 		void					setCreator(ftClient & member);
-		bool					banMember(ftClient & member);
 		void					setSafe(void);
 		void					setBuffer(const std::string & buffer);
 		void					setFlags(const std::string& add_remove, unsigned flag);
 		void					setMasks(unsigned mask, const std::string& str);
+		void					unsetMasks(unsigned mask, const std::string& str);
 
 		//manipulators
 		void					notSafe(void);
-		bool					unbanMember(const ftClient & member);
 		bool					addChop(ftClient & member);
 		bool					removeChop(ftClient & member);
 		bool					removeMember(ftClient & member);

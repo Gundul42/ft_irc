@@ -314,29 +314,29 @@ int		Commands::oper(ftClient& client, Message& msg)
 }
 int		Commands::part(ftClient& client, Message& msg)
 {
-	std::vector<std::string>					params = msg.getParam();
+	std::vector<std::string>					params;
 	servChannel::iterator						itchan;
 
 	if (client.get_name().empty())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 	else if (!msg.getParam().size())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
+	params = msg.getParam();
 	for (int i = 0; i != params.size(); i++)
 	{
 		if ((itchan = _channels.find(params[i])) == _channels.end())
 			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
 		if ((*itchan).second->isMember(client))
 		{
-			if ((*itchan).second->isCreator(client) && (*itchan).second->getMembers().size() == 1)
+			(*itchan).second->removeMember(client);
+			if (!(*itchan).second->getMembers().size())
 			{
-				_channels.erase(itchan);
 				delete (*itchan).second;
+				_channels.erase(itchan);
 			}
-			else
-				(*itchan).second->removeMember(client);
-			return serverSend(client.get_fd(),client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+			return serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
 		}
-		return !serverSend(client.get_fd(),client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+		return !serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
 	}
 	return false;
 }
@@ -399,11 +399,16 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 
 		if (it != _channels.end())
 		{
+			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
+				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
+				|| (*it).second->isBanned(client))
+				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
 			//check if can send to channel: moderated, no_outside_msg, and check client flag
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
-				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				if (members[i]->get_name() != client.get_name())
+					serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
 			return true;
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
@@ -504,7 +509,7 @@ int		Commands::topic(ftClient& client, Message& msg)
 //USER
 int		Commands::user(ftClient& client, Message& msg)
 {
-		std::string			username = msg.getParam()[0];
+		std::string			username;
 		std::string			realname = msg.getTrailing();
 		std::string			servername = IRCSERVNAME;
 		std::string			serverversion = IRCSERVVERSION;
@@ -514,6 +519,7 @@ int		Commands::user(ftClient& client, Message& msg)
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
 		else if (msg.getParam().size() < 3)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+		username = msg.getParam()[0];
 		client.set_names(username, realname);
 		client.validate();
 		motd(client, msg); //show motd
