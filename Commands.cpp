@@ -132,8 +132,7 @@ int		Commands::join(ftClient& client, Message& msg)
 				serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
 				Message m(params[i]);
 				mode(client, m);
-				sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[i], "@" + client.get_name());
-				sendCommandResponse(client, RPL_ENDOFNAMES, params[i], "End of /NAMES list.");
+				names(client, m);
 			}
 			else
 			{
@@ -153,14 +152,23 @@ int		Commands::join(ftClient& client, Message& msg)
 				else if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
-					serverSend(client.get_fd(), client.get_name(), "JOIN " + params[i], "");
+					for (int i = 0; i != (*itchan).second->getMembers().size(); i++)
+					{
+						std::cout << "?\n";
+						serverSend((*itchan).second->getMembers()[i]->get_fd(), client.get_name(), "JOIN " + params[i], "");
+					}
+						std::cout << "?1\n";
 					if (!(*itchan).second->getTopic().empty())
 					{
 						Message mt("TOPIC " + (*itchan).second->getName());
 						topic(client, mt);
 					}
+						std::cout << "?2\n";
+
 					Message m((*itchan).second->getName());
 					names(client, m);
+						std::cout << "?3\n";
+
 				}
 			}
 		}
@@ -181,7 +189,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 
 		if (client.get_name().empty())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
-		if (params.size() == 0)
+		if (!params.size())
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (msg.isChannel(params[0]))
 		{
@@ -201,14 +209,15 @@ int		Commands::mode(ftClient& client, Message& msg)
 			{
 				for (int i = 1; i != msg.getFlags().size(); i++)
 				{
-					//response not shown on client
-					if (ChannelMode::parse(msg.getFlags()[i][0]) == 0 || msg.getFlags()[i] == "a")
+					if (ChannelMode::parse(msg.getFlags()[i][0]) == 0 || msg.getFlags()[i] == "a")//response sent client not shown
 						return !serverSend(client.get_fd(), "", "472 " +
-								client.get_name() + " " + msg.getFlags()[i] + " ", "is an unknown mode char to me");
+								client.get_name() + " " + msg.getFlags()[i].c_str(), "is an unknown mode char to me");
 					else if (msg.getFlags()[0] == "+" && (ChannelMode::parse(msg.getFlags()[i][0]) & (*itchan).second->getFlags()))
 						return false;
+					if (!(*itchan).second->isChop(client))
+						return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, "You're not channel operator");
 					(*itchan).second->setFlags(msg.getFlags()[0], ChannelMode::parse(msg.getFlags()[i][0]));
-						return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + msg.getFlags()[0] + " " + msg.getFlags()[0], "");
+					return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + " " + msg.getFlags()[0] + msg.getFlags()[i], "");
 					//set mask, key, limit etc
 				}
 			}
@@ -235,7 +244,7 @@ int		Commands::motd(ftClient& client, Message& msg)
 			sendCommandResponse(client, RPL_MOTD, str);
 		sendCommandResponse(client, RPL_ENDOFMOTD, "End of /MOTD command.");
 		motd.close();
-		return 1;
+		return true;
 }
 
 //NAMES
@@ -248,7 +257,7 @@ int		Commands::names(ftClient& client, Message& msg)
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
-	res_param = client.get_name();
+	res_param.clear();
 	res_trailing.clear();
 	if (msg.getParam().empty())
 	{
@@ -275,7 +284,7 @@ int		Commands::names(ftClient& client, Message& msg)
 			members = (*it).second->getMembers();
 			for (int i = 0; i != members.size(); i++)
 			{
-				if ((*it).second->isChop(client))
+				if ((*it).second->isChop(*members[i]))
 					res_trailing += "@";
 				res_trailing += members[i]->get_name() + (i + 1 == members.size() ? "" : " ");
 			}
@@ -336,7 +345,10 @@ int		Commands::notice(ftClient& client, Message& msg)
 
 		if (it != _channels.end())
 		{
-			//check if can send to channel
+			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
+				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
+				|| (*it).second->isBanned(client))
+				return false;
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
@@ -365,8 +377,8 @@ int		Commands::oper(ftClient& client, Message& msg)
 }
 int		Commands::part(ftClient& client, Message& msg)
 {
-	std::vector<std::string>					params;
-	servChannel::iterator						itchan;
+	std::vector<std::string>	params;
+	servChannel::iterator		itchan;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -414,7 +426,9 @@ int		Commands::ping(ftClient& client, Message& msg)
 	else
 		return serverSend(client.get_fd(), "", oss.str(), msg.getParam().front());
 }
+
 int		Commands::pong(ftClient& client, Message& msg) { return true; }
+
 int		Commands::privmsg(ftClient& client, Message& msg)
 {
 	std::string target;
@@ -454,7 +468,6 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
 				|| (*it).second->isBanned(client))
 				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
-			//check if can send to channel: moderated, no_outside_msg, and check client flag
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
@@ -464,7 +477,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
 	}
-	//else if (msg.isMask(target))
+	//else if (msg.isMask(target)) oper related
 	return true;
 }
 
@@ -603,6 +616,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 {
 	std::ostringstream	tosend;
 
+	tosend.clear();
 	tosend << code;
 	return sendCommandResponse(clt, tosend.str(), trailer);
 }
@@ -613,6 +627,8 @@ bool Commands::sendCommandResponse(const ftClient & clt, const std::string & cod
 	std::ostringstream	tosend;
 	std::string			go;
 
+	tosend.clear();
+	go.clear();
 	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " :";
 	tosend << trailer << "\x0d\x0a";
 	go = tosend.str();
@@ -628,12 +644,16 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 	std::ostringstream	tosend;
 	std::string			go;
 
+	tosend.clear();
+	go.clear();
 	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " " << argument << " :";
 	tosend << trailer << "\x0d\x0a";
 	go = tosend.str();
+	std::cout << ">>>RESPONSE " << go << "\n"; 
 	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
 		perror("sendCommandResponse");
 	usleep(100); 
+
 	return true;
 }
 
@@ -646,7 +666,9 @@ bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 		if (trl.length() == 0)
 				trl = IRCSERVNAME;
 
+		tosend.clear();
 		tosend = ":" + prefix + " " + msg + " :" + trl + "\x0d\x0a";
+		std::cout << ">>>RESPONSE " << tosend << "\n"; 
 		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
 				perror("serverSend");
 		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
