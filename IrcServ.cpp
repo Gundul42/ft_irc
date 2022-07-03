@@ -149,6 +149,7 @@ void IrcServ::loop(void)
 	pollfd									*pfds = (pollfd*) calloc(fd_size, sizeof (*pfds));
 	std::string								addrStr;
 	bool									block;
+	bool									theEnd = false;
 
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
@@ -156,7 +157,7 @@ void IrcServ::loop(void)
 	addrlen = sizeof remoteaddr;
 	std::ostringstream oss;
 
-	while(true)
+	while(!theEnd)
 	{
 		oss.str("");
 		poll_count = poll(pfds, fd_count, -1);
