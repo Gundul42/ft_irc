@@ -60,8 +60,8 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 
 int		Commands::away(ftClient& client, Message& msg)
 {
-	if (client.get_name().empty())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	if (!msg.getTrailing().size())
 	{
 		client.set_flags("-", UserMode::AWAY);
@@ -130,7 +130,8 @@ int		Commands::join(ftClient& client, Message& msg)
 				}
 				_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
 				serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
-				serverSend(client.get_fd(),IRCSERVNAME, "MODE " + params[i] + " +" + newChan->toString(), "");
+				Message m(params[i]);
+				mode(client, m);
 				sendCommandResponse(client, RPL_NAMREPLY, "@ " + params[i], "@" + client.get_name());
 				sendCommandResponse(client, RPL_ENDOFNAMES, params[i], "End of /NAMES list.");
 			}
@@ -152,8 +153,14 @@ int		Commands::join(ftClient& client, Message& msg)
 				else if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
-					//respond 332 353
-					return serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
+					serverSend(client.get_fd(), client.get_name(), "JOIN " + params[i], "");
+					if (!(*itchan).second->getTopic().empty())
+					{
+						Message mt("TOPIC " + (*itchan).second->getName());
+						topic(client, mt);
+					}
+					Message m((*itchan).second->getName());
+					names(client, m);
 				}
 			}
 		}
@@ -217,7 +224,7 @@ int		Commands::motd(ftClient& client, Message& msg)
 		std::ostringstream	tosend;
 		std::string			str;
 
-		if (client.get_name().empty())
+		if (client.get_name().empty() || client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
@@ -232,8 +239,52 @@ int		Commands::motd(ftClient& client, Message& msg)
 }
 
 //NAMES
-int		Commands::names(ftClient& client, Message& msg) { return 1; }
+int		Commands::names(ftClient& client, Message& msg)
+{
+	servChannel::iterator	it;
+	std::vector<ftClient*>	members;
+	std::string				res_param;
+	std::string				res_trailing;
 
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
+	res_param = client.get_name();
+	res_trailing.clear();
+	if (msg.getParam().empty())
+	{
+		it = _channels.begin();
+		for (; it != _channels.end(); it++)
+		{
+			Message m((*it).second->getName());
+			names(client, m);
+		}
+		return true;
+	}
+	for (int i = 0; i != msg.getParam().size(); i++)
+	{
+		it = _channels.find(msg.getParam()[i]);
+		if (it != _channels.end())
+		{
+			if ((*it).second->getFlags() & ChannelMode::SECRET)
+				res_param += " @ ";
+			else if ((*it).second->getFlags() & ChannelMode::PRIVATE)
+				res_param += " * ";
+			else
+				res_param += " = ";
+			res_param += (*it).second->getName();
+			members = (*it).second->getMembers();
+			for (int i = 0; i != members.size(); i++)
+			{
+				if ((*it).second->isChop(client))
+					res_trailing += "@";
+				res_trailing += members[i]->get_name() + (i + 1 == members.size() ? "" : " ");
+			}
+			sendCommandResponse(client, RPL_NAMREPLY, res_param, res_trailing);
+		}
+		sendCommandResponse(client, RPL_ENDOFNAMES, msg.getParam()[i], "End of /NAMES list.");
+	}
+	return true;
+}
 //NICK
 int		Commands::nick(ftClient& client, Message& msg)
 {
@@ -300,8 +351,8 @@ int		Commands::notice(ftClient& client, Message& msg)
 
 int		Commands::oper(ftClient& client, Message& msg)
 {
-	if (client.get_name().empty())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	else if (msg.getParam().size() < 2)
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	// std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
@@ -317,8 +368,8 @@ int		Commands::part(ftClient& client, Message& msg)
 	std::vector<std::string>					params;
 	servChannel::iterator						itchan;
 
-	if (client.get_name().empty())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	else if (!msg.getParam().size())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	params = msg.getParam();
@@ -369,8 +420,8 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 	std::string target;
 	int			pos = 0;
 
-	if (client.get_name().empty())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	else if (!msg.getParam().size())
 		return !serverSend(client.get_fd(), "", "411 ", "No recipient given " + msg.getCommand());
 	else if (!msg.getTrailing().size())
@@ -515,6 +566,8 @@ int		Commands::user(ftClient& client, Message& msg)
 		std::string			serverversion = IRCSERVVERSION;
 		int					i = 0;
 
+		if (client.get_name().empty())
+			return !serverSend(client.get_fd(), "", "", "You have not set your nickname yet");
 		if (client.isRegistered())
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
 		else if (msg.getParam().size() < 3)
