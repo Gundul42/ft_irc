@@ -146,7 +146,7 @@ void IrcServ::loop(void)
 	int										fd_count = 0;
 	int										fd_size = 5;
 	int										poll_count = 0;
-	pollfd									*pfds = (pollfd*) malloc(sizeof (*pfds) * fd_size);
+	pollfd									*pfds = (pollfd*) calloc(fd_size, sizeof (*pfds));
 	std::string								addrStr;
 	bool									block;
 
