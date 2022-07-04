@@ -166,8 +166,10 @@ bool IrcChannel::isBanned(const ftClient & member) const
 		return false;
 	for (int i = 0; i != _masks._ban.size(); i++)
 	{
-		mask = _masks._invitation[i];
-		nickname = mask.substr(0, mask.find("i") - 1);
+		mask = _masks._ban[i];
+		if (mask.find('!') == std::string::npos || mask.find('@') == std::string::npos)
+			return false;
+		nickname = mask.substr(0, mask.find("!"));
 		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
 		hostname = mask.substr(mask.find("@") + 1);
 		if (hostname == member.get_hostname() || hostname == "*")
@@ -302,44 +304,108 @@ void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
 unsigned	IrcChannel::getFlags(void) { return _flags; }
 std::string	IrcChannel::getKey(void) const { return _key; }
 
-void	IrcChannel::setMasks(unsigned mask, const std::string& str)
+int	IrcChannel::setMasks(unsigned mask, std::string& str)
 {
+	std::vector<std::string>::iterator	it;
+	std::string							_mask = str;
+
 	if (str.empty())
-		return ;
-	if (mask == ChannelMode::INVITATION_MASK)
-		_masks._invitation.push_back(str);
-	else if (mask == ChannelMode::BAN_MASK)
-		_masks._ban.push_back(str);
-	else if (mask == ChannelMode::EXCEPTION_MASK)
-		_masks._exception.push_back(str);
+		return false;
 	else if (mask == ChannelMode::KEY)
+	{
 		_key = str;
+		return true;
+	}
 	else if (mask == ChannelMode::LIMIT)
-		_limit = atoi(const_cast<char*>(str.c_str()));
+	{
+		if (str.find_first_not_of("0123456789") == std::string::npos)
+		{
+			_limit = atoi(const_cast<char*>(str.c_str()));
+			return true;
+		}
+		return false;
+	}
+	parse_mask(str);
+	if (mask == ChannelMode::INVITATION_MASK)
+	{
+		it = _masks._invitation.begin();
+		for (; it != _masks._invitation.end(); it++)
+			if ((*it) == str)
+				return false;
+		_masks._invitation.push_back(str);
+		return true;
+	}
+	else if (mask == ChannelMode::BAN_MASK)
+	{
+		it = _masks._ban.begin();
+		for (; it != _masks._ban.end(); it++)
+			if ((*it) == _mask)
+				return false;
+		_masks._ban.push_back(str);
+		return true;
+	}
+	else if (mask == ChannelMode::EXCEPTION_MASK)
+	{
+		it = _masks._ban.begin();
+		for (; it != _masks._ban.end(); it++)
+			if ((*it) == _mask)
+				return false;
+		_masks._exception.push_back(str);
+		return true;
+	}
+	return false;
 }
 
-void	IrcChannel::unsetMasks(unsigned mask, const std::string& str)
+int	IrcChannel::unsetMasks(unsigned mask, std::string& str)
 {
 	std::vector<std::string>::iterator it;
 
+	if (str.empty() || mask == ChannelMode::LIMIT)
+		return false;
+	else if (mask == ChannelMode::KEY)
+	{
+		_key = "*";
+		str = _key;
+		return true;
+	}
+	parse_mask(str);
 	if (mask == ChannelMode::INVITATION_MASK)
 	{
+		it = _masks._invitation.begin();
 		for (; it != _masks._invitation.end(); it++)
+		{
 			if ((*it) == str)
+			{
 				_masks._invitation.erase(it);
+				return true;
+			}
+		}
 	}
 	else if (mask == ChannelMode::BAN_MASK)
 	{
+		it = _masks._ban.begin();
 		for (; it != _masks._ban.end(); it++)
+		{
 			if ((*it) == str)
+			{
 				_masks._ban.erase(it);
+				return true;
+			}
+		}
 	}
 	else if (mask == ChannelMode::EXCEPTION_MASK)
 	{
+		it = _masks._exception.begin();
 		for (; it != _masks._exception.end(); it++)
+		{
 			if ((*it) == str)
+			{
 				_masks._exception.erase(it);
+				return true;
+			}
+		}
 	}
+	return false;
 }
 
 
@@ -397,7 +463,7 @@ bool	IrcChannel::isException(const ftClient & member) const
 	for (int i = 0; i != _masks._exception.size(); i++)
 	{
 		mask = _masks._exception[i];
-		nickname = mask.substr(0, mask.find("i") - 1);
+		nickname = mask.substr(0, mask.find("!"));
 		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
 		hostname = mask.substr(mask.find("@") + 1);
 		if (hostname == member.get_hostname() || hostname == "*")
@@ -410,4 +476,42 @@ bool	IrcChannel::isException(const ftClient & member) const
 		}
 	}
 	return false;
+}
+
+bool	IrcChannel::isVoice(const ftClient & member) const
+{
+	std::vector<ftClient*>::const_iterator it = _voice.begin();
+
+	if (_voice.empty())
+		return false;
+	for (; it != _voice.end(); it++)
+	{
+		if ((*it)->get_name() == member.get_name())
+			return true;
+	}
+	return false;
+}
+
+void	IrcChannel::parse_mask(std::string& _mask)
+{
+	std::string	_nick;
+	std::string	_user;
+	std::string	_host;
+	int			i = -1;
+
+	if (_mask.find('!') == std::string::npos && _mask.find('@') == std::string::npos)
+	{
+		_mask += "!*@*";
+		return ;
+	}
+	while (_mask.find('!') != std::string::npos && _mask[++i] && _mask[i] != '!')
+		_nick.append(1, _mask[i]);
+	_nick = _nick.empty() ? "*" : _nick;
+	while (_mask[++i] && _mask[i] != '@')
+		_user.append(1, _mask[i]);
+	_user = _user.empty() ? "*" : _user;
+	while (_mask[++i] && _mask[i])
+		_host.append(1, _mask[i]);
+	_host = _host.empty() ? "*" : _host;
+	_mask = _nick + "!" + _user + "@" + _host;
 }

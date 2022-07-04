@@ -78,6 +78,7 @@ class IrcChannel : public ChannelMode
 		std::string								_passwd;
 		std::vector<ftClient*>					_chop;
 		std::vector<ftClient*>					_member;
+		std::vector<ftClient*>					_voice;
 		ftClient*								_creator;
 		bool									_safe;
 		std::string								_chanBuffer;
@@ -111,6 +112,7 @@ class IrcChannel : public ChannelMode
 		bool					isInvited(const ftClient & member) const;
 		bool					isMember(const ftClient & candid) const;
 		bool					isException(const ftClient & member) const;
+		bool					isVoice(const ftClient & member) const;
 
 		//setters
 		bool					addMember(ftClient & member);
@@ -122,8 +124,8 @@ class IrcChannel : public ChannelMode
 		void					setSafe(void);
 		void					setBuffer(const std::string & buffer);
 		void					setFlags(const std::string& add_remove, unsigned flag);
-		void					setMasks(unsigned mask, const std::string& str);
-		void					unsetMasks(unsigned mask, const std::string& str);
+		int						setMasks(unsigned mask, std::string& str);
+		int						unsetMasks(unsigned mask, std::string& str);
 
 		//manipulators
 		void					notSafe(void);
@@ -133,6 +135,7 @@ class IrcChannel : public ChannelMode
 
 		//other
 		bool					valChanName(const std::string name) const;
+		void					parse_mask(std::string& _mask);
 };
 
 #endif
