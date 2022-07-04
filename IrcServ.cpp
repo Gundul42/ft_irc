@@ -261,6 +261,7 @@ void IrcServ::loop(void)
 								_logAction(oss.str());
 								oss.str("");
 								_del_from_pfds(pfds, i, &fd_count);
+								continue;
 							}
 							client->tmpBuffer.clear();
 							if (client->get_send())

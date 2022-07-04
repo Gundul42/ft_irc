@@ -657,7 +657,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 	tosend << ":" << IRCSERVNAME << " " << code << " " << clt.get_name() << " " << argument << " :";
 	tosend << trailer << "\x0d\x0a";
 	go = tosend.str();
-	std::cout << ">>>RESPONSE " << go << "\n"; 
+	//std::cout << ">>>RESPONSE " << go << "\n"; 
 	if (send(clt.get_fd(), go.c_str(), go.length(), 0) == -1)
 		perror("sendCommandResponse");
 	usleep(100); 
@@ -676,7 +676,7 @@ bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 
 		tosend.clear();
 		tosend = ":" + prefix + " " + msg + " :" + trl + "\x0d\x0a";
-		std::cout << ">>>RESPONSE " << tosend << "\n"; 
+		//std::cout << ">>>RESPONSE " << tosend << "\n"; 
 		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
 				perror("serverSend");
 		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
