@@ -115,7 +115,7 @@ void IrcServ::_del_from_pfds(pollfd pfds[], int i, int *fd_count)
 {
 	delete _connections.find(pfds[i].fd)->second;
 	_connections.erase(pfds[i].fd);
-	close (pfds[i].fd);
+//	close (pfds[i].fd); //should be closed already by destructing ftClient
 	pfds[i] = pfds[*fd_count - 1];
 	(*fd_count)--;
 }
@@ -157,6 +157,8 @@ void IrcServ::loop(void)
 	addrlen = sizeof remoteaddr;
 	std::ostringstream oss;
 
+	std::cout << "fd_size is " << fd_size << "\nsizeof *pfds = " << sizeof(*pfds) << std::endl;
+	std::cout << "pollfd size is " << sizeof(pollfd) << std::endl;
 	while(!theEnd)
 	{
 		oss.str("");
@@ -261,6 +263,9 @@ void IrcServ::loop(void)
 			}
 		}
 	}
+	delete pfds;
+	this->_dropEmAll();
+	close(_socketfd);
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)
@@ -327,3 +332,16 @@ void IrcServ::_debugBuffer(const char *buf) const
 		}
 		std::cout << std::endl;
 }
+
+void IrcServ::_dropEmAll(void) 
+{
+	std::map<int, ftClient*>::iterator		in = _connections.begin();
+
+	while (in != _connections.end())
+	{
+			delete in->second;
+			in++;
+	}
+	_connections.clear();
+}
+
