@@ -19,6 +19,7 @@
 # include <fstream>
 # include <vector>
 # include <cctype>
+#include <cstdlib>
 # include "NumCodes.hpp"
 # include "config.hpp"
 

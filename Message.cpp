@@ -5,6 +5,7 @@ Message::Message()
 	_input = "";
 	_prefix = "";
 	_command = "";
+	
 	_param.clear();
 	_trailing = "";
 	_keys.clear();

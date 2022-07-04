@@ -87,6 +87,7 @@ int		Commands::join(ftClient& client, Message& msg)
 		bool										isnew = false;
 		IrcChannel*									newChan;
 
+		std::cout << "OUO\n";
 		if (client.get_name().empty())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
 		if (params.size() == 0)
@@ -160,15 +161,14 @@ int		Commands::join(ftClient& client, Message& msg)
 						std::cout << "?1\n";
 					if (!(*itchan).second->getTopic().empty())
 					{
-						Message mt("TOPIC " + (*itchan).second->getName());
+						Message mt("TOPIC " + params[i]);
 						topic(client, mt);
 					}
 						std::cout << "?2\n";
 
-					Message m((*itchan).second->getName());
+					Message m(params[i]);
 					names(client, m);
 						std::cout << "?3\n";
-
 				}
 			}
 		}
@@ -186,6 +186,8 @@ int		Commands::mode(ftClient& client, Message& msg)
 		std::vector<std::string>					params = msg.getParam();
 		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
+		unsigned									incoming_flag;
+		std::string									add_remove;
 
 		if (client.get_name().empty())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
@@ -209,14 +211,25 @@ int		Commands::mode(ftClient& client, Message& msg)
 			{
 				for (int i = 1; i != msg.getFlags().size(); i++)
 				{
-					if (ChannelMode::parse(msg.getFlags()[i][0]) == 0 || msg.getFlags()[i] == "a")//response sent client not shown
+					incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
+					add_remove = msg.getFlags()[0];
+					if (incoming_flag == 0 || msg.getFlags()[i] == "a")//response sent client not shown
 						return !serverSend(client.get_fd(), "", "472 " +
 								client.get_name() + " " + msg.getFlags()[i].c_str(), "is an unknown mode char to me");
-					else if (msg.getFlags()[0] == "+" && (ChannelMode::parse(msg.getFlags()[i][0]) & (*itchan).second->getFlags()))
+					else if (add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
 						return false;
+					if (incoming_flag == ChannelMode::BAN_MASK && msg.getParam().size() == 2)
+						return true ;//print list
 					if (!(*itchan).second->isChop(client))
 						return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, "You're not channel operator");
-					(*itchan).second->setFlags(msg.getFlags()[0], ChannelMode::parse(msg.getFlags()[i][0]));
+					(*itchan).second->setFlags(add_remove, incoming_flag);
+					if ((incoming_flag == ChannelMode::INVITATION_MASK || incoming_flag == ChannelMode::EXCEPTION_MASK)
+						&& msg.getParam().size() == 2)
+						return true; //print list
+					else if	((incoming_flag == ChannelMode::KEY || incoming_flag == ChannelMode::LIMIT)
+						&& msg.getParam().size() < 3)
+							return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+					(*itchan).second->setMasks(incoming_flag, msg.getParam()[1]);
 					return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + " " + msg.getFlags()[0] + msg.getFlags()[i], "");
 					//set mask, key, limit etc
 				}

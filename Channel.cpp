@@ -41,8 +41,6 @@ std::string ChannelMode::toString() const
 		s.push_back('t');
 	if (_flags & KEY)
 		s.push_back('k');
-	if (_flags & LIMIT)
-		s.push_back('l');
 	if (_flags & OP_MODERATED)
 		s.push_back('z');
 	return (s);
@@ -306,12 +304,18 @@ std::string	IrcChannel::getKey(void) const { return _key; }
 
 void	IrcChannel::setMasks(unsigned mask, const std::string& str)
 {
+	if (str.empty())
+		return ;
 	if (mask == ChannelMode::INVITATION_MASK)
 		_masks._invitation.push_back(str);
 	else if (mask == ChannelMode::BAN_MASK)
 		_masks._ban.push_back(str);
 	else if (mask == ChannelMode::EXCEPTION_MASK)
 		_masks._exception.push_back(str);
+	else if (mask == ChannelMode::KEY)
+		_key = str;
+	else if (mask == ChannelMode::LIMIT)
+		_limit = atoi(const_cast<char*>(str.c_str()));
 }
 
 void	IrcChannel::unsetMasks(unsigned mask, const std::string& str)
