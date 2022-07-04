@@ -25,6 +25,8 @@ class IrcServ
 				std::string	_printTime(void) const;
 				void		_logAction(const std::string & log) const;
 				void		_debugBuffer(const char *buf) const;
+				void		_dropEmAll(void);
+
 		public:
 				IrcServ(const char *port);
 				~IrcServ(void);
