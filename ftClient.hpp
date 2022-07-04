@@ -46,6 +46,7 @@ class ftClient : public UserMode
 				std::string	_name;			// NICK name
 				std::string	_addr;			// addr string
 				bool		_val;			// flag if server has validated the client 
+				bool		_send;			// flag Oper send a /DIE cmd
 				time_t		_connect;		// time of connection
 				time_t		_lastAction;	// when was the last action
 				int			_msgs;			// nbr of messages sent
@@ -80,12 +81,14 @@ class ftClient : public UserMode
 				std::string		get_prefix(void) const; //get usermask
 				unsigned		get_flags(void);
 				std::string		get_awaymsg(void);
+				bool			get_send(void) const; //server end
 
 				void			set_name(const std::string& name);
 				void			set_names(const std::string& username, const std::string& realname);
 				void			set_pass(const std::string& pass);
 				void			set_flags(const std::string& add_remove, unsigned flag);
 				void			set_awaymsg(const std::string& msg);
+				void			set_send(void); //server end
 
 				int				getTimeConnected(void) const;
 				time_t			getLastAction(void) const;

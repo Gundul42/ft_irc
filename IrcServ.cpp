@@ -250,6 +250,11 @@ void IrcServ::loop(void)
 							this->_commands.handle_command(_connections, pfds[i].fd,
 											client->tmpBuffer);
 							client->tmpBuffer.clear();
+							if (client->get_send())
+							{
+									theEnd = true;
+									break;
+							}
 						}
 					}
 				}
