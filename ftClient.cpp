@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/06/14 13:27:32 by graja             #+#    #+#             */
-/*   Updated: 2022/07/02 13:11:02 by graja            ###   ########.fr       */
+/*   Updated: 2022/07/04 07:58:30 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_name = rgt._name;
 		_addr = rgt._addr;
 		_val = rgt._val;
+		_send = rgt._send;
 		_connect = rgt._connect;
 		_lastAction = rgt._lastAction;
 		_msgs = rgt._msgs;
@@ -55,7 +56,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 // Constructor needs a FD, a string for the name, a string for it's address
 // val will be false until server checks validity of the client
 //
-ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false), _hostname(host)
+ftClient::ftClient(int fd, std::string name, const std::string addr, const std::string host): _fd(fd), _name(name), _addr(addr), _val(false), _send(false), _hostname(host)
 {
 		_msgs = 0;
 		time(&_connect);
@@ -70,6 +71,16 @@ ftClient::~ftClient(void)
 {
 		close(_fd);
 }
+
+//
+// set server end
+//
+void ftClient::set_send(void) {_send = true;}
+
+//
+// get server and status
+//
+bool ftClient::get_send(void) const {return _send;}
 
 //
 // Call once after the client has been validated after login

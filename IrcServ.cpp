@@ -115,7 +115,7 @@ void IrcServ::_del_from_pfds(pollfd pfds[], int i, int *fd_count)
 {
 	delete _connections.find(pfds[i].fd)->second;
 	_connections.erase(pfds[i].fd);
-	close (pfds[i].fd);
+//	close (pfds[i].fd); //should be closed already by destructing ftClient
 	pfds[i] = pfds[*fd_count - 1];
 	(*fd_count)--;
 }
@@ -149,14 +149,17 @@ void IrcServ::loop(void)
 	pollfd									*pfds = (pollfd*) calloc(fd_size, sizeof (*pfds));
 	std::string								addrStr;
 	bool									block;
+	bool									theEnd = false;
+	std::ostringstream 						oss;
 
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
 	fd_count = 1;
 	addrlen = sizeof remoteaddr;
-	std::ostringstream oss;
 
-	while(true)
+	if (!pfds)
+			exit(EXIT_FAILURE);
+	while(!theEnd)
 	{
 		oss.str("");
 		poll_count = poll(pfds, fd_count, -1);
@@ -246,14 +249,23 @@ void IrcServ::loop(void)
 									">>> " << client->tmpBuffer;
 							_logAction(oss.str());
 							oss.str("");
-							this->_commands.handle_command(_connections, pfds[i].fd, client->tmpBuffer);
+							this->_commands.handle_command(_connections, pfds[i].fd,
+											client->tmpBuffer);
 							client->tmpBuffer.clear();
+							if (client->get_send())
+							{
+									theEnd = true;
+									break;
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+	this->_dropEmAll();
+	close(_socketfd);
+	free(pfds);				//alloc with calloc means free with free() !
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)
@@ -320,3 +332,16 @@ void IrcServ::_debugBuffer(const char *buf) const
 		}
 		std::cout << std::endl;
 }
+
+void IrcServ::_dropEmAll(void) 
+{
+	std::map<int, ftClient*>::iterator		in = _connections.begin();
+
+	while (in != _connections.end())
+	{
+			delete in->second;
+			in++;
+	}
+	_connections.clear();
+}
+
