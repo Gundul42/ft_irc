@@ -31,6 +31,7 @@ class Message : public Target
 		const std::string&				getTrailing();
 		const std::vector<std::string>&	getKeys();
 		const std::vector<std::string>&	getFlags();
+		const std::vector<std::string>&	getChannel();
 
 	private:
 		std::string					_input;

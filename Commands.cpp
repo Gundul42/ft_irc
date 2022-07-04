@@ -84,14 +84,13 @@ int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 //JOIN
 int		Commands::join(ftClient& client, Message& msg) 
 {
-		std::vector<std::string>					params = msg.getParam();
+		std::vector<std::string>					params = msg.getChannel();
 		servChannel::iterator						itchan;
 		bool										isnew = false;
 		IrcChannel*									newChan;
 
-		std::cout << "OUO\n";
-		if (client.get_name().empty())
-			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+		if (client.get_name().empty() || !client.isRegistered())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 		if (params.size() == 0)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (params[0] == "0")
@@ -132,7 +131,7 @@ int		Commands::join(ftClient& client, Message& msg)
 					newChan->setFlags("+", ChannelMode::parse('t'));
 				}
 				_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
-				serverSend(client.get_fd(),client.get_name(), "JOIN " + params[i], "");
+				serverSend(client.get_fd(), client.get_name(), "JOIN " + params[i], client.get_name());
 				Message m(params[i]);
 				mode(client, m);
 				names(client, m);
@@ -149,28 +148,22 @@ int		Commands::join(ftClient& client, Message& msg)
 				else if ((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY && !(*itchan).second->isInvited(client))
 					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
 								"Cannot join channel (+i)");
-				else if ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i] != (*itchan).second->getKey())
+				if ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty()
+					|| (*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i] != (*itchan).second->getKey())
 					return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
 								"Cannot join channel (+k)");
-				else if (!(*itchan).second->isMember(client))
+				if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
 					for (int i = 0; i != (*itchan).second->getMembers().size(); i++)
-					{
-						std::cout << "?\n";
-						serverSend((*itchan).second->getMembers()[i]->get_fd(), client.get_name(), "JOIN " + params[i], "");
-					}
-						std::cout << "?1\n";
+						serverSend((*itchan).second->getMembers()[i]->get_fd(), client.get_name(), "JOIN " + (*itchan).second->getName(), client.get_name());
 					if (!(*itchan).second->getTopic().empty())
 					{
 						Message mt("TOPIC " + params[i]);
 						topic(client, mt);
 					}
-						std::cout << "?2\n";
-
 					Message m(params[i]);
 					names(client, m);
-						std::cout << "?3\n";
 				}
 			}
 		}
@@ -191,8 +184,8 @@ int		Commands::mode(ftClient& client, Message& msg)
 		unsigned									incoming_flag;
 		std::string									add_remove;
 
-		if (client.get_name().empty())
-			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+		if (client.get_name().empty() || !client.isRegistered())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 		if (!params.size())
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (msg.isChannel(params[0]))
@@ -231,9 +224,8 @@ int		Commands::mode(ftClient& client, Message& msg)
 					else if	((incoming_flag == ChannelMode::KEY || incoming_flag == ChannelMode::LIMIT)
 						&& msg.getParam().size() < 3)
 							return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-					(*itchan).second->setMasks(incoming_flag, msg.getParam()[1]);
+					(*itchan).second->setMasks(incoming_flag, msg.getParam()[2]);
 					return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + " " + msg.getFlags()[0] + msg.getFlags()[i], "");
-					//set mask, key, limit etc
 				}
 			}
 		}
@@ -248,8 +240,8 @@ int		Commands::motd(ftClient& client, Message& msg)
 		std::ostringstream	tosend;
 		std::string			str;
 
-		if (client.get_name().empty() || client.isRegistered())
-			return !serverSend(client.get_fd(), "", "", "You are not registered yet.");
+		if (client.get_name().empty() || !client.isRegistered())
+			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
 			return !sendCommandResponse(client, ERR_NOMOTD, "MOTD File is missing");
@@ -487,7 +479,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 			int size = members.size();
 			for (int i = 0; i != size; i++)
 				if (members[i]->get_name() != client.get_name())
-					serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+					serverSend(members[i]->get_fd(), client.get_name(), msg.getCommand() + " " + target, msg.getTrailing());
 			return true;
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
@@ -603,7 +595,8 @@ int		Commands::user(ftClient& client, Message& msg)
 		username = msg.getParam()[0];
 		client.set_names(username, realname);
 		client.validate();
-		motd(client, msg); //show motd
+		if (!motd(client, msg)) //show motd
+			return false;
 		serverSend(client.get_fd(), "", "001 " + client.get_name(), "Welcome to the Internet Relay Network " + client.get_name());
 		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is " + servername + ", running version " + serverversion);
 		return serverSend(client.get_fd(), "", "003 " + client.get_name(), "The server was created on I don't know how long ago...");

@@ -177,3 +177,5 @@ void	Message::split_flags(void)
 		}
 	}
 }
+
+const std::vector<std::string>&	Message::getChannel() { return _channels; }
