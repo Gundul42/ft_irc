@@ -263,9 +263,9 @@ void IrcServ::loop(void)
 			}
 		}
 	}
-	delete pfds;
 	this->_dropEmAll();
 	close(_socketfd);
+	free(pfds);				//alloc with calloc means free wit free() !
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)
