@@ -150,15 +150,15 @@ void IrcServ::loop(void)
 	std::string								addrStr;
 	bool									block;
 	bool									theEnd = false;
+	std::ostringstream 						oss;
 
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
 	fd_count = 1;
 	addrlen = sizeof remoteaddr;
-	std::ostringstream oss;
 
-	std::cout << "fd_size is " << fd_size << "\nsizeof *pfds = " << sizeof(*pfds) << std::endl;
-	std::cout << "pollfd size is " << sizeof(pollfd) << std::endl;
+	if (!pfds)
+			exit(EXIT_FAILURE);
 	while(!theEnd)
 	{
 		oss.str("");
@@ -265,7 +265,7 @@ void IrcServ::loop(void)
 	}
 	this->_dropEmAll();
 	close(_socketfd);
-	free(pfds);				//alloc with calloc means free wit free() !
+	free(pfds);				//alloc with calloc means free with free() !
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)
