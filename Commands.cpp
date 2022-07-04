@@ -75,7 +75,7 @@ int		Commands::away(ftClient& client, Message& msg)
 	}
 
 }
-int		Commands::die(ftClient& client, Message& msg) { return 1; }
+int		Commands::die(ftClient& client, Message& msg) { return -1; }
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 

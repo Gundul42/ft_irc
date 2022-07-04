@@ -247,7 +247,8 @@ void IrcServ::loop(void)
 									">>> " << client->tmpBuffer;
 							_logAction(oss.str());
 							oss.str("");
-							this->_commands.handle_command(_connections, pfds[i].fd, client->tmpBuffer);
+							this->_commands.handle_command(_connections, pfds[i].fd,
+											client->tmpBuffer);
 							client->tmpBuffer.clear();
 						}
 					}
