@@ -76,7 +76,21 @@ int		Commands::away(ftClient& client, Message& msg)
 }
 
 //DIE
-int		Commands::die(ftClient& client, Message& msg) { client.set_send(); return 1; }
+int		Commands::die(ftClient& client, Message& msg) 
+{ 
+		servChannel::iterator	it = _channels.begin();
+
+		while (it != _channels.end())
+		{
+				delete it->second;
+				it++;
+		}
+		_channels.clear();
+		client.set_send(); 
+		return 1;
+}
+
+
 
 int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg) { return 1; }
