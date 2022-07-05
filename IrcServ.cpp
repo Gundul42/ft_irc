@@ -6,13 +6,9 @@ std::string	IrcServ::_rdns(std::string addr)
 	struct sockaddr_in sa;
 	int res = inet_pton(AF_INET, addr.c_str(), &sa.sin_addr);
 	if (res == -1)
-		return ("Illegal IPv4, please check your debug");
+		return addr;
 	else if (res == 0)
-	{
-		if (inet_pton(AF_INET6, addr.c_str(), &sa.sin_addr) != 1)
-			return ("Illegal IPv6, please check your debug");
-		return (addr);
-	}
+		return addr;
 	sa.sin_family = AF_INET;
 	char node[NI_MAXHOST];
 	memset(node, 0, NI_MAXHOST);
@@ -196,7 +192,7 @@ void IrcServ::loop(void)
 						_logAction(oss.str());
 						oss.str("");
 						_connections.insert(std::pair<int, ftClient*>(newfd, 
-									new ftClient(newfd, "", addrStr, "")));
+									new ftClient(newfd, "", addrStr, _rdns(addrStr))));
 					}
 				}
 				else //clients
@@ -239,11 +235,6 @@ void IrcServ::loop(void)
 							block = true;
 						if (!block)
 						{
-							// std::cout << "connection:\n";
-							// std::map<int, ftClient*>::iterator it = _connections.begin();
-							// for (; it != _connections.end(); it++)
-							// 	std::cout << (*it).second->get_name() << "\n";
-							// std::cout << "****\n";
 							client->add_msgsCount(1);
 							oss << "Last action " << updateTimeDiff(*client) << 
 									" seconds ago " << client->get_msgs() << " fd#" << pfds[i].fd <<
@@ -270,17 +261,11 @@ void IrcServ::loop(void)
 									break;
 							}
 						}
-						// std::cout << "hi\n";
 					}
-					// std::cout << "hi1\n";
 				}
-				// std::cout << "hi2\n";
 			}
-			// std::cout << "hi3\n";
 		}
-		// std::cout << "hi4\n";
 	}
-	// std::cout << "hi5\n";
 	this->_dropEmAll();
 	close(_socketfd);
 	free(pfds);				//alloc with calloc means free with free() !
