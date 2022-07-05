@@ -16,7 +16,7 @@ class Masks
 		Masks();
 		~Masks();
 
-		const std::vector<std::string>&	getMasks(unsigned mask, const std::string& str);
+		void	getMaskList(unsigned mask, std::vector<std::string>& makslist);
 };
 
 class ChannelMode
@@ -52,6 +52,10 @@ public:
 		INVITATION_MASK = 1 << 12,
 		/* 'z' - Operator moderated flag */
 		OP_MODERATED = 1 << 13,
+		/* 'v' - Voice Privilege */
+		VOICE = 1 << 14,
+		/* 'o' - Channel Operator*/
+		OPERATOR = 1 << 15
 	};
 
 	ChannelMode(unsigned flags = 0);
@@ -100,11 +104,13 @@ class IrcChannel : public ChannelMode
 		std::string  			getTopic(void) const;
 		int 					getLimit(void) const;
 		std::vector<ftClient*>	getMembers(void) const;
+		bool					getMember(const std::string& name, ftClient** member);
 		ftClient*				getCreator(void) const;
 		std::string  			getPasswd(void) const;
 		std::string 			getBuffer(void) const;
 		std::string				getKey(void) const;
 		unsigned				getFlags(void);
+		Masks					getMasks(void) const;
 		bool					isChop(const ftClient & member) const;
 		bool					isCreator(const ftClient & member) const;
 		bool					isSafe(void) const;
@@ -113,7 +119,6 @@ class IrcChannel : public ChannelMode
 		bool					isMember(const ftClient & candid) const;
 		bool					isException(const ftClient & member) const;
 		bool					isVoice(const ftClient & member) const;
-
 		//setters
 		bool					addMember(ftClient & member);
 		void					setName(const std::string newName);
@@ -129,9 +134,11 @@ class IrcChannel : public ChannelMode
 
 		//manipulators
 		void					notSafe(void);
-		bool					addChop(ftClient & member);
-		bool					removeChop(ftClient & member);
-		bool					removeMember(ftClient & member);
+		bool					addChop(unsigned flag, ftClient& member);
+		bool					addVoice(unsigned flag, ftClient& member);
+		bool					removeChop(unsigned flag, ftClient& member);
+		bool					removeVoice(unsigned flag, ftClient& member);
+		bool					removeMember(ftClient& member);
 
 		//other
 		bool					valChanName(const std::string name) const;

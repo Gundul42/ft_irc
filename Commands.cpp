@@ -179,11 +179,13 @@ int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
 int		Commands::mode(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
+		std::vector<std::string>					list;
 		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
 		unsigned									incoming_flag;
 		std::string									add_remove;
 		std::string									mask;
+		ftClient*									target;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -212,24 +214,47 @@ int		Commands::mode(ftClient& client, Message& msg)
 					if (incoming_flag == 0 || msg.getFlags()[i] == "a")//response sent client not shown
 						return !serverSend(client.get_fd(), "", "472 " +
 								client.get_name() + " " + msg.getFlags()[i].c_str(), "is an unknown mode char to me");
-					else if (incoming_flag == ChannelMode::BAN_MASK && msg.getParam().size() == 2)
-						return true ;//print list
+					else if (incoming_flag == ChannelMode::BAN_MASK && msg.getParam().size() == 2)//does not support ban time
+					{
+						(*itchan).second->getMasks().getMaskList(incoming_flag, list);
+						if (!list.empty())
+							for (std::vector<std::string>::iterator it = list.begin(); it != list.end(); it++)
+								serverSend(client.get_fd(), "", "367 " + client.get_name() 
+									+ " " + (*itchan).second->getName() + " " +  (*it) + " " + client.get_prefix(), " ");
+						return serverSend(client.get_fd(), "", "368 " + client.get_name()
+							+ " " + (*itchan).second->getName(), "End of Channel Ban List");
+					}
 					if (!(*itchan).second->isChop(client))
 						return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, "You're not channel operator");
 					else if ((incoming_flag == ChannelMode::INVITATION_MASK || incoming_flag == ChannelMode::EXCEPTION_MASK)
-						&& msg.getParam().size() == 2)
-						return true; //print list
-					else if	(add_remove == "+" && (incoming_flag == ChannelMode::KEY || incoming_flag == ChannelMode::LIMIT)
-						&& msg.getParam().size() < 3)
-						return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+						&& msg.getParam().size() == 2)//does not support invite time
+					{
+						(*itchan).second->getMasks().getMaskList(incoming_flag, list);
+						if (!list.empty())
+							for (std::vector<std::string>::iterator it = list.begin(); it != list.end(); it++)
+								serverSend(client.get_fd(), "", "346 " + client.get_name() 
+									+ " " + (*itchan).second->getName() + " " +  (*it) + " " + client.get_prefix(), " ");
+						return serverSend(client.get_fd(), "", "347 " + client.get_name()
+							+ " " + (*itchan).second->getName(), "End of Channel Invite List");
+					}
+					else if	(add_remove == "+" && (incoming_flag == ChannelMode::KEY || incoming_flag == ChannelMode::LIMIT
+						|| incoming_flag == ChannelMode::VOICE || incoming_flag == ChannelMode::OPERATOR) && msg.getParam().size() < 3)
+							return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 					else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
 						|| (add_remove == "-" && incoming_flag == ChannelMode::LIMIT && !(incoming_flag & (*itchan).second->getFlags())))
 						return false;
 					(*itchan).second->setFlags(add_remove, incoming_flag);
 					mask = msg.getParam()[2];
+					if (incoming_flag == ChannelMode::VOICE || incoming_flag == ChannelMode::OPERATOR)
+					{
+						if (!(*itchan).second->getMember(mask, &target))
+							return !serverSend(client.get_fd(), "", "410 " + client.get_name() + " " + mask, "No such nick/channel");
+					}
 					if (add_remove == "+")
 					{
-						if ((*itchan).second->setMasks(incoming_flag, mask))
+						if ((*itchan).second->addChop(incoming_flag, *target)
+							|| (*itchan).second->addVoice(incoming_flag, *target)
+							|| (*itchan).second->setMasks(incoming_flag, mask))
 							return serverSend(client.get_fd(), client.get_name(), "MODE "
 								+ (*itchan).second->getName() + " " + add_remove 
 								+ msg.getFlags()[i] + " " + mask, " ");
@@ -237,7 +262,9 @@ int		Commands::mode(ftClient& client, Message& msg)
 					}
 					else
 					{
-						if ((*itchan).second->unsetMasks(incoming_flag, mask))
+						if ((*itchan).second->removeChop(incoming_flag, *target)
+							|| (*itchan).second->removeVoice(incoming_flag, *target)
+							|| (*itchan).second->unsetMasks(incoming_flag, mask))
 							return serverSend(client.get_fd(), client.get_name(), "MODE "
 								+ (*itchan).second->getName() + " " + add_remove 
 								+ msg.getFlags()[i] + " " + mask, " ");
@@ -373,7 +400,7 @@ int		Commands::notice(ftClient& client, Message& msg)
 		if (it != _channels.end())
 		{
 			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
-				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
+				|| ((*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client) && !(*it).second->isVoice(client))
 				|| (*it).second->isBanned(client))
 				return false;
 			std::vector<ftClient*> members = (*it).second->getMembers();
@@ -404,8 +431,10 @@ int		Commands::oper(ftClient& client, Message& msg)
 }
 int		Commands::part(ftClient& client, Message& msg)
 {
-	std::vector<std::string>	params;
-	servChannel::iterator		itchan;
+	std::vector<std::string>			params;
+	servChannel::iterator				itchan;
+	std::vector<ftClient*>				members;
+	std::vector<ftClient*>::iterator	itmem;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -424,6 +453,10 @@ int		Commands::part(ftClient& client, Message& msg)
 				delete (*itchan).second;
 				_channels.erase(itchan);
 			}
+			members = (*itchan).second->getMembers();
+			itmem = members.begin();
+			for (; itmem != members.end(); itmem++)
+				serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
 			return serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
 		}
 		return !serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
@@ -471,7 +504,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 	if (msg.isNickname(target))
 	{
 		if ((pos = target.find('@')) || (pos = target.find('%')))
-			target = target.substr(0, pos - 1);
+			target = target.substr(0, pos);
 		std::map<int, ftClient*>::const_iterator it = this->_users.begin();
 		for (; it != this->_users.end(); it++)
 		{
@@ -492,7 +525,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 		if (it != _channels.end())
 		{
 			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
-				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
+				|| ((*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client) && !(*it).second->isVoice(client))
 				|| (*it).second->isBanned(client))
 				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
 			std::vector<ftClient*> members = (*it).second->getMembers();

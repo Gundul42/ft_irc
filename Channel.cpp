@@ -49,8 +49,8 @@ std::string ChannelMode::toString() const
 const unsigned short ChannelMode::_lowerFlagTable[] =
 {
 	ANONYMOUS, BAN_MASK, 0, 0, EXCEPTION_MASK, 0, 0, 0, INVITE_ONLY, 0, KEY,
-	LIMIT, MODERATED, NO_OUTSIDE_MSG, 0, PRIVATE, QUIET, 0, SECRET,
-	TOPIC_SETTABLE_BY_CHANOP, 0, 0, 0, 0, 0, OP_MODERATED
+	LIMIT, MODERATED, NO_OUTSIDE_MSG, OPERATOR, PRIVATE, QUIET, 0, SECRET,
+	TOPIC_SETTABLE_BY_CHANOP, 0, VOICE, 0, 0, 0, OP_MODERATED
 };
 
 IrcChannel::IrcChannel(const std::string & newName, ftClient & crt): _name(newName)
@@ -109,6 +109,20 @@ IrcChannel::~IrcChannel(void)
 
 std::vector<ftClient*> IrcChannel::getMembers(void) const {return _member;}
 
+bool IrcChannel::getMember(const std::string& name, ftClient** member)
+{
+	std::vector<ftClient*>::iterator it = _member.begin();
+	for (; it != _member.end(); it++)
+	{
+		if ((*it)->get_name() == name)
+		{
+			*member = (*it);
+			return true;
+		}
+	}
+	return false;
+}
+
 std::string IrcChannel::getName(void) const {return _name;}
 		
 std::string IrcChannel::getCtime(void) const
@@ -129,18 +143,18 @@ std::string IrcChannel::getPasswd(void) const {return _passwd;}
 
 bool IrcChannel::isChop(const ftClient & member) const
 {
-		std::vector<ftClient*>::const_iterator	in;
+	std::vector<ftClient*>::const_iterator	in;
 
-		if (_chop.size() == 0)
-				return false;
-		in = _chop.begin();
-		while (in != _chop.end())
-		{
-				if ((*in)->get_name() == member.get_name())
-						return true;
-				in++;
-		}
+	if (_chop.size() == 0)
 		return false;
+	in = _chop.begin();
+	while (in != _chop.end())
+	{
+		if ((*in)->get_name() == member.get_name())
+			return true;
+		in++;
+	}
+	return false;
 }
 
 bool IrcChannel::isCreator(const ftClient & clt) const
@@ -205,10 +219,10 @@ bool IrcChannel::isMember(const ftClient & candid) const
 
 bool IrcChannel::addMember(ftClient & member)
 {
-		if (isMember(member) == true)
-				return false;
-		_member.push_back(&member);
-		return true;
+	if (isMember(member) == true)
+		return false;
+	_member.push_back(&member);
+	return true;
 }
 
 void IrcChannel::setName(const std::string newName) {_name = newName;}
@@ -227,52 +241,79 @@ void IrcChannel::setBuffer(const std::string & buffer) {_chanBuffer = buffer;}
 
 void IrcChannel::notSafe(void) {_safe = false;}
 
-bool IrcChannel::addChop(ftClient & member) 
+bool IrcChannel::addChop(unsigned flag, ftClient& member) 
 {
-		if (isChop(member) == true)
-				return false;
-		_chop.push_back(&member);
-		return true;
+	if (flag != ChannelMode::OPERATOR || isChop(member))
+			return false;
+	_chop.push_back(&member);
+	return true;
 }
 
-bool IrcChannel::removeChop(ftClient & member)
+bool IrcChannel::addVoice(unsigned flag, ftClient& member)
 {
-		std::vector<ftClient*>::const_iterator	in;
-
-		if (_chop.size() == 0 || isChop(member) == false)
-				return false;
-		in = _chop.begin();
-		while (in != _chop.end())
-		{
-				if ((*in)->get_name() == member.get_name())
-				{
-						_chop.erase(in);
-						return true;
-				}
-				in++;
-		}
+	if (flag != ChannelMode::VOICE || isVoice(member))
 		return false;
+	_voice.push_back(&member);
+	return true;
+}
+
+bool IrcChannel::removeChop(unsigned flag, ftClient & member)
+{
+	std::vector<ftClient*>::const_iterator	in;
+
+	if (flag != ChannelMode::OPERATOR || _chop.size() == 0 || isChop(member) == false)
+			return false;
+	in = _chop.begin();
+	while (in != _chop.end())
+	{
+		if ((*in)->get_name() == member.get_name())
+		{
+			_chop.erase(in);
+			return true;
+		}
+		in++;
+	}
+	return false;
 }
 
 bool IrcChannel::removeMember(ftClient & member)
 {
-		std::vector<ftClient*>::const_iterator	in;
+	std::vector<ftClient*>::const_iterator	in;
 
-		if (_member.size() == 0 || isMember(member) == false)
-				return false;
-		in = _member.begin();
-		while (in != _member.end())
-		{
-			if ((*in)->get_name() == member.get_name())
-			{
-				_member.erase(in);
-				return true;
-			}
-			in++;
-		}
+	if (_member.size() == 0 || isMember(member) == false)
 		return false;
+	in = _member.begin();
+	while (in != _member.end())
+	{
+		if ((*in)->get_name() == member.get_name())
+		{
+			_member.erase(in);
+			return true;
+		}
+		in++;
+	}
+	return false;
 }
-		
+
+bool IrcChannel::removeVoice(unsigned flag, ftClient& member)
+{
+	std::vector<ftClient*>::const_iterator	in;
+
+	if (flag != ChannelMode::VOICE || _voice.size() == 0 || isVoice(member) == false)
+		return false;
+	in = _voice.begin();
+	while (in != _voice.end())
+	{
+		if ((*in)->get_name() == member.get_name())
+		{
+			_voice.erase(in);
+			return true;
+		}
+		in++;
+	}
+	return false;
+}
+
 bool IrcChannel::valChanName(const std::string name) const
 {
 		std::string::const_iterator	it = name.begin();
@@ -293,7 +334,8 @@ bool IrcChannel::valChanName(const std::string name) const
 void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
 {
 	if (flag == ChannelMode::INVITATION_MASK || flag == ChannelMode::BAN_MASK
-			|| flag == ChannelMode::EXCEPTION_MASK)
+			|| flag == ChannelMode::EXCEPTION_MASK || flag == ChannelMode::VOICE
+			|| flag == ChannelMode::OPERATOR)
 		return ;
 	else if (add_remove == "+")
 		_flags |= flag;
@@ -409,15 +451,14 @@ int	IrcChannel::unsetMasks(unsigned mask, std::string& str)
 }
 
 
-//flag might be out of the three options
-const std::vector<std::string>&	Masks::getMasks(unsigned mask, const std::string& str)
+void	Masks::getMaskList(unsigned mask, std::vector<std::string>& makslist)
 {
 	if (mask == ChannelMode::INVITATION_MASK)
-		return _invitation;
+		makslist = _invitation;
 	else if (mask == ChannelMode::BAN_MASK)
-		return _ban;
-	else
-		return _exception;
+		makslist = _ban;
+	else if (mask == ChannelMode::EXCEPTION_MASK)
+		makslist = _exception;
 }
 
 //does not support wildcard such as a* or *.net
@@ -485,10 +526,8 @@ bool	IrcChannel::isVoice(const ftClient & member) const
 	if (_voice.empty())
 		return false;
 	for (; it != _voice.end(); it++)
-	{
 		if ((*it)->get_name() == member.get_name())
 			return true;
-	}
 	return false;
 }
 
@@ -515,3 +554,5 @@ void	IrcChannel::parse_mask(std::string& _mask)
 	_host = _host.empty() ? "*" : _host;
 	_mask = _nick + "!" + _user + "@" + _host;
 }
+
+Masks	IrcChannel::getMasks(void) const { return _masks; }
