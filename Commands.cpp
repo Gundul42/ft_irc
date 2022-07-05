@@ -186,7 +186,58 @@ int		Commands::join(ftClient& client, Message& msg)
 
 int		Commands::kick(ftClient& client, Message& msg) { return 1; }
 int		Commands::kill(ftClient& client, Message& msg) { return 1; }
-int		Commands::list(ftClient& client, Message& msg) { return 1; }
+int		Commands::list(ftClient& client, Message& msg)
+{
+		servChannel::iterator						it = _channels.begin();
+		std::vector<std::string>					params = msg.getParam();
+		std::ostringstream							oss;
+		std::string									chan;
+		size_t										pos;
+
+		if (_channels.size() == 0 || params.size() > 2)
+		{
+			sendCommandResponse(client, RPL_LISTEND, "End of /LIST");
+			return 1;
+		}
+		sendCommandResponse(client, RPL_LISTSTART, "Channel", "Users Name");
+		if (params.size() == 0)
+		{
+			while (it != _channels.end())
+			{
+				oss.str("");
+				oss << RPL_LIST << " " << client.get_name() << " " << (*it).first <<
+						" " << (*it).second->getMembers().size();
+				serverSend(client.get_fd(), "", oss.str(), (*it).second->getTopic());
+				it++;
+			}
+			sendCommandResponse(client, RPL_LISTEND, "End of /LIST");
+			return 1;
+		}
+		if (params.size() == 2 && params[1] != IRCSERVNAME)
+		{
+			sendCommandResponse(client, ERR_NOSUCHSERVER, params[1], "No such server");
+			sendCommandResponse(client, RPL_LISTEND, "End of /LIST");
+			return 1;
+		}
+		chan = params[0];
+		do
+		{
+				pos = chan.find(',');
+				it = _channels.find(chan.substr(0, pos));
+				if (it != _channels.end())
+				{
+					oss.str("");
+					oss << RPL_LIST << " " << client.get_name() << " " << (*it).first <<
+							" " << (*it).second->getMembers().size();
+					serverSend(client.get_fd(), "", oss.str(), (*it).second->getTopic());
+				}
+				chan = chan.substr(pos + 1, std::string::npos);
+		}
+		while (pos != std::string::npos);
+		return 1;
+}
+
+//LUSERS
 int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
 
 //MODE
@@ -225,19 +276,26 @@ int		Commands::mode(ftClient& client, Message& msg)
 					add_remove = msg.getFlags()[0];
 					if (incoming_flag == 0 || msg.getFlags()[i] == "a")//response sent client not shown
 						return !serverSend(client.get_fd(), "", "472 " +
-								client.get_name() + " " + msg.getFlags()[i].c_str(), "is an unknown mode char to me");
+								client.get_name() + " " +
+								msg.getFlags()[i].c_str(), "is an unknown mode char to me");
 					else if (incoming_flag == ChannelMode::BAN_MASK && msg.getParam().size() == 2)
 						return true ;//print list
 					if (!(*itchan).second->isChop(client))
-						return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, "You're not channel operator");
-					else if ((incoming_flag == ChannelMode::INVITATION_MASK || incoming_flag == ChannelMode::EXCEPTION_MASK)
-						&& msg.getParam().size() == 2)
+						return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED,
+										"You're not channel operator");
+					else if ((incoming_flag == ChannelMode::INVITATION_MASK ||
+										incoming_flag == ChannelMode::EXCEPTION_MASK) &&
+										msg.getParam().size() == 2)
 						return true; //print list
-					else if	(add_remove == "+" && (incoming_flag == ChannelMode::KEY || incoming_flag == ChannelMode::LIMIT)
-						&& msg.getParam().size() < 3)
-						return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-					else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
-						|| (add_remove == "-" && incoming_flag == ChannelMode::LIMIT && !(incoming_flag & (*itchan).second->getFlags())))
+					else if	(add_remove == "+" && 
+										(incoming_flag == ChannelMode::KEY ||
+										 incoming_flag == ChannelMode::LIMIT) &&
+										msg.getParam().size() < 3)
+						return !sendCommandResponse(client, ERR_NEEDMOREPARAMS,
+										"Not enough parameters");
+					else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags())) ||
+									(add_remove == "-" && incoming_flag == ChannelMode::LIMIT &&
+									 !(incoming_flag & (*itchan).second->getFlags())))
 						return false;
 					(*itchan).second->setFlags(add_remove, incoming_flag);
 					mask = msg.getParam()[2];
@@ -256,10 +314,14 @@ int		Commands::mode(ftClient& client, Message& msg)
 								+ (*itchan).second->getName() + " " + add_remove 
 								+ msg.getFlags()[i] + " " + mask, " ");
 						else if (incoming_flag == ChannelMode::LIMIT)
-							return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + " " + add_remove + msg.getFlags()[i], " ");
+							return serverSend(client.get_fd(), client.get_name(), "MODE "
+									+ (*itchan).second->getName() + " " 
+									+ add_remove + msg.getFlags()[i], " ");
 						return false;
 					}
-					return serverSend(client.get_fd(), client.get_name(), "MODE " + (*itchan).second->getName() + " " + add_remove + msg.getFlags()[i], " ");
+					return serverSend(client.get_fd(), client.get_name(), "MODE " +
+									(*itchan).second->getName() + " " + add_remove +
+									msg.getFlags()[i], " ");
 				}
 			}
 		}
@@ -335,6 +397,7 @@ int		Commands::names(ftClient& client, Message& msg)
 	}
 	return true;
 }
+
 //NICK
 int		Commands::nick(ftClient& client, Message& msg)
 {
@@ -346,7 +409,8 @@ int		Commands::nick(ftClient& client, Message& msg)
 							"No nickname given");
 	newnick = msg.getParam().front();
 	if (newnick.size() > 9 || newnick[0] < 64 || newnick.find(' ') != std::string::npos)
-			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " + newnick, "Erroneus nickname");
+			return !serverSend(client.get_fd(), "", "432 " + oldnick + " " +
+							newnick, "Erroneus nickname");
 	std::map<int, ftClient*>::const_iterator it = this->_users.begin();
 	for (; it != this->_users.end(); it++)
 		if (newnick == (*it).second->get_name())
@@ -358,6 +422,7 @@ int		Commands::nick(ftClient& client, Message& msg)
 	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
 
+//NOTICE
 int		Commands::notice(ftClient& client, Message& msg)
 {
 	std::string target = msg.getParam().front();
@@ -374,8 +439,10 @@ int		Commands::notice(ftClient& client, Message& msg)
 		{
 			if (target == (*it).second->get_name())
 			{
-				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
-				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
+								" " + target, msg.getTrailing());
+				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
+								" " + target, msg.getTrailing());
 			}
 		}
 		return false;
@@ -386,14 +453,16 @@ int		Commands::notice(ftClient& client, Message& msg)
 
 		if (it != _channels.end())
 		{
-			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
-				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
-				|| (*it).second->isBanned(client))
+			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG &&
+							!(*it).second->isMember(client)) ||
+							(*it).second->getFlags() & ChannelMode::MODERATED &&
+							!(*it).second->isChop(client) || (*it).second->isBanned(client))
 				return false;
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
-				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() +
+							" " + target, msg.getTrailing());
 			return true;
 		}
 		return false;
@@ -416,6 +485,8 @@ int		Commands::oper(ftClient& client, Message& msg)
 	//set usermode
 	return true;
 }
+
+//PART
 int		Commands::part(ftClient& client, Message& msg)
 {
 	std::vector<std::string>	params;
@@ -438,9 +509,11 @@ int		Commands::part(ftClient& client, Message& msg)
 				delete (*itchan).second;
 				_channels.erase(itchan);
 			}
-			return serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+			return serverSend(client.get_fd(), client.get_prefix(), "PART " +
+							params[i] + " ", msg.getTrailing());
 		}
-		return !serverSend(client.get_fd(), client.get_prefix(), "PART " + params[i] + " ", msg.getTrailing());
+		return !serverSend(client.get_fd(), client.get_prefix(), "PART " +
+						params[i] + " ", msg.getTrailing());
 	}
 	return false;
 }
@@ -492,9 +565,12 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 			if (target == (*it).second->get_name())
 			{
 				if (UserMode::AWAY & (*it).second->get_flags())
-					return !serverSend(client.get_fd(), "", "301 " + client.get_name() + " " + target, (*it).second->get_awaymsg());
-				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
-				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() + " " + target, msg.getTrailing());
+					return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
+									" " + target, (*it).second->get_awaymsg());
+				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
+								" " + target, msg.getTrailing());
+				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
+								" " + target, msg.getTrailing());
 			}
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
@@ -505,15 +581,17 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 
 		if (it != _channels.end())
 		{
-			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && !(*it).second->isMember(client))
-				|| (*it).second->getFlags() & ChannelMode::MODERATED && !(*it).second->isChop(client)
-				|| (*it).second->isBanned(client))
+			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG && 
+							!(*it).second->isMember(client)) ||
+							(*it).second->getFlags() & ChannelMode::MODERATED && 
+							!(*it).second->isChop(client) || (*it).second->isBanned(client))
 				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
 				if (members[i]->get_name() != client.get_name())
-					serverSend(members[i]->get_fd(), client.get_name(), msg.getCommand() + " " + target, msg.getTrailing());
+					serverSend(members[i]->get_fd(), client.get_name(), msg.getCommand() +
+									" " + target, msg.getTrailing());
 			return true;
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
@@ -591,24 +669,30 @@ int		Commands::topic(ftClient& client, Message& msg)
 		return false;
 	it = _channels.find(msg.getParam()[0]);
 	if (it == _channels.end())
-		return !serverSend(client.get_fd(), "", "403 " + client.get_name() + " " + msg.getParam()[0], "No such channel");//weechat does not react to this response
+		return !serverSend(client.get_fd(), "", "403 " + client.get_name() + " "
+						+ msg.getParam()[0], "No such channel");//weechat does not react to this response
 	else if ((*it).second->getName()[0] == '+')
-		return !sendCommandResponse(client, ERR_NOCHANMODES, msg.getParam()[0], "Channel doesn't support modes");
+		return !sendCommandResponse(client, ERR_NOCHANMODES, msg.getParam()[0],
+						"Channel doesn't support modes");
 	else if (!msg.getTrailing().size())
 	{
 		if ((*it).second->getTopic().empty())
 			return !sendCommandResponse(client, RPL_NOTOPIC, msg.getParam()[0], "No topic is set");
-		return serverSend(client.get_fd(), "", "332 " + client.get_name() + " " + msg.getParam()[0], (*it).second->getTopic());
+		return serverSend(client.get_fd(), "", "332 " + client.get_name() + " " +
+						msg.getParam()[0], (*it).second->getTopic());
 	}
 	else if (!(*it).second->isMember(client))
-		return !sendCommandResponse(client, ERR_NOTONCHANNEL, msg.getParam()[0], "You're not on that channel");
+		return !sendCommandResponse(client, ERR_NOTONCHANNEL, msg.getParam()[0],
+						"You're not on that channel");
 	else if ((*it).second->getFlags() & ChannelMode::TOPIC_SETTABLE_BY_CHANOP)
 	{
 		if (!(*it).second->isChop(client))
-			return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, msg.getParam()[0], "You're not channel operator");
+			return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, msg.getParam()[0],
+							"You're not channel operator");
 	}
 	(*it).second->setTopic(msg.getTrailing());
-	return serverSend(client.get_fd(), client.get_name(), msg.getCommand() + " " + msg.getParam()[0], msg.getTrailing());
+	return serverSend(client.get_fd(), client.get_name(), msg.getCommand() + " " +
+					msg.getParam()[0], msg.getTrailing());
 }
 
 //USER
@@ -631,10 +715,15 @@ int		Commands::user(ftClient& client, Message& msg)
 		client.validate();
 		if (!motd(client, msg)) //show motd
 			return false;
-		serverSend(client.get_fd(), "", "001 " + client.get_name(), "Welcome to the Internet Relay Network " + client.get_name());
-		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is " + servername + ", running version " + serverversion);
-		return serverSend(client.get_fd(), "", "003 " + client.get_name(), "The server was created on I don't know how long ago...");
+		serverSend(client.get_fd(), "", "001 " + client.get_name(),
+						"Welcome to the Internet Relay Network " + client.get_name());
+		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is "
+						+ servername + ", running version " + serverversion);
+		return serverSend(client.get_fd(), "", "003 " + client.get_name(),
+						"The server was created on I don't know how long ago...");
 }
+
+//USERHOST
 int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
 
 //VERSION
