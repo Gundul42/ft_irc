@@ -105,6 +105,7 @@ IrcChannel::~IrcChannel(void)
 {
 		_chop.clear();
 		_member.clear();
+		_voice.clear();
 }
 
 std::vector<ftClient*> IrcChannel::getMembers(void) const {return _member;}
