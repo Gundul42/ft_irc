@@ -79,15 +79,23 @@ int		Commands::away(ftClient& client, Message& msg)
 int		Commands::die(ftClient& client, Message& msg) 
 { 
 		servChannel::iterator	it = _channels.begin();
+		std::vector<std::string>::iterator	itop = _operList.begin();
 
-		while (it != _channels.end())
+		for (; itop != _operList.end(); itop++)
 		{
-				delete it->second;
-				it++;
+			if ((*itop) == client.get_name())
+			{
+				while (it != _channels.end())
+				{
+						delete it->second;
+						it++;
+				}
+				_channels.clear();
+				client.set_send();
+				return true;
+			}
 		}
-		_channels.clear();
-		client.set_send(); 
-		return 1;
+		return false;
 }
 
 
@@ -497,17 +505,23 @@ int		Commands::notice(ftClient& client, Message& msg)
 
 int		Commands::oper(ftClient& client, Message& msg)
 {
+	std::vector<std::string>::iterator it = _operList.begin();
+
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	else if (msg.getParam().size() < 2)
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
-	// std::map<std::string, Oper*>::const_iterator it = this->_operList.getOperList().find(client.get_name());
-	// if ( it == this->_operList.getOperList().end() || (*it).second->getPass() != msg.getParam()[1])
-	// 	return !serverSend(client.get_fd(), "", "464 ", ":Password incorrect");
-	// if ((*it).second->getHost() != client.get_addr())
-	// 	return !serverSend(client.get_fd(), "", "491 ", ":No O-lines for your host");
-	//set usermode
-	return true;
+	else if (client.get_name() != msg.getParam()[0])
+		return false;
+	for (; it != _operList.end(); it++)
+		if((*it) == msg.getParam()[0])
+			return false;
+	if (msg.getParam()[0] == IRCADMIN)
+	{
+		_operList.push_back(msg.getParam()[0]);
+		return serverSend(client.get_fd(), "", "381 " + client.get_name(), "You are now an IRC operator");
+	}
+	return !serverSend(client.get_fd(), "", "491 " + client.get_name(), "No O-lines for your host");
 }
 
 //PART
