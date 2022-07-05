@@ -1,7 +1,7 @@
 
 NAME	=	ft_irc
 
-SRCS	=	IrcServ.cpp ftClient.cpp run.cpp Commands.cpp Message.cpp Channel.cpp Oper.cpp
+SRCS	=	IrcServ.cpp ftClient.cpp run.cpp Commands.cpp Message.cpp Channel.cpp
 
 OBJ		=	${SRCS:.cpp=.o}
 

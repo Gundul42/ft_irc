@@ -7,7 +7,6 @@
 # include "Message.hpp"
 # include "NumCodes.hpp"
 # include "Channel.hpp"
-# include "Oper.hpp"
 
 class Commands
 {
@@ -19,10 +18,10 @@ class Commands
 				typedef std::map<int, ftClient*>								userMap;
 				typedef std::map<std::string, IrcChannel*>						servChannel;
 
-				userCommandsMap		_userCommands;
-				userMap				_users;
-				servChannel			_channels;
-				// OperList			_operList;
+				userCommandsMap					_userCommands;
+				userMap							_users;
+				servChannel						_channels;
+				std::vector<std::string>		_operList;
 
 				Commands(const Commands& other);
 				Commands& operator=(const Commands& other);

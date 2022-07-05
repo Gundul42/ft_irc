@@ -407,6 +407,8 @@ int	IrcChannel::unsetMasks(unsigned mask, std::string& str)
 		return false;
 	else if (mask == ChannelMode::KEY)
 	{
+		if (_key == "*")
+			return false;
 		_key = "*";
 		str = _key;
 		return true;
