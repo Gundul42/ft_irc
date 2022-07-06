@@ -589,7 +589,7 @@ int		Commands::part(ftClient& client, Message& msg)
 				itmem = members.begin();
 				while (itmem != members.end())
 				{
-					serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + tmp, "");
+					serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + tmp, comment);
 					itmem++;
 				}
 				itchan->second->removeMember(client);
