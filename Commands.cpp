@@ -693,19 +693,22 @@ int		Commands::quit(ftClient& client, Message& msg)
 {
 	servChannel::iterator	itchan;
 
-	if (_channels.size())
-	{
 		itchan = _channels.begin();
-		for (; itchan != _channels.end();)
+		while (itchan != _channels.end())
 		{
-			Message m((*itchan).second->getName());
 			if ((*itchan).second->isMember(client))
 			{
-				itchan++;
-				part(client, m);
+				(*itchan).second->removeMember(client);
+				if ((*itchan).second->getMembers().size() == 0)
+				{
+					delete itchan->second;
+					_channels.erase(itchan);
+					itchan = _channels.begin();
+					continue;
+				}
 			}
+			itchan++;
 		}
-	}
 	client.set_quit();
 	return true;
 }
