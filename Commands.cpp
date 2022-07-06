@@ -81,21 +81,24 @@ int		Commands::die(ftClient& client, Message& msg)
 		servChannel::iterator	it = _channels.begin();
 		std::vector<std::string>::iterator	itop = _operList.begin();
 
-		for (; itop != _operList.end(); itop++)
+		while (itop != _operList.end())
 		{
 			if ((*itop) == client.get_name())
-			{
-				while (it != _channels.end())
-				{
-						delete it->second;
-						it++;
-				}
-				_channels.clear();
-				client.set_send();
-				return true;
-			}
+					break;
+			itop++;
 		}
-		return false;
+		if (itop == _operList.end())
+				return false;
+		std::cout << client.get_hostname() << " from " << client.get_addr() <<
+				" shuts down server." << std::endl;
+		while (it != _channels.end())
+		{
+			delete it->second;
+			it++;
+		}
+		_channels.clear();
+		client.set_send();
+		return true;
 }
 
 
@@ -106,10 +109,10 @@ int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 //JOIN
 int		Commands::join(ftClient& client, Message& msg) 
 {
-		std::vector<std::string>					params = msg.getChannel();
-		servChannel::iterator						itchan;
-		bool										isnew = false;
-		IrcChannel*									newChan;
+		std::vector<std::string>	params = msg.getChannel();
+		servChannel::iterator		itchan;
+		bool						isnew = false;
+		IrcChannel*					newChan;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
