@@ -585,8 +585,14 @@ int		Commands::part(ftClient& client, Message& msg)
 				sendCommandResponse(client, ERR_NOTONCHANNEL, tmp, "You're not on that channel");
 			else
 			{
+				members = itchan->second->getMembers();
+				itmem = members.begin();
+				while (itmem != members.end())
+				{
+					serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + tmp, "");
+					itmem++;
+				}
 				itchan->second->removeMember(client);
-				serverSend(client.get_fd(), client.get_prefix(), "PART " + tmp, "");
 			}
 			if (itchan->second->getMembers().size() == 0)
 			{
