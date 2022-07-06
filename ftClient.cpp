@@ -152,16 +152,16 @@ void			ftClient::set_pass(const std::string& pass) { this->_password = pass; }
 
 std::string		ftClient::get_prefix(void) const
 {
-	std::string _prefix;
+	std::ostringstream prefix;
 
-	_prefix = this->_name;
-	if (this->_username.size())
-		_prefix += "!" + this->_username;
-	_prefix += "@" + this->_addr;
-	return _prefix;
+	prefix << this->get_name();
+	if ((this->_username).size())
+		prefix << "!" << this->_username;
+	prefix << "@" << this->_addr;
+	return prefix.str();
 }
 
-unsigned		ftClient::get_flags(void) { return _flags; }
+unsigned		ftClient::get_flags(void) const { return _flags; }
 void			ftClient::set_flags(const std::string& add_remove, unsigned flag)
 {
 	if (add_remove == "+")
@@ -170,7 +170,7 @@ void			ftClient::set_flags(const std::string& add_remove, unsigned flag)
 		_flags = _flags & ~flag;
 }
 
-std::string		ftClient::get_awaymsg(void) { return this->_awayMsg; }
+std::string		ftClient::get_awaymsg(void) const { return this->_awayMsg; }
 void			ftClient::set_awaymsg(const std::string& msg) { this->_awayMsg = msg; }
 std::string		ftClient::get_username(void) const { return this->_username; }
 int				ftClient::get_quit(void) const { return this->_quit; }

@@ -79,8 +79,8 @@ class ftClient : public UserMode
 				int				get_fd(void) const;
 				int				get_msgs(void) const;
 				std::string		get_prefix(void) const; //get usermask
-				unsigned		get_flags(void);
-				std::string		get_awaymsg(void);
+				unsigned		get_flags(void) const;
+				std::string		get_awaymsg(void) const;
 				std::string		get_username(void) const;
 				int				get_quit(void) const;
 				bool			get_send(void) const; //server end

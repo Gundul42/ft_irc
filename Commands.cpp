@@ -163,7 +163,6 @@ int		Commands::join(ftClient& client, Message& msg)
 			}
 			else
 			{
-				//below error cases need to be tested, hostname check will have problem as ipv4 and ipv6 rDNS problem, currently all hostnames are ""
 				if ((*itchan).second->isBanned(client))
 					return !sendCommandResponse(client, ERR_BANNEDFROMCHAN, params[i],
 								"Cannot join channel (+b)");
@@ -241,7 +240,7 @@ int		Commands::list(ftClient& client, Message& msg)
 		}
 		chan = params[0];
 		do
-		{
+		{	
 				pos = chan.find(',');
 				it = _channels.find(chan.substr(0, pos));
 				if (it != _channels.end())
@@ -557,35 +556,47 @@ int		Commands::part(ftClient& client, Message& msg)
 	servChannel::iterator				itchan;
 	std::vector<ftClient*>				members;
 	std::vector<ftClient*>::iterator	itmem;
+	std::string							comment;
+	std::string							parse;
+	std::string							tmp;
+	size_t								pos;
 
-	if (!client.isRegistered())
-		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
-	else if (!msg.getParam().size())
-		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	params = msg.getParam();
-	for (int i = 0; i != params.size(); i++)
+	if (!client.isRegistered())
+		return !sendCommandResponse(client, ERR_NOTREGISTERED, "You have not registered");
+	if (params.size() == 0)
+		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, msg.getCommand(),
+						"Not enough parameters");
+	if (params.size() > 1)
+			comment = params[1];
+	else
+			comment = client.get_name();
+	parse = params[0];
+	do
 	{
-		if ((itchan = _channels.find(params[i])) == _channels.end())
-			return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
-		if ((*itchan).second->isMember(client))
+		pos = parse.find(',');
+		tmp = parse.substr(0, pos);
+		itchan = _channels.find(tmp);
+		if (itchan == _channels.end())
+			sendCommandResponse(client, ERR_NOSUCHCHANNEL, tmp, "No such channel");
+		else
 		{
-			(*itchan).second->removeMember(client);
-			if (!(*itchan).second->getMembers().size())
+			if (!itchan->second->isMember(client))
+				sendCommandResponse(client, ERR_NOTONCHANNEL, tmp, "You're not on that channel");
+			else
 			{
-				delete (*itchan).second;
+				itchan->second->removeMember(client);
+				serverSend(client.get_fd(), client.get_prefix(), "PART " + tmp, "");
+			}
+			if (itchan->second->getMembers().size() == 0)
+			{
+				delete itchan->second;
 				_channels.erase(itchan);
 			}
-			members = (*itchan).second->getMembers();
-			itmem = members.begin();
-			for (; itmem != members.end(); itmem++)
-				serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " +
-							params[i] + " ", msg.getTrailing());
-			return serverSend(client.get_fd(), client.get_prefix(), "PART " +
-							params[i] + " ", msg.getTrailing());
 		}
-		return !serverSend(client.get_fd(), client.get_prefix(), "PART " +
-						params[i] + " ", msg.getTrailing());
+		parse = parse.substr(pos + 1, std::string::npos);
 	}
+	while (pos != std::string::npos);
 	return false;
 }
 
