@@ -10,5 +10,6 @@
 # define IRCFLOODCONTROL 2								//time intervall it is checked for msgs
 # define IRCMAXMSGCOUNT 5								//that many can be sent in floodcontrol
 # define IRCMOTDFILE "ft_irc.motd"						//ascii file for motd
-# define IRCADMIN "Adminnn"
+# define IRCADMIN "admin"
+# define IRCADMINPWD "admin"
 #endif
