@@ -39,6 +39,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_server = rgt._server;
 		_hostname = rgt._hostname;
 		_quit = rgt._quit;
+		tmpBuffer = rgt.tmpBuffer;
 		return (*this);
 }
 
