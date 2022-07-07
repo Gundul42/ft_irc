@@ -48,17 +48,17 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 	int					i = 0;
 	int					c;
 
-	std::cout << std::endl;
-	while (i != buf.length())
-	{
-			c =  static_cast<int>(buf[i]);
-			if ((c > 64 && c < 91) || (c > 96 && c < 123) || (c > 47 && c < 58))
-					std::cout << buf[i] << ", ";
-			else
-					std::cout << c << ", ";
-			i++;
-	}
-	std::cout << std::endl;
+	// std::cout << std::endl;
+	// while (i != buf.length())
+	// {
+	// 		c =  static_cast<int>(buf[i]);
+	// 		if ((c > 64 && c < 91) || (c > 96 && c < 123) || (c > 47 && c < 58))
+	// 				std::cout << buf[i] << ", ";
+	// 		else
+	// 				std::cout << c << ", ";
+	// 		i++;
+	// }
+	// std::cout << std::endl;
 	this->_users = usermap;
 	for (std::string line; std::getline(str, line, '\n'); )
 	{
