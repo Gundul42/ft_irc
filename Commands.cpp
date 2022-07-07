@@ -45,8 +45,21 @@ Commands::~Commands() {}
 void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, std::string buf)
 {
 	std::stringstream	str(buf);
-	this->_users = usermap;
+	int					i = 0;
+	int					c;
 
+	std::cout << std::endl;
+	while (i != buf.length())
+	{
+			c =  static_cast<int>(buf[i]);
+			if ((c > 64 && c < 91) || (c > 96 && c < 123) || (c > 47 && c < 58))
+					std::cout << buf[i] << ", ";
+			else
+					std::cout << c << ", ";
+			i++;
+	}
+	std::cout << std::endl;
+	this->_users = usermap;
 	for (std::string line; std::getline(str, line, '\n'); )
 	{
 		Message msg(line);
@@ -693,6 +706,9 @@ int		Commands::quit(ftClient& client, Message& msg)
 {
 	servChannel::iterator	itchan;
 
+		serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
+		serverSend(client.get_fd(), " ", "Error", "Closing Link: " + 
+						client.get_addr() + " (Client Quit)");
 		itchan = _channels.begin();
 		while (itchan != _channels.end())
 		{
