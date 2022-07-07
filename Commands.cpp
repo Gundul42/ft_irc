@@ -710,7 +710,9 @@ int		Commands::quit(ftClient& client, Message& msg)
 			itchan++;
 		}
 	client.set_quit();
-	return true;
+	serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
+	return serverSend(client.get_fd(), " ", "Error", "Closing Link: " + client.get_addr() +
+					" (Client Quit)");
 }
 
 int		Commands::rehash(ftClient& client, Message& msg) { return 1; }

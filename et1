@@ -1,0 +1,763 @@
+[33mcommit 24fd206e0d583fb0fe4c46e5694d07630eefe7dd[m[33m ([m[1;36mHEAD -> [m[1;32mmaster[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jul 6 23:09:12 2022 +0200
+
+    QUIT response + remove Chop/Voice when part/quit
+
+[33mcommit 4a223a66213cd11062ee57a3882ae06e85a90261[m[33m ([m[1;31morigin/dev[m[33m, [m[1;32mdev[m[33m)[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 18:33:22 2022 +0200
+
+    fix quit stalling
+
+[33mcommit bc2951f7eb828b3540dd7c2ffc2aebbfdd9afb64[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 15:52:28 2022 +0200
+
+    part comment
+
+[33mcommit 33d06fd1bd84a04a846d5926aabc5ad7cba3e662[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 14:47:40 2022 +0200
+
+    sent to all
+
+[33mcommit 1c90b2bb6a616ea44d08865dad5c2f0fb7708f97[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 13:41:27 2022 +0200
+
+    new part
+
+[33mcommit ccb607f83abde677b920442bd1c39b646c6f077f[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 07:36:03 2022 +0200
+
+    still errors
+
+[33mcommit b9cb7b4e653b0eadceb15eed71cfe54bafdb917f[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jul 6 06:30:54 2022 +0200
+
+    set admin pwd
+
+[33mcommit 1e4cfc8c70b552e2379b35a77e8b6b664dfae468[m[33m ([m[1;31morigin/mode[m[33m, [m[1;32mmode[m[33m)[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jul 5 22:30:43 2022 +0200
+
+    fix rdns ipv6 abort trap
+
+[33mcommit d5e0350340720780a563525fcac2cdc74f1cb060[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jul 5 22:21:17 2022 +0200
+
+    OPER + DIE protection
+
+[33mcommit e0fdc27050692474f831ea1d1d9e7df388aadd0b[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jul 5 21:53:58 2022 +0200
+
+    MODE multiple flags
+
+[33mcommit e03571b7e68064d06533734aadaf2c0eb6e2c2f9[m
+Merge: 2bc8b9e 3128b07
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jul 5 21:37:20 2022 +0200
+
+    merge dev
+
+[33mcommit 3128b079b7a28188f0640a9aff3da0e56e3bd86f[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jul 5 17:46:32 2022 +0200
+
+    add /list
+
+[33mcommit 2bc8b9ef03ba98339985b8d6da076c2070e5ae68[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jul 5 17:27:42 2022 +0200
+
+    mode +/- ov & moderated channel msg check
+
+[33mcommit 4ddd2e1ebda4070eee1d43c5641a3b10d6430604[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jul 5 12:13:11 2022 +0200
+
+    fix die leak
+
+[33mcommit b82ad27f41101f38fb700b763526fa7905670939[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Mon Jul 4 23:19:09 2022 +0200
+
+    remove test files
+
+[33mcommit bf0d24f71584f81958d1a8ddd67a7673a4ffb51e[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Mon Jul 4 23:18:42 2022 +0200
+
+    MODE set/unset masks
+
+[33mcommit 54f69b3b0e8a04da6eb9e1dc48296df21e434fba[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 15:48:56 2022 +0200
+
+    fix QUIT leak and cleanup
+
+[33mcommit a64e568e0ade9dfc926f5f2c3de6f3756ca2ff6c[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 15:48:29 2022 +0200
+
+    fix QUIT leak
+
+[33mcommit d19681a1470490ae43710600d74e0d485b99878d[m[33m ([m[1;31morigin/channel[m[33m)[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Mon Jul 4 13:23:30 2022 +0200
+
+    join with key
+
+[33mcommit 83dd7dc8f2f7f84bcb82eaac5b2c4fa783f38d33[m
+Merge: da81617 1615e57
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Mon Jul 4 11:24:40 2022 +0200
+
+    merge leakfix
+
+[33mcommit da816175d63face21d6e77a7f89e9acde2543691[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Mon Jul 4 11:19:59 2022 +0200
+
+    testing mode +k
+
+[33mcommit 1615e5737276577ffa5f223f022f71b743676041[m
+Merge: f300fd3 d4aea54
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 10:17:53 2022 +0200
+
+    Merge branch 'leakfix'
+
+[33mcommit d4aea54bc8675d9f7a407e45f09780af4ef2d3ea[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 10:17:40 2022 +0200
+
+    leakfree
+
+[33mcommit 296376f6dab5ff857b82ccd0a78a48ecd5bccef3[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 09:49:42 2022 +0200
+
+    all fixed and clean !
+
+[33mcommit caad810e59c5f044d9f683a80007f3a74a92c16e[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 09:31:49 2022 +0200
+
+    one error left
+
+[33mcommit 0eff9e4ab7919e9af84784475cce3aadef150827[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 08:09:08 2022 +0200
+
+    server_end
+
+[33mcommit aaa9f41da70ff19399b5cd415f42de270600e11b[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Mon Jul 4 07:47:59 2022 +0200
+
+    working
+
+[33mcommit 6cd1228f95773e01b4fc455fc08f7d0a3ab46cef[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sun Jul 3 23:33:01 2022 +0200
+
+    MODE WIP
+
+[33mcommit 49a5cfb2ca81e311753a4fff1dfc2d281be9c93b[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jul 3 17:32:00 2022 +0200
+
+    theEnd
+
+[33mcommit f300fd3f5168aea90a852512782e2ea86f52254e[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jul 3 15:48:55 2022 +0200
+
+    fix leak
+
+[33mcommit 4a5fa6853a705bfc9520126454212dc74c9193aa[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sun Jul 3 14:35:58 2022 +0200
+
+    names
+
+[33mcommit 864370037d05b0e34d0aba0496ec937f5f29d658[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jul 3 13:16:58 2022 +0200
+
+    fix uninit values
+
+[33mcommit 6a47086b300c38bbb585ca59f7c27cc896797484[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sun Jul 3 11:00:13 2022 +0200
+
+    queen of leak
+
+[33mcommit 2c2ffc2c8e6b3058662ab5cb19cb096bf38978c5[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jul 2 17:54:54 2022 +0200
+
+    the seg queen II
+
+[33mcommit 06e79f94d2a941cf0b3e21dbaaa9e459b6143de8[m
+Merge: bc31485 971e683
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jul 2 16:26:59 2022 +0200
+
+    merge origin
+
+[33mcommit bc31485131282705c278f3756188d0e7b337d957[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jul 2 16:24:50 2022 +0200
+
+    quit update
+
+[33mcommit 971e683cdfb751ecb3924889ed655afc6f62b3fc[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jul 2 15:39:12 2022 +0200
+
+    glued
+
+[33mcommit 9f4c69ffc7e4626d7c858c98b68cfa31f5d51738[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jul 2 13:34:52 2022 +0200
+
+    nick segfault fix
+
+[33mcommit 541193f3b825157825ea9637cf6fc5d746f56dfa[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jul 2 13:19:48 2022 +0200
+
+    tmp
+
+[33mcommit b5e6acd6dd8b0d0bb0f5f0e91ade2a87a609543f[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jul 2 00:16:26 2022 +0200
+
+    TOPIC
+
+[33mcommit 33f7a425f57c85e4241decb3ca519539090f2414[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Thu Jun 30 23:38:11 2022 +0200
+
+    MODE WIP
+
+[33mcommit 68f8c9ac12c84d10701edb176ba7f5075db7e18b[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Thu Jun 30 19:24:14 2022 +0200
+
+    join 0 + quit
+
+[33mcommit 3f1f07a6ee8141622fdd1f51da3518db8d39ec3c[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 23:25:37 2022 +0200
+
+    join allows other clients to channel
+
+[33mcommit 7541a724706be4e3923d0258f5a1e763c6c2df38[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 19:38:46 2022 +0200
+
+    channel flags
+
+[33mcommit 09a29b37c8c3bea233ed46851a8d575f605612de[m[33m ([m[1;31morigin/notice[m[33m)[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 17:54:49 2022 +0200
+
+    update set_flag
+
+[33mcommit 49ecb09679bd87a53b41c01ec007b22b4b18044c[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 17:15:44 2022 +0200
+
+    fix away
+
+[33mcommit 35f5d72e460b477f76c1c684a5a59aac97938c82[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 16:57:29 2022 +0200
+
+    add user message respond
+
+[33mcommit 68121fb346a487e008c5fcf6a6a212f51d1a8b1c[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 15:45:59 2022 +0200
+
+    notice + away
+
+[33mcommit 25f3154ab609b903ab468c3e64e2e6484ef0a3f9[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Wed Jun 29 13:14:39 2022 +0200
+
+    privmsg channel send fix
+
+[33mcommit 5646187444abfa1e666a79357cfb1894a7fa924d[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 28 23:30:17 2022 +0200
+
+    user mode + privmsg
+
+[33mcommit 0a38ac9e176221e90e83844fd5783cb00454f869[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 28 09:48:44 2022 +0200
+
+    oper out
+
+[33mcommit 2e7a8a438b5cb6166ada3ad0f90667b835edac89[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 28 08:34:07 2022 +0200
+
+    fix typo
+
+[33mcommit aaf2be0958c1fbf63b26f17049940dfbc53260c7[m
+Merge: 4010c8c 09253be
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 28 08:15:41 2022 +0200
+
+    Merge branch 'master' of https://github.com/Gundul42/ft_irc
+
+[33mcommit 4010c8c859800f636380484abdb1674f8c566251[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 28 08:13:49 2022 +0200
+
+    last stand
+
+[33mcommit 09253be5be7dd4df95b71111f8cfde1e41bf0f3a[m
+Merge: 2cd422c 402630e
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 28 00:25:21 2022 +0200
+
+    OPER WIP
+
+[33mcommit 2cd422c88a44347efb4c62d3ce4a93316031bd95[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 28 00:20:32 2022 +0200
+
+    OPER WIP
+
+[33mcommit 402630e2c7bb641839430484aa6b26db4a263e3b[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 26 17:42:51 2022 +0200
+
+    pingpong
+
+[33mcommit f704dc0a34c0c2a23c7f737da8e8edfdb89d3e25[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 26 15:57:38 2022 +0200
+
+    fix motd error msg
+
+[33mcommit c40f1bd5b8193d11267d16841d2548d3e3fd2455[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 26 15:49:03 2022 +0200
+
+    add _hostname to ftClient
+
+[33mcommit da141e16f8157f1e6d4f53449275aaefac0db241[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 26 14:39:00 2022 +0200
+
+    add rDNS hostnames for IPv4
+
+[33mcommit 15e81668963abb70dd0dd99aca7e81a25e211e5d[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jun 25 18:15:56 2022 +0200
+
+    add time
+
+[33mcommit 7bd5afff27520a77f4040d36fa49a89ffe72f563[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jun 25 17:15:43 2022 +0200
+
+    add version
+
+[33mcommit 5c2afb079e06cefb314c75664a173bee07350f32[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jun 25 15:59:05 2022 +0200
+
+    add motd
+
+[33mcommit c5b52e0880e777538e080ad9b366a751fc9d7bfa[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sat Jun 25 14:14:51 2022 +0200
+
+    new channel details
+
+[33mcommit 004deeb3363c879ba2d16322ab2bb5f2424155f0[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jun 25 09:43:33 2022 +0200
+
+    PING
+
+[33mcommit af92e2e4d711acd16eecf0daacd4d5db2ab0cf84[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jun 25 09:37:08 2022 +0200
+
+    PING
+
+[33mcommit f187d4c014220fb2c42e83c5ac0e4bf458b311ad[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Sat Jun 25 09:36:56 2022 +0200
+
+    PING
+
+[33mcommit 080644dc06ebe7c0de1abb41ed98b3139f73a6da[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 19:11:41 2022 +0200
+
+    add basic chan creation
+
+[33mcommit 178ec00fec2fe8d92e162c991b1a13403d6c60f6[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 17:06:03 2022 +0200
+
+    add chan basics
+
+[33mcommit cc773feb250281c62217508741c5b130732a6daf[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 14:57:07 2022 +0200
+
+    delete unnecessecary
+
+[33mcommit 9b22410bcc32898325f6d38bd48f2dd63ecc7cb2[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 14:14:40 2022 +0200
+
+    latest
+
+[33mcommit 2813a443d4f5ef9d22c1113326d5bdd9ee92e4c2[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 11:01:12 2022 +0200
+
+    never say last fix XD
+
+[33mcommit fdd399144c9e08d9f85278f9298cf3a95bab1fe7[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 24 09:39:22 2022 +0200
+
+    final fix floodcontrol
+
+[33mcommit dc963af4d8a22f93cd0c226ded6b4f25a6403f23[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Thu Jun 23 23:36:37 2022 +0200
+
+    parser fix + register
+
+[33mcommit c41b2f59a360c39b66c664a00df56dafaba4d571[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 18:24:43 2022 +0200
+
+    const issue
+
+[33mcommit f68187c486f4c7410504ff3cb680136e77e44d04[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 13:12:50 2022 +0200
+
+    update
+
+[33mcommit 245a78ab8da10f4c5873725c4ee015aad7d8fb78[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 12:45:20 2022 +0200
+
+    fix flooding prevention, makefile
+
+[33mcommit 0922bbc714ab72e07eaae7eebcfed8dc3a3673ff[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 12:35:29 2022 +0200
+
+    fix flood protection
+
+[33mcommit e9f737e7251e5a00d964825576d735044a47a2df[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 11:05:57 2022 +0200
+
+    add more functions - clean
+
+[33mcommit e7dc7a5dbf48776cf0db4e862f9faf9e09d286b1[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 23 11:05:41 2022 +0200
+
+    add more functions
+
+[33mcommit 61d9da9acf0588e090d6f9d50f2bef2c9eeab43d[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 19:06:37 2022 +0200
+
+    add channels WIP
+
+[33mcommit 9a89910aef47b19598c6a04cff93c5c4ce3917c1[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 15:52:35 2022 +0200
+
+    sendcommandresponse
+
+[33mcommit 9680e7558066a5805ef088fe88f2e0b8b57d1104[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 13:51:38 2022 +0200
+
+    fix Makefile
+
+[33mcommit 40570a9d4c65b573c08d7ec41cc63564da6fa930[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 13:51:17 2022 +0200
+
+    fix Makefile
+
+[33mcommit 2db41454777ebffdebf45e77c60deede5b107c37[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 13:28:32 2022 +0200
+
+    lol
+
+[33mcommit 853275e78b73fcdad5523d70f23a7497e002ac31[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 13:03:00 2022 +0200
+
+    tai kucing
+
+[33mcommit f27a006b89a51b28469e8a2e9aa45b67659763fe[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 22 12:39:36 2022 +0200
+
+    test
+
+[33mcommit 73559cbc1f3c64d9e4c8a9d42c097933e69b3c32[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 21 23:10:44 2022 +0200
+
+    command NICK/USER - WIP
+
+[33mcommit 10c9501e6e4bc83c1a7e854b3b69b95b000ab046[m
+Merge: 33f6672 75ece30
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 21 21:57:36 2022 +0200
+
+    merge
+
+[33mcommit 33f6672fbbb8d50fd3cc52c5d09af5ff185e8b65[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 21 21:49:00 2022 +0200
+
+    command USER - WIP
+
+[33mcommit 75ece309348bd28335d4ca0e9a20d736db92da75[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 21 19:29:10 2022 +0200
+
+    cleanup - flood control ! janganlah banjir
+
+[33mcommit cb65259304eee9dda76c8cee6de1b5380bb2afbc[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 21 19:28:48 2022 +0200
+
+    flood control ! janganlah banjir
+
+[33mcommit b57a50dd01da484a71b6ee152c9c3233d9491187[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 21 15:38:09 2022 +0200
+
+    add 3digit codes
+
+[33mcommit 45ac2a936cc032744a7cf1394a13d8084461cc2a[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 21 12:52:41 2022 +0200
+
+    add numcodes
+
+[33mcommit 17daee5534c983f2930d4cf5ac0b309ddecc68ce[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 19 14:31:51 2022 +0200
+
+    better
+
+[33mcommit 17fb51d70d72c06eea249fd647108347fd815d84[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 19 11:21:26 2022 +0200
+
+    fix missing hpp
+
+[33mcommit 6f66f45f87e1f835d2059cb576dd6347560ca6e8[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Sun Jun 19 11:08:13 2022 +0200
+
+    updates
+
+[33mcommit b68bd61cb46753bbb118b454a63ad38572c9cc22[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 17 18:25:34 2022 +0200
+
+    first contact !
+
+[33mcommit 3844ebbbb81c1e59e6f9bd9e62a2118d52d1e9b4[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 17 13:55:35 2022 +0200
+
+    add prefix, suffix
+
+[33mcommit cfe5eb3b04a67dabcdb6a06a758e5c6bf7be7929[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 19:00:05 2022 +0200
+
+    nick_exists
+
+[33mcommit b495ca4f9394686773d59fc833f8bbec3d96b49d[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 15:40:02 2022 +0200
+
+    timeout after x sec without validate
+
+[33mcommit 5fd978b920290aa73c6e218712e9e13b6394f3e9[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 12:31:13 2022 +0200
+
+    pelanlah
+
+[33mcommit 9a2ecc762114ee359e91bd433b3b336fc128bb2b[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 09:33:49 2022 +0200
+
+    fix c_str
+
+[33mcommit 2b7cc730cf7b3eb45f14918668ef13cf0c477e9a[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 05:52:21 2022 +0200
+
+    fix Segfault and little const issue
+
+[33mcommit f91ae70f0fb4ab3fd38485a65e939dd1a399cef6[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 16 05:46:09 2022 +0200
+
+    fix Segfault
+
+[33mcommit 3e4fda48b8bcbfb837c1c1ebd1dccd796093d909[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Thu Jun 16 00:48:05 2022 +0200
+
+    ping fix
+
+[33mcommit a178cfbfabc9eb0ea949fecec93da1fddd0d5ce6[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Thu Jun 16 00:41:14 2022 +0200
+
+    command class
+
+[33mcommit 6b76699abbc841e1ed02e42f069603e79baf5bc5[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 15 13:10:40 2022 +0200
+
+    cleanup
+
+[33mcommit bcb599242093fb9ab5a4bf17dc3e6b2ca83d59a5[m
+Merge: 9c68214 94a32ee
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 15 13:08:45 2022 +0200
+
+    merge master, fix update time
+
+[33mcommit 94a32ee4b2768f2617e4b3c72136234acf2f8c47[m
+Author: berlintrabby <83368424+berlintrabby@users.noreply.github.com>
+Date:   Tue Jun 14 23:04:23 2022 +0200
+
+    bridge commands
+
+[33mcommit 9c682144262f04e720f0e510aa9da30f761abf22[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 14 19:09:18 2022 +0200
+
+    add timestamps
+
+[33mcommit 0f7dc29ec30483810b929d04bb46932821a9f4a1[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 14 15:15:39 2022 +0200
+
+    micro server
+
+[33mcommit aa1c2a5eef8e0a5fb21651f37e6eb84540fddac2[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 14 12:49:05 2022 +0200
+
+    cpp style
+
+[33mcommit 4ec907787a6615733214d4fd9fb303e41674dc8c[m[33m ([m[1;31morigin/noblock[m[33m)[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 10 18:09:49 2022 +0200
+
+    enough is enough
+
+[33mcommit 0c8a6840296b480f8f0e3cdd6f92e819d8499fbc[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 10 13:11:26 2022 +0200
+
+    clean
+
+[33mcommit ebafe50f973daf78b8d492842e713394ea29997b[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Fri Jun 10 11:17:51 2022 +0200
+
+    test poll
+
+[33mcommit f8dd0f822ea67e7183e7ed3863e345f45cb9068f[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 19:46:17 2022 +0200
+
+    no block
+
+[33mcommit a87066a486a376b70c507e0988b61f650369710d[m[33m ([m[1;31morigin/test[m[33m)[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 19:20:18 2022 +0200
+
+    last
+
+[33mcommit 51927c19026225f320f4123db64a1edfdc061e18[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 17:19:37 2022 +0200
+
+    add basic signals
+
+[33mcommit 9bb3d10f903f61761aaf206973ce693e6bfbe7d9[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 13:24:31 2022 +0200
+
+    del nl
+
+[33mcommit 9396c7e4c1a71d1a737c6468826a2a4df54e8047[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 13:20:49 2022 +0200
+
+    very basic
+
+[33mcommit a2564f458b42e83bb044a48871601bbfabbf5c4e[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Thu Jun 9 09:57:26 2022 +0200
+
+    no leaks
+
+[33mcommit 9343aedf95931926c291f79e263c931c2e1014ba[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 8 17:50:54 2022 +0200
+
+    first connnect
+
+[33mcommit a19a1988e777b8b5a95399dabb459a875e2aad33[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Wed Jun 8 17:09:07 2022 +0200
+
+    two styles
+
+[33mcommit b747f01774fe8d4dbd7efa4d9dc33ef64eae9040[m
+Author: Gundul <sampah@mailbox.org>
+Date:   Tue Jun 7 19:16:28 2022 +0200
+
+    video tests
+
+[33mcommit 8ab0d8eff1a2bb0326ee988d486e193ae01dd163[m
+Author: Gundul <77735052+Gundul42@users.noreply.github.com>
+Date:   Tue Jun 7 14:21:59 2022 +0200
+
+    Initial commit
