@@ -11,6 +11,7 @@ class IrcServ
 		private:
 
 				int								_socketfd;
+				std::string						_pwd;
 				Commands						_commands;
 				std::map<int, ftClient*>		_connections;
 
@@ -28,10 +29,11 @@ class IrcServ
 				void		_dropEmAll(void);
 
 		public:
-				IrcServ(const char *port);
+				IrcServ(const char *port, const std::string pwd);
 				~IrcServ(void);
 
 				int			getSocketFd(void) const;
+				std::string	getPwd(void) const;
 				void		loop(void);
 				int			getTimeDiff(ftClient & start);
 				int			updateTimeDiff(ftClient & start);

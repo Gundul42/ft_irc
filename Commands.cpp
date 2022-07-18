@@ -48,6 +48,7 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 	int					i = 0;
 	int					c;
 
+	/*
 	std::cout << std::endl;
 	while (i != buf.length())
 	{
@@ -59,6 +60,7 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 			i++;
 	}
 	std::cout << std::endl;
+	*/
 	this->_users = usermap;
 	for (std::string line; std::getline(str, line, '\n'); )
 	{
@@ -626,7 +628,7 @@ int		Commands::pass(ftClient& client, Message& msg)
 		return !serverSend(client.get_fd(), "", "462 ", "You may not reregister");
 	else if (msg.getParam().empty())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
-	client.set_pass(msg.getParam().front());
+	client.setPwd(msg.getParam().front());
 	return true;
 }
 

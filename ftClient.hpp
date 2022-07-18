@@ -4,8 +4,6 @@
 # include "config.hpp"
 # include "lib.hpp"
 
-# define FT_IRC_TIMEOUT 20
-
 class UserMode
 {
 public:
@@ -72,6 +70,7 @@ class ftClient : public UserMode
 				~ftClient(void);
 
 				void			validate(void);
+				void			deval(void);
 
 				std::string		get_name(void) const;
 				std::string 	get_addr(void) const;
@@ -84,10 +83,11 @@ class ftClient : public UserMode
 				std::string		get_username(void) const;
 				int				get_quit(void) const;
 				bool			get_send(void) const; //server end
+				std::string		getPwd(void) const;
 
 				void			set_name(const std::string& name);
 				void			set_names(const std::string& username, const std::string& realname);
-				void			set_pass(const std::string& pass);
+				void			setPwd(const std::string& pass);
 				void			set_flags(const std::string& add_remove, unsigned flag);
 				void			set_awaymsg(const std::string& msg);
 				void			set_quit();

@@ -26,7 +26,7 @@ IrcServ & IrcServ::operator=(const IrcServ & rgt)
 		return *this;
 }
 
-IrcServ::IrcServ(const char *port)
+IrcServ::IrcServ(const char *port, const std::string pwd): _pwd(pwd)
 {
 	int yes=1;
 	int rv;
@@ -43,7 +43,7 @@ IrcServ::IrcServ(const char *port)
 	{
     	oss << "selectserver: " << gai_strerror(rv);
 		_logAction(oss.str());
-	    exit(1);
+	    exit(EXIT_FAILURE);
     }
 	for(p = ai; p != NULL; p = p->ai_next)
 	{
@@ -61,13 +61,13 @@ IrcServ::IrcServ(const char *port)
 	if (p == NULL)
 	{
 		_logAction("Error: socket could not bind: exiting");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	freeaddrinfo(ai);
 	if (listen(_socketfd, 10) == -1)
 	{
 		_logAction("Error: socket could not listen: exiting");
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 	oss << "Success: Socket opened and listening at FD#" << _socketfd;
 	_logAction(oss.str());
@@ -82,6 +82,11 @@ IrcServ::~IrcServ(void)
 int	IrcServ::getSocketFd(void) const
 {
 		return (_socketfd);
+}
+
+std::string IrcServ::getPwd(void) const
+{
+		return (_pwd);
 }
 
 void IrcServ::_logAction(const std::string & log) const
@@ -155,6 +160,7 @@ void IrcServ::loop(void)
 
 	if (!pfds)
 			exit(EXIT_FAILURE);
+	std::cout << "Welcome to " << IRCSERVNAME << ", password is: " << this->getPwd() << std::endl;
 	while(!theEnd)
 	{
 		oss.str("");
@@ -163,7 +169,7 @@ void IrcServ::loop(void)
 		if (poll_count == -1)
 		{
 			_logAction("Error while poll: exiting");
-			exit(1);
+			exit(EXIT_FAILURE);
 		}
 
 		check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
@@ -303,16 +309,28 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 		std::map<int, ftClient*>::iterator	it = this->_connections.begin();
 		std::ostringstream					oss;
 		int									distance;
+		bool								wrongPwd;
 
 		while (it != this->_connections.end())
 		{
-			if ((it->second)->isRegistered() == false)
+			wrongPwd = false;
+			if ((this->getPwd() != it->second->getPwd()))
+				wrongPwd = true;
+			if (it->second->isRegistered() == false || wrongPwd)
 			{
-					if (it->second->getTimeConnected() > FT_IRC_TIMEOUT)
+					if (it->second->getTimeConnected() > IRCTIMEOUT || wrongPwd)
 					{
 						oss << "Timeout of FD#" << it->first;
+						if (wrongPwd)
+						{
+								oss << " wrong password !";
+								_commands.sendCommandResponse(*(it->second), ERR_PASSWDMISMATCH,
+												"Password incorrect");
+						}
+						else
+								_commands.sendCommandResponse(*(it->second), ERR_NOTREGISTERED,
+												"You have not registered");
 						_logAction(oss.str());
-						_commands.serverSend(it->first, "", "Auth failed. Connection timed out", "");
 						distance = 1 + std::distance(this->_connections.begin(), it);
 						it++;
 						_del_from_pfds(pfds, distance, fd_count);

@@ -54,6 +54,11 @@ ftClient::ftClient(int fd, std::string name, const std::string addr, const std::
 		time(&_connect);
 		time(&_lastAction);
 		tmpBuffer.clear();
+		_realname.clear();
+		_username.clear();
+		_server.clear();	//server is static and saved in the macro IRCSERVNAME
+		_password.clear();
+		_awayMsg.clear();
 }
 
 //
@@ -78,6 +83,7 @@ bool ftClient::get_send(void) const {return _send;}
 // Call once after the client has been validated after login
 //
 void ftClient::validate(void) {_val = true;}
+void ftClient::deval(void) {_val = false;}
 
 //
 // get Hostname (rDNS) of connected client
@@ -149,7 +155,8 @@ void			ftClient::set_names(const std::string& username, const std::string& realn
 	this->_realname = realname;
 	this->_hostname = this->_addr;
 }
-void			ftClient::set_pass(const std::string& pass) { this->_password = pass; }
+void			ftClient::setPwd(const std::string& pass) { this->_password = pass; }
+std::string		ftClient::getPwd(void) const { return this->_password;}
 
 std::string		ftClient::get_prefix(void) const
 {

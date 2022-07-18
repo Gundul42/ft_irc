@@ -345,6 +345,7 @@ void		IrcChannel::setFlags(const std::string& add_remove, unsigned flag)
 }
 
 unsigned	IrcChannel::getFlags(void) { return _flags; }
+
 std::string	IrcChannel::getKey(void) const { return _key; }
 
 int	IrcChannel::setMasks(unsigned mask, std::string& str)

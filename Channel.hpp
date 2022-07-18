@@ -119,6 +119,7 @@ class IrcChannel : public ChannelMode
 		bool					isMember(const ftClient & candid) const;
 		bool					isException(const ftClient & member) const;
 		bool					isVoice(const ftClient & member) const;
+		
 		//setters
 		bool					addMember(ftClient & member);
 		void					setName(const std::string newName);
