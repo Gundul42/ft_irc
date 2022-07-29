@@ -15,7 +15,35 @@ Bot Bot::operator=(Bot const & cpy)
 Bot::Bot(std::string address, std::string port, std::string password): _port(port), _addr(address), 
 		_passwd(password)
 {
+		struct addrinfo *result, *res;
+
 		this->_bfd = socket(AF_INET, SOCK_STREAM, 0);
+		if (this->_bfd < 0)
+		{
+				std::cerr << "Error: building socket failed" << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		if (getaddrinfo((this->_addr).c_str(), (this->_port).c_str(), NULL, &result) != 0)
+		{
+				std::cerr << "Error in getaddrinfo" << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		res = result;
+		while (res != NULL)
+		{
+			if (connect(this->_bfd, res->ai_addr, res->ai_addrlen) == 0) 
+				break;	
+			res = res->ai_next;
+		}
+		std::cerr << std::endl;
+		if (res == NULL)
+		{
+				std::cerr << "Error: Could not connect to " << this->_addr << ":" << 
+						this->_port << std::endl;
+				exit(EXIT_FAILURE);
+		}
+		std::cerr << "Connected to " << this->_addr << ":" << this->_port << std::endl;
+		freeaddrinfo(result);
 }
 
 Bot::~Bot(void)
