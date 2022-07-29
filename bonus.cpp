@@ -1,27 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   run.cpp                                            :+:      :+:    :+:   */
+/*   bonus.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
+/*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/06/13 18:52:50 by graja             #+#    #+#             */
-/*   Updated: 2022/07/29 09:40:53 by graja            ###   ########.fr       */
+/*   Created: 2022/07/29 09:49:56 by graja             #+#    #+#             */
+/*   Updated: 2022/07/29 09:54:59 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "IrcServ.hpp"
-#include "Channel.hpp"
-#include "ftClient.hpp"
+#include "Bot.hpp"
 
-int	main(int argc, char **argv)
+int main(int argc, char **argv)
 {
-	if (argc != 3)
+	if (argc != 4)
 	{
-			std::cout << argv[0] << " [PORT] [PASSWORD]" << std::endl;
-			exit (1);
+			std::cout << argv[0] << ": Error not enough argumments [Address][Port][Password]"
+					<< std::endl;
+			exit(EXIT_FAILURE);
 	}
-	IrcServ	srv(argv[1], argv[2]);
-	srv.loop();
-	return(0);
+
+	Bot		bot(argv[1], argv[2], argv[3]);
+
+	exit(1);
 }
+
