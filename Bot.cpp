@@ -11,9 +11,8 @@ Bot Bot::operator=(Bot const & cpy)
 		return (*this);
 }
 
-
-Bot::Bot(std::string address, std::string port, std::string password): _port(port), _addr(address), 
-		_passwd(password)
+Bot::Bot(std::string const & address, std::string const & port, std::string const & password): 
+		_port(port), _addr(address), _passwd(password)
 {
 		struct addrinfo *result, *res;
 
@@ -51,10 +50,89 @@ Bot::~Bot(void)
 		close(this->_bfd);
 }
 				
-int const & Bot::getFd(void) const {return this->_bfd;}
+bool Bot::login(void) const
+{
+	std::ostringstream	oss;
+	std::string			ret;
 
-std::string	const & Bot::getPort(void) const {return this->_port;}
+	oss << "PASS " << this->_passwd;
+	this->write(oss.str());
+	sleep(1);
+	this->write("NICK MrBot");
+	ret = this->read();
+	if (ret.find("NICK") == std::string::npos)
+			return false;
+	oss.str("");
+	oss << "USER " << FT_BOTNAME << " 0 * :" << FT_BOTNAME;
+	this->write(oss.str());
+	ret = this->read();
+	if (ret.find("375") == std::string::npos)
+			return false;
+	return true;
+}
 
-std::string const & Bot::getAddr(void) const {return this->_addr;}
+void Bot::write(std::string const & msg) const
+{
+		std::ostringstream	oss;
+		std::string			out;
 
-std::string const & Bot::getPwd(void) const {return this->_passwd;}
+		oss << msg << "\x0d\x0a";
+		out = oss.str();
+		send(this->_bfd, out.c_str(), out.length(), 0);
+}
+
+std::string	Bot::read(void) const
+{
+		char	buf[FT_BUFSIZE];
+
+		memset(buf, 0, FT_BUFSIZE);
+		if (recv(this->_bfd, buf, FT_BUFSIZE, 0) < 0)
+				std::cerr << "Error while receiving" << std::endl;
+		return (buf);
+}
+
+bool Bot::loop(void)
+{
+		std::string msg;
+
+		while (msg != "QUIT")
+		{
+				msg = this->read();
+				if (msg.length() > 0)
+				{
+						std::cout << msg;
+						if (msg.find("PRIVMSG") == std::string::npos)
+								continue;
+						this->answer(msg);
+				}
+		}
+		return true;
+}
+
+std::string Bot::getName(std::string const & msg) const
+{
+		size_t			pos;
+
+		pos = msg.find("!");
+		return (msg.substr(1, pos - 1));
+}
+
+std::string	Bot::getInfo(std::string const & msg) const
+{
+		size_t		pos;
+
+		pos = msg.find_first_of(":", 1);
+		if (pos == std::string::npos)
+				return ("");
+		pos++;
+		return (msg.substr(pos, msg.length() - pos));
+}
+
+
+void Bot::answer(std::string const & msg) const
+{
+		std::ostringstream oss;
+
+		oss << "PRIVMSG " << this->getName(msg) << " :" << "---> " << this->getInfo(msg);
+		this->write(oss.str());
+}

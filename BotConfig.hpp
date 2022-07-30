@@ -1,33 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   bonus.cpp                                          :+:      :+:    :+:   */
+/*   BotConfig.hpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2022/07/29 09:49:56 by graja             #+#    #+#             */
-/*   Updated: 2022/07/30 14:52:55 by graja            ###   ########.fr       */
+/*   Created: 2022/07/29 17:05:26 by graja             #+#    #+#             */
+/*   Updated: 2022/07/29 17:07:53 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Bot.hpp"
+#ifndef BOTCONFIG_H
+# define BOTCONFIG_H
 
-int main(int argc, char **argv)
-{
-	if (argc != 4)
-	{
-			std::cout << argv[0] << ": Error not enough argumments [Address][Port][Password]"
-					<< std::endl;
-			exit(EXIT_FAILURE);
-	}
+# define FT_BOTNAME "MrBot"
+# define FT_BOTCHAN "#ftbotchan"
+# define FT_BUFSIZE 512
 
-	Bot		bot(argv[1], argv[2], argv[3]);
-	if (!bot.login())
-	{
-		std::cout << "Error: Login failed" << std::endl;
-		exit(EXIT_FAILURE);
-	}
-	std::cout << "All went well" << std::endl;
-	bot.loop();
-	exit(1);
-}
+#endif

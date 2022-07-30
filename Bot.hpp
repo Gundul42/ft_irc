@@ -6,21 +6,15 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 08:33:53 by graja             #+#    #+#             */
-/*   Updated: 2022/07/29 10:14:50 by graja            ###   ########.fr       */
+/*   Updated: 2022/07/30 14:18:57 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef BOT_H
 # define BOT_H
 
-/*
-# include <sys/socket.h>
-# include <iostream>
-# include <string.h>
-# include <unistd.h>
-# include <errno.h>
-*/
 # include "lib.hpp"
+# include "BotConfig.hpp"
 
 class Bot
 {
@@ -33,15 +27,19 @@ class Bot
 				Bot(Bot const & cpy);
 				Bot operator=(Bot const & cpy);
 
-		public:
-				Bot(std::string address, std::string port, std::string password);
-				~Bot(void);
+				void		write(std::string const & msg) const;
+				std::string	read(void) const;
+				std::string getName(std::string const & msg) const;
+				std::string	getInfo(std::string const & msg) const;
 
-				//getters
-				int const & 		getFd(void) const;
-				std::string const &	getPort(void) const;
-				std::string const & getAddr(void) const;
-				std::string const & getPwd(void) const;
+		public:
+				Bot(std::string const & address, std::string const & port,
+								std::string const & password);
+				~Bot(void);
+				
+				bool		login(void) const;
+				bool		loop(void);
+				void		answer(std::string const & msg) const;
 };
 
 #endif
