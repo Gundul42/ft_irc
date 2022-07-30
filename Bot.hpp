@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 08:33:53 by graja             #+#    #+#             */
-/*   Updated: 2022/07/30 14:18:57 by graja            ###   ########.fr       */
+/*   Updated: 2022/07/30 15:27:58 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ class Bot
 				std::string	read(void) const;
 				std::string getName(std::string const & msg) const;
 				std::string	getInfo(std::string const & msg) const;
+				void		answer(std::string const & msg) const;
+				std::string	encrypt(std::string const & msg) const;
+				std::string decrypt(std::string const & msg) const;
 
 		public:
 				Bot(std::string const & address, std::string const & port,
@@ -39,7 +42,6 @@ class Bot
 				
 				bool		login(void) const;
 				bool		loop(void);
-				void		answer(std::string const & msg) const;
 };
 
 #endif

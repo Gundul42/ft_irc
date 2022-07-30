@@ -131,8 +131,40 @@ std::string	Bot::getInfo(std::string const & msg) const
 
 void Bot::answer(std::string const & msg) const
 {
-		std::ostringstream oss;
+		std::ostringstream	oss;
+		std::string 		ret;
+		std::string 		chk = this->getInfo(msg);
 
-		oss << "PRIVMSG " << this->getName(msg) << " :" << "---> " << this->getInfo(msg);
+		if (this->getName(msg) == FT_BOTNAME)
+				return ;
+		if (chk.length() < 2 || chk[0] != '#' )
+			ret = ("Syntax Error: use # in front to de- and encrypt ");
+		else if (chk[0] == '#')
+			ret = this->encrypt(chk.substr(1,std::string::npos));
+		oss << "PRIVMSG " << this->getName(msg) << " :" << ret;
 		this->write(oss.str());
+}
+
+std::string	Bot::encrypt(std::string const & msg) const
+{
+		std::string					ret;
+		std::string::const_iterator	it = msg.begin();
+
+		while (it != msg.end())
+		{
+				std::cout << *it << " ";
+				if (*it >= 'a' && *it <= 'm')
+						ret.push_back(*it + 13);
+				else if (*it >= 'n' && *it <= 'z')
+						ret.push_back(*it - 13);
+				else if (*it >= 'A' && *it <= 'M')
+						ret.push_back(*it + 13);
+				else if (*it >= 'N' && *it <= 'Z')
+						ret.push_back(*it - 13);
+				else
+						ret.push_back(*it);
+				it++;
+		}
+		std::cout << std::endl;
+		return ret;
 }
