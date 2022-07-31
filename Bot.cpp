@@ -16,6 +16,7 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 {
 		struct addrinfo *result, *res;
 
+		this->setTime();
 		this->_bfd = socket(AF_INET, SOCK_STREAM, 0);
 		if (this->_bfd < 0)
 		{
@@ -50,7 +51,7 @@ Bot::~Bot(void)
 		close(this->_bfd);
 }
 				
-bool Bot::login(void) const
+bool Bot::login(void)
 {
 	std::ostringstream	oss;
 	std::string			ret;
@@ -59,15 +60,16 @@ bool Bot::login(void) const
 	this->write(oss.str());
 	sleep(1);
 	this->write("NICK MrBot");
-	ret = this->read();
+	ret = this->read(true);
 	if (ret.find("NICK") == std::string::npos)
 			return false;
 	oss.str("");
 	oss << "USER " << FT_BOTNAME << " 0 * :" << FT_BOTNAME;
 	this->write(oss.str());
-	ret = this->read();
+	ret = this->read(true);
 	if (ret.find("375") == std::string::npos)
 			return false;
+	this->setTime();
 	return true;
 }
 
@@ -81,13 +83,21 @@ void Bot::write(std::string const & msg) const
 		send(this->_bfd, out.c_str(), out.length(), 0);
 }
 
-std::string	Bot::read(void) const
+std::string	Bot::read(bool block) const
 {
-		char	buf[FT_BUFSIZE];
-
-		memset(buf, 0, FT_BUFSIZE);
-		if (recv(this->_bfd, buf, FT_BUFSIZE, 0) < 0)
-				std::cerr << "Error while receiving" << std::endl;
+		char	buf[FT_BOTBUFSIZE];
+		int		flag;
+		
+		if (block)
+				flag = 0;
+		else
+				flag = MSG_DONTWAIT;
+		memset(buf, 0, FT_BOTBUFSIZE);
+		if (recv(this->_bfd, buf, FT_BOTBUFSIZE, flag) < 0)
+		{
+				if (block)
+					std::cerr << "Error while receiving" << std::endl;
+		}
 		return (buf);
 }
 
@@ -95,12 +105,19 @@ bool Bot::loop(void)
 {
 		std::string msg;
 
-		while (msg != "QUIT")
+		while (this->keepAlive())
 		{
-				msg = this->read();
+				sleep(1);
+				msg.clear();
+				msg = this->read(false);
 				if (msg.length() > 0)
 				{
-						std::cout << msg;
+						std::cout << this->printTime() << " : " << msg;
+						if (msg.find("PONG") != std::string::npos)
+						{
+								this->setTime();
+								continue;
+						}
 						if (msg.find("PRIVMSG") == std::string::npos)
 								continue;
 						this->answer(msg);
@@ -152,7 +169,6 @@ std::string	Bot::encrypt(std::string const & msg) const
 
 		while (it != msg.end())
 		{
-				std::cout << *it << " ";
 				if (*it >= 'a' && *it <= 'm')
 						ret.push_back(*it + 13);
 				else if (*it >= 'n' && *it <= 'z')
@@ -165,6 +181,44 @@ std::string	Bot::encrypt(std::string const & msg) const
 						ret.push_back(*it);
 				it++;
 		}
-		std::cout << std::endl;
 		return ret;
+}
+
+std::string	Bot::printTime(void) const
+{
+   time_t now = time(0);
+   std::string	mytime(ctime(&now));
+   
+   return (mytime.substr(0, mytime.size() - 1));
+}
+
+int Bot::getTime(void) const
+{
+		time_t	end;
+
+		time(&end);
+		return (static_cast<int> (difftime(end, this->_timer)));
+}
+
+void Bot::setTime(void)
+{
+		time(&(this->_timer));
+}
+				
+bool Bot::keepAlive(void)
+{
+		std::ostringstream	oss;
+		static int			response = 0;
+
+		if (this->getTime() < FT_BOTKEEPALIVE)
+				response = 0;
+		else if (this->getTime() >= FT_BOTKEEPALIVE && !response)
+		{
+				oss << "PING " << _addr;
+				this->write(oss.str());
+				response = 1;
+		}
+		else if (this->getTime() >= (FT_BOTKEEPALIVE * 2))
+				return false;
+		return true;
 }

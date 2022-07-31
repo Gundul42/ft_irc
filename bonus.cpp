@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 09:49:56 by graja             #+#    #+#             */
-/*   Updated: 2022/07/30 14:52:55 by graja            ###   ########.fr       */
+/*   Updated: 2022/07/31 13:57:18 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ int main(int argc, char **argv)
 		std::cout << "Error: Login failed" << std::endl;
 		exit(EXIT_FAILURE);
 	}
-	std::cout << "All went well" << std::endl;
+	std::cout << std::endl << FT_BOTNAME << " successfully started !" << std::endl << std::endl;
 	bot.loop();
+	std::cout << "ERROR: Connection to " << argv[1] << " was lost !" << std::endl;
 	exit(1);
 }
