@@ -1,4 +1,11 @@
 #include "Bot.hpp"
+#include <signal.h>
+
+void	Bot::myHandler(int signum)
+{
+		std::cerr << std::endl << "Caught <CTRL+C>, bot is terminating ..." << std::endl;
+		exit (signum);
+}
 
 Bot::Bot(Bot const & cpy) {*this = cpy;}
 
@@ -105,6 +112,7 @@ bool Bot::loop(void)
 {
 		std::string msg;
 
+		signal(SIGINT, &Bot::myHandler);
 		while (this->keepAlive())
 		{
 				sleep(1);

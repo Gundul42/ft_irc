@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 08:33:53 by graja             #+#    #+#             */
-/*   Updated: 2022/07/31 12:55:58 by graja            ###   ########.fr       */
+/*   Updated: 2022/07/31 15:07:06 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ class Bot
 				std::string decrypt(std::string const & msg) const;
 				bool		keepAlive(void);
 
+				static void		myHandler(int signum);
+
 		public:
 				Bot(std::string const & address, std::string const & port,
 								std::string const & password);
@@ -48,6 +50,7 @@ class Bot
 				int 		getTime(void) const;
 				void 		setTime(void);
 				std::string	printTime(void) const;
+				
 };
 
 #endif
