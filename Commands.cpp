@@ -670,10 +670,10 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 				if (UserMode::AWAY & (*it).second->get_flags())
 					return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
 									" " + target, (*it).second->get_awaymsg());
-				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
-								" " + target, msg.getTrailing());
-				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
-								" " + target, msg.getTrailing());
+				return (serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
+								" " + target, msg.getTrailing()));
+				//return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
+				//				" " + target, msg.getTrailing());
 			}
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
