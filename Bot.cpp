@@ -1,5 +1,4 @@
 #include "Bot.hpp"
-#include <signal.h>
 
 void	Bot::myHandler(int signum)
 {

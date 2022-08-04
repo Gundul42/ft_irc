@@ -19,7 +19,8 @@
 # include <fstream>
 # include <vector>
 # include <cctype>
-#include <cstdlib>
+# include <cstdlib>
+# include <signal.h>
 # include "NumCodes.hpp"
 # include "config.hpp"
 

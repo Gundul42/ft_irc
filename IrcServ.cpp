@@ -153,6 +153,7 @@ void IrcServ::loop(void)
 	bool									theEnd = false;
 	std::ostringstream 						oss;
 
+	signal(SIGPIPE, SIG_IGN);
 	pfds[0].fd = _socketfd;
 	pfds[0].events = POLLIN;
 	fd_count = 1;
