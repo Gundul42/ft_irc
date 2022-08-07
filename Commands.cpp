@@ -45,22 +45,7 @@ Commands::~Commands() {}
 void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socket, std::string buf)
 {
 	std::stringstream	str(buf);
-	int					i = 0;
-	int					c;
 
-	/*
-	std::cout << std::endl;
-	while (i != buf.length())
-	{
-			c =  static_cast<int>(buf[i]);
-			if ((c > 64 && c < 91) || (c > 96 && c < 123) || (c > 47 && c < 58))
-					std::cout << buf[i] << ", ";
-			else
-					std::cout << c << ", ";
-			i++;
-	}
-	std::cout << std::endl;
-	*/
 	this->_users = usermap;
 	for (std::string line; std::getline(str, line, '\n'); )
 	{
@@ -95,6 +80,8 @@ int		Commands::die(ftClient& client, Message& msg)
 { 
 		servChannel::iterator	it = _channels.begin();
 		std::vector<std::string>::iterator	itop = _operList.begin();
+
+		msg.getPrefix();
 
 		while (itop != _operList.end())
 		{
