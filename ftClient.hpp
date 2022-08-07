@@ -47,14 +47,9 @@ class ftClient : public UserMode
 				time_t		_connect;		// time of connection
 				time_t		_lastAction;	// when was the last action
 				int			_msgs;			// nbr of messages sent
-				/*In addition to the nickname, all servers must have the
-				following information about all clients: the real name of the host
-				that the client is running on, the username of the client on that
-				host, and the server to which the client is connected.*/
 				std::string	_hostname;	//rDNS name of connected client IPv4 ONLY
 				std::string	_realname;
 				std::string	_username;
-				std::string	_server;	//server is static and saved in the macro IRCSERVNAME
 				std::string	_password;
 				std::string	_awayMsg;
 				int			_quit;

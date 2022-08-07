@@ -36,7 +36,6 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_msgs = rgt._msgs;
 		_realname = rgt._realname;
 		_username = rgt._username;
-		_server = rgt._server;
 		_hostname = rgt._hostname;
 		_quit = rgt._quit;
 		tmpBuffer = rgt.tmpBuffer;
@@ -56,7 +55,6 @@ ftClient::ftClient(int fd, std::string name, const std::string addr, const std::
 		tmpBuffer.clear();
 		_realname.clear();
 		_username.clear();
-		_server.clear();	//server is static and saved in the macro IRCSERVNAME
 		_password.clear();
 		_awayMsg.clear();
 }

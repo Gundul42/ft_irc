@@ -18,7 +18,6 @@ std::string	IrcServ::_rdns(std::string addr)
 	return (node);
 }
 
-//these are private, no use of copying
 IrcServ::IrcServ(const IrcServ & cpy) {*this = cpy;}
 IrcServ & IrcServ::operator=(const IrcServ & rgt) 
 {
@@ -101,8 +100,8 @@ void IrcServ::_add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_si
 {
 	if(*fd_count==*fd_size)
 	{
-		*fd_size*=2;
-		*pfds=(pollfd*)realloc(*pfds,sizeof(*pfds)*(*fd_size));
+		(*fd_size) *= 2;
+		*pfds=(pollfd*)realloc(*pfds,sizeof(*pfds) * (*fd_size));
 	}
 	(*pfds)[*fd_count].fd=newfd;
 	(*pfds)[*fd_count].events=POLLIN;
@@ -116,7 +115,6 @@ void IrcServ::_del_from_pfds(pollfd pfds[], int i, int *fd_count)
 {
 	delete _connections.find(pfds[i].fd)->second;
 	_connections.erase(pfds[i].fd);
-//	close (pfds[i].fd); //should be closed already by destructing ftClient
 	pfds[i] = pfds[*fd_count - 1];
 	(*fd_count)--;
 }
@@ -222,10 +220,6 @@ void IrcServ::loop(void)
 					else
 					{
 						block = false;
-						//we got something in -> parse command
-						//IRC adds CR,LF to each end of a buffer line, remove it first !
-						//std::cout << "Last Char with value: " <<
-						//		static_cast<int>(buf[strlen(buf) - 1]) << std::endl;
 						if (buf[strlen(buf) - 2] == '\x0d' && buf[strlen(buf) - 1] == '\x0a')
 							memset(buf + strlen(buf) - 2, 0, 2);
 						else if (buf[strlen(buf) - 1] != '\x0a')
@@ -315,7 +309,9 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 		while (it != this->_connections.end())
 		{
 			wrongPwd = false;
-			if ((this->getPwd() != it->second->getPwd()))
+			if (!(it->second))
+					return;
+			if (this->getPwd() != it->second->getPwd())
 				wrongPwd = true;
 			if (it->second->isRegistered() == false || wrongPwd)
 			{

@@ -12,5 +12,5 @@
 # define IRCMOTDFILE "ft_irc.motd"						//ascii file for motd
 # define IRCADMIN "admin"
 # define IRCADMINPWD "admin"
-# define IRCTIMEOUT 20
+# define IRCTIMEOUT 60
 #endif

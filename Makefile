@@ -9,17 +9,22 @@ BONUS	=	Bot.cpp bonus.cpp
 
 OBJ		=	${SRCS:.cpp=.o}
 
-CC		=	c++
+CC		=	g++
 
-FLAGS	=	-std=c++98 -pedantic-errors -g -Wextra -Wall #-Werror  
+FLAGS	=	-std=c++98 -pedantic-errors -Wextra -Wall -Werror
 
-$(NAME)	:	$(OBJ)	$(SRCS)
-	$(CC) $(FLAGS) -o $(NAME) $(OBJ)
+DFLAGS	=	-ggdb -std=c++98 -pedantic-errors -Wextra -Wall -Werror
+
+$(NAME)	:	$(SRCS) $(OBJ)
+	$(CC) $(FLAGS) -o $(NAME) $(OBJ) 
 	@echo "\033[0;36m*****************"
 	@echo "** \033[0;97mtype \033[0;31m$(NAME)\033[0;36m **"
 	@echo "*****************\033[0m"
 
 all	:	$(NAME)
+
+debug	:	$(SRCS) fclean
+	$(CC) $(DFLAGS) $(SRCS) -o $(NAME) 
 
 bonus	:	$(BONUS)
 	$(CC) $(FLAGS) -o $(BOT) $(BONUS)
