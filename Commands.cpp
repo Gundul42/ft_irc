@@ -21,7 +21,7 @@ Commands::Commands()
 	_userCommands["AWAY"] = &Commands::away;
 	_userCommands["DIE"] = &Commands::die;
 	// _userCommands["INFO"] = &Commands::info;
-	// _userCommands["INVITE"] = &Commands::invite;
+	_userCommands["INVITE"] = &Commands::invite;
 	_userCommands["JOIN"] = &Commands::join;
 	_userCommands["KICK"] = &Commands::kick;
 	_userCommands["LIST"] = &Commands::list;
@@ -106,7 +106,40 @@ int		Commands::die(ftClient& client, Message& msg)
 
 
 // int		Commands::info(ftClient& client, Message& msg) { return 1; }
-// int		Commands::invite(ftClient& client, Message& msg) { return 1; }
+int		Commands::invite(ftClient& client, Message& msg)
+{
+	servChannel::iterator		itchan;
+	std::string					nickname = msg.getParam()[0];
+	std::string					channel = msg.getParam()[1];
+	ftClient*					target;
+
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
+	else if (msg.getParam().size() < 2)
+		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+	else if ((itchan = _channels.find(channel)) == _channels.end())
+		return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, channel, "No such channel");
+	else if (!(*itchan).second->isMember(client))
+		return !sendCommandResponse(client, ERR_NOTONCHANNEL, channel, "You're not on that channel");
+	else if (!(*itchan).second->isChop(client))
+		return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, channel, "You're not channel operator");
+	else if (!isUser(nickname))
+		return !serverSend(client.get_fd(), "", "401 " + client.get_name() +
+		" " + nickname, "No such nick/channel");
+	else if ((*itchan).second->getMember(nickname, &target))
+		return !serverSend(client.get_fd(), "", "443 " + nickname +
+			" " + (*itchan).second->getName(), "is already on channel");
+	else if ((*target).get_flags() & UserMode::AWAY)
+		return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
+			" " + nickname, (*target).get_awaymsg());
+	else
+	{
+		(*itchan).second.
+		serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
+		return serverSend(target->get_fd(), "", "341 " + nickname + " " + client.get_name()
+			+ " " + channel, "");
+	}
+}
 
 //JOIN
 int		Commands::join(ftClient& client, Message& msg) 
@@ -224,15 +257,19 @@ int		Commands::kick(ftClient& client, Message& msg)
 		{
 			for (size_t j = 0; j < msg.getKeys().size(); j++)
 			{
-				if (!(*itchan).second->getMember(msg.getKeys()[j], &target))
-					serverSend(client.get_fd(), "", "410 " + client.get_name() +
-											" " + msg.getKeys()[j], "No such nick/channel");
+				if (!isUser(msg.getKeys()[j]))
+					serverSend(client.get_fd(), "", "401 " + client.get_name() +
+							" " + msg.getKeys()[j], "No such nick/channel");
+				else if (!(*itchan).second->getMember(msg.getKeys()[j], &target))
+					serverSend(client.get_fd(), "", "441 " + msg.getKeys()[j] +
+							" " + (*itchan).second->getName(), "They aren't on that channel");
 				else
 				{
 					Message partmsg("PART " + params[i]);
 					kick_msg = msg.getTrailing().empty() ? msg.getKeys()[j] : msg.getTrailing();
 					(*itchan).second->removeMember(*target);
 					serverSend(client.get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
+					serverSend(target->get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
 				}
 			}
 		}
@@ -378,9 +415,12 @@ int		Commands::mode(ftClient& client, Message& msg)
 						if (incoming_flag == ChannelMode::VOICE || incoming_flag ==
 										ChannelMode::OPERATOR)
 						{
-							if (!(*itchan).second->getMember(mask, &target))
-								serverSend(client.get_fd(), "", "410 " + client.get_name() +
+							if (!isUser(mask))
+								serverSend(client.get_fd(), "", "401 " + client.get_name() +
 										" " + mask, "No such nick/channel");
+							else if (!(*itchan).second->getMember(mask, &target))
+								serverSend(client.get_fd(), "", "441 " + mask +
+										" " + (*itchan).second->getName(), "They aren't on that channel");
 						}
 						if (add_remove == "+")
 						{
@@ -694,8 +734,6 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 									" " + target, (*it).second->get_awaymsg());
 				return (serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
 								" " + target, msg.getTrailing()));
-				//return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
-				//				" " + target, msg.getTrailing());
 			}
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
@@ -940,3 +978,13 @@ bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 		return true;
 }
 
+bool	Commands::isUser(const std::string& nick)
+{
+	userMap::iterator it = _users.begin();
+	for (; it != _users.end(); it++)
+	{
+		if ((*it).second->get_name() == nick)
+			return true;
+	}
+	return false;
+}

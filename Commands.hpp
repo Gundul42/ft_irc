@@ -26,6 +26,7 @@ class Commands
 				Commands(const Commands& other);
 				Commands& operator=(const Commands& other);
 
+				bool	isUser(const std::string& nick);
 		public:
 
 				Commands();
