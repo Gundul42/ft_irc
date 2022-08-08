@@ -2,41 +2,41 @@
 
 Commands::Commands()
 {
-	_userCommands["KILL"] = &Commands::kill;
+	// _userCommands["KILL"] = &Commands::kill;
 	_userCommands["NICK"] = &Commands::nick;
 	_userCommands["NOTICE"] = &Commands::notice;
 	_userCommands["OPER"] = &Commands::oper;
 	_userCommands["PASS"] = &Commands::pass;
 	_userCommands["PING"] = &Commands::ping;
-	_userCommands["PONG"] = &Commands::pong;
+	// _userCommands["PONG"] = &Commands::pong;
 	_userCommands["PRIVMSG"] = &Commands::privmsg;
 	_userCommands["QUIT"] = &Commands::quit;
-	_userCommands["SERVICE"] = &Commands::service;
-	_userCommands["SERVLIST"] = &Commands::servlist;
-	_userCommands["SQUERY"] = &Commands::squery;
+	// _userCommands["SERVICE"] = &Commands::service;
+	// _userCommands["SERVLIST"] = &Commands::servlist;
+	// _userCommands["SQUERY"] = &Commands::squery;
 	_userCommands["USER"] = &Commands::user;
-	_userCommands["WHO"] = &Commands::who;
-	_userCommands["WHOIS"] = &Commands::whois;
-	_userCommands["WHOWAS"] = &Commands::whowas;
+	// _userCommands["WHO"] = &Commands::who;
+	// _userCommands["WHOIS"] = &Commands::whois;
+	// _userCommands["WHOWAS"] = &Commands::whowas;
 	_userCommands["AWAY"] = &Commands::away;
 	_userCommands["DIE"] = &Commands::die;
-	_userCommands["INFO"] = &Commands::info;
-	_userCommands["INVITE"] = &Commands::invite;
+	// _userCommands["INFO"] = &Commands::info;
+	// _userCommands["INVITE"] = &Commands::invite;
 	_userCommands["JOIN"] = &Commands::join;
-	_userCommands["KICK"] = &Commands::kick;
+	// _userCommands["KICK"] = &Commands::kick;
 	_userCommands["LIST"] = &Commands::list;
 	_userCommands["MODE"] = &Commands::mode;
 	_userCommands["MOTD"] = &Commands::motd;
 	_userCommands["NAMES"] = &Commands::names;
 	_userCommands["PART"] = &Commands::part;
-	_userCommands["REHASH"] = &Commands::rehash;
-	_userCommands["RESTART"] = &Commands::restart;
-	_userCommands["STATS"] = &Commands::stats;
+	// _userCommands["REHASH"] = &Commands::rehash;
+	// _userCommands["RESTART"] = &Commands::restart;
+	// _userCommands["STATS"] = &Commands::stats;
 	_userCommands["TIME"] = &Commands::ustime;
 	_userCommands["TOPIC"] = &Commands::topic;
-	_userCommands["USERHOST"] = &Commands::userhost;
+	// _userCommands["USERHOST"] = &Commands::userhost;
 	_userCommands["VERSION"] = &Commands::version;
-	_userCommands["CAP"] = &Commands::cap;
+	// _userCommands["CAP"] = &Commands::cap;
 
 }
 
@@ -105,8 +105,8 @@ int		Commands::die(ftClient& client, Message& msg)
 
 
 
-int		Commands::info(ftClient& client, Message& msg) { return 1; }
-int		Commands::invite(ftClient& client, Message& msg) { return 1; }
+// int		Commands::info(ftClient& client, Message& msg) { return 1; }
+// int		Commands::invite(ftClient& client, Message& msg) { return 1; }
 
 //JOIN
 int		Commands::join(ftClient& client, Message& msg) 
@@ -137,7 +137,7 @@ int		Commands::join(ftClient& client, Message& msg)
 			}
 			return true;
 		}
-		for (int i = 0; i != params.size(); i++)
+		for (size_t i = 0; i != params.size(); i++)
 		{
 			if ((itchan = _channels.find(params[i])) == _channels.end())
 			{
@@ -169,22 +169,22 @@ int		Commands::join(ftClient& client, Message& msg)
 					return !sendCommandResponse(client, ERR_BANNEDFROMCHAN, params[i],
 								"Cannot join channel (+b)");
 				else if ((*itchan).second->getLimit() > 0 && (*itchan).second->getLimit()
-								<= (*itchan).second->getMembers().size())
+								<= static_cast<int>((*itchan).second->getMembers().size()))
 					return !sendCommandResponse(client, ERR_CHANNELISFULL, params[i],
 								"Cannot join channel (+l)");
 				else if ((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY &&
 								!(*itchan).second->isInvited(client))
 					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
 								"Cannot join channel (+i)");
-				if ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty()
-								|| (*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
-								!= (*itchan).second->getKey())
+				if (((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
+								|| ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
+								!= (*itchan).second->getKey()))
 					return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
 								"Cannot join channel (+k)");
 				if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
-					for (int i = 0; i != (*itchan).second->getMembers().size(); i++)
+					for (size_t i = 0; i != (*itchan).second->getMembers().size(); i++)
 						serverSend((*itchan).second->getMembers()[i]->get_fd(), client.get_name(),
 								"JOIN " + (*itchan).second->getName(), client.get_name());
 					if (!(*itchan).second->getTopic().empty())
@@ -201,10 +201,10 @@ int		Commands::join(ftClient& client, Message& msg)
 }
 
 //KICK
-int		Commands::kick(ftClient& client, Message& msg) { return 1; }
+// int		Commands::kick(ftClient& client, Message& msg) { return 1; }
 
 //KILL
-int		Commands::kill(ftClient& client, Message& msg) { return 1; }
+// int		Commands::kill(ftClient& client, Message& msg) { return 1; }
 
 //LIST
 int		Commands::list(ftClient& client, Message& msg)
@@ -259,7 +259,7 @@ int		Commands::list(ftClient& client, Message& msg)
 }
 
 //LUSERS
-int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
+// int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
 
 //MODE
 int		Commands::mode(ftClient& client, Message& msg)
@@ -292,7 +292,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 			}
 			else
 			{
-				for (int i = 1; i != msg.getFlags().size(); i++)
+				for (size_t i = 1; i != msg.getFlags().size(); i++)
 				{
 					incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
 					add_remove = msg.getFlags()[0];
@@ -392,6 +392,7 @@ int		Commands::motd(ftClient& client, Message& msg)
 		std::ostringstream	tosend;
 		std::string			str;
 
+		(void)msg;
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 		motd.open(IRCMOTDFILE, std::ios::in);
@@ -428,7 +429,7 @@ int		Commands::names(ftClient& client, Message& msg)
 		}
 		return true;
 	}
-	for (int i = 0; i != msg.getParam().size(); i++)
+	for (size_t i = 0; i != msg.getParam().size(); i++)
 	{
 		it = _channels.find(msg.getParam()[i]);
 		if (it != _channels.end())
@@ -441,7 +442,7 @@ int		Commands::names(ftClient& client, Message& msg)
 				res_param += " = ";
 			res_param += (*it).second->getName();
 			members = (*it).second->getMembers();
-			for (int i = 0; i != members.size(); i++)
+			for (size_t i = 0; i != members.size(); i++)
 			{
 				if ((*it).second->isChop(*members[i]))
 					res_trailing += "@";
@@ -631,7 +632,7 @@ int		Commands::ping(ftClient& client, Message& msg)
 		return serverSend(client.get_fd(), "", oss.str(), msg.getParam().front());
 }
 
-int		Commands::pong(ftClient& client, Message& msg) { return true; }
+// int		Commands::pong(ftClient& client, Message& msg) { return true; }
 
 int		Commands::privmsg(ftClient& client, Message& msg)
 {
@@ -695,49 +696,50 @@ int		Commands::quit(ftClient& client, Message& msg)
 {
 	servChannel::iterator	itchan;
 
-		serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
-		serverSend(client.get_fd(), " ", "Error", "Closing Link: " + 
-						client.get_addr() + " (Client Quit)");
-		itchan = _channels.begin();
-		while (itchan != _channels.end())
+	(void)msg;
+	serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
+	serverSend(client.get_fd(), " ", "Error", "Closing Link: " + 
+					client.get_addr() + " (Client Quit)");
+	itchan = _channels.begin();
+	while (itchan != _channels.end())
+	{
+		if ((*itchan).second->isMember(client))
 		{
-			if ((*itchan).second->isMember(client))
+			(*itchan).second->removeMember(client);
+			if ((*itchan).second->getMembers().size() == 0)
 			{
-				(*itchan).second->removeMember(client);
-				if ((*itchan).second->getMembers().size() == 0)
-				{
-					delete itchan->second;
-					_channels.erase(itchan);
-					itchan = _channels.begin();
-					continue;
-				}
+				delete itchan->second;
+				_channels.erase(itchan);
+				itchan = _channels.begin();
+				continue;
 			}
-			itchan++;
 		}
+		itchan++;
+	}
 	client.set_quit();
 	return true;
 }
 
-int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
+// int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
 
 //RESTART - RFC2812 4.4 ... this message is optional ...
-int		Commands::restart(ftClient& client, Message& msg) { return 1; }
+// int		Commands::restart(ftClient& client, Message& msg) { return 1; }
 
 //SERVICE
 //should not be allowed from client rfc2813, 4.1.4
-int		Commands::service(ftClient& client, Message& msg) { return 1; }
+// int		Commands::service(ftClient& client, Message& msg) { return 1; }
 
 //SERVLIST
 //bonus would be a service ? a bot ?
-int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
+// int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
 
 //SQUERY
 //this would be a PM to a service
-int		Commands::squery(ftClient& client, Message& msg) { return 1; }
+// int		Commands::squery(ftClient& client, Message& msg) { return 1; }
 
 //STATS
 //all stats about the server, this would mean to register each byte going in and out !
-int		Commands::stats(ftClient& client, Message& msg) { return 1; }
+// int		Commands::stats(ftClient& client, Message& msg) { return 1; }
 
 //TIME
 int		Commands::ustime(ftClient& client, Message& msg)
@@ -799,7 +801,6 @@ int		Commands::user(ftClient& client, Message& msg)
 		std::string			realname = msg.getTrailing();
 		std::string			servername = IRCSERVNAME;
 		std::string			serverversion = IRCSERVVERSION;
-		int					i = 0;
 
 		if (client.get_name().empty())
 			return !serverSend(client.get_fd(), "", "", "You have not set your nickname yet");
@@ -821,7 +822,7 @@ int		Commands::user(ftClient& client, Message& msg)
 }
 
 //USERHOST
-int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
+// int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
 
 //VERSION
 int		Commands::version(ftClient& client, Message& msg)
@@ -833,10 +834,10 @@ int		Commands::version(ftClient& client, Message& msg)
 		return !sendCommandResponse(client, RPL_VERSION, IRCSERVVERSION, "");
 }
 
-int		Commands::who(ftClient& client, Message& msg) { return 1; }
-int		Commands::whois(ftClient& client, Message& msg) { return 1; }
-int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
-int		Commands::cap(ftClient& client, Message& msg) { return true; }
+// int		Commands::who(ftClient& client, Message& msg) { return 1; }
+// int		Commands::whois(ftClient& client, Message& msg) { return 1; }
+// int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
+// int		Commands::cap(ftClient& client, Message& msg) { return true; }
 
 
 bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 

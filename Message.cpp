@@ -31,7 +31,7 @@ Message::Message(std::string input)
 	this->split_flags();
 }
 
-Message::~Message() {};
+Message::~Message(){}
 
 Message::Message(const Message& cpy)
 {
@@ -148,7 +148,7 @@ void	Message::split_channels(void)
 	{
 		std::vector<std::string> newParam;
 
-		for(int i = 0; i != _param.size(); i++)
+		for(size_t i = 0; i != _param.size(); i++)
 		{
 			std::stringstream	str(_param[i]);
 			for (std::string component; std::getline(str, component, ','); )
@@ -177,7 +177,7 @@ void	Message::split_flags(void)
 	if (_command == "MODE" && _param.size() > 1)
 	{
 		flags = _param[1];
-		for (int i = 0; i != flags.size(); i++)
+		for (size_t i = 0; i != flags.size(); i++)
 		{
 			str = flags[i];
 			_setFlags.push_back(str);

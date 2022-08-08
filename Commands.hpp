@@ -40,7 +40,7 @@ class Commands
 								const std::string & argument, const std::string & trailer) const;
 				bool	serverSend(int fd, std::string prefix, std::string msg, std::string trl);
 
-				//commands, to be implemented
+				//commands, will need to remove commands that are not used
 				int		away(ftClient& client, Message& msg);
 				int		die(ftClient& client, Message& msg);
 				int		info(ftClient& client, Message& msg);

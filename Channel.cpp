@@ -179,7 +179,7 @@ bool IrcChannel::isBanned(const ftClient & member) const
 
 	if (_masks._ban.empty())
 		return false;
-	for (int i = 0; i != _masks._ban.size(); i++)
+	for (size_t i = 0; i != _masks._ban.size(); i++)
 	{
 		mask = _masks._ban[i];
 		if (mask.find('!') == std::string::npos || mask.find('@') == std::string::npos)
@@ -475,7 +475,7 @@ bool IrcChannel::isInvited(const ftClient & member) const
 
 	if (_masks._invitation.empty())
 		return false;
-	for (int i = 0; i != _masks._invitation.size(); i++)
+	for (size_t i = 0; i != _masks._invitation.size(); i++)
 	{
 		mask = _masks._invitation[i];
 		nickname = mask.substr(0, mask.find("!"));
@@ -505,7 +505,7 @@ bool	IrcChannel::isException(const ftClient & member) const
 
 	if (_masks._exception.empty())
 		return false;
-	for (int i = 0; i != _masks._exception.size(); i++)
+	for (size_t i = 0; i != _masks._exception.size(); i++)
 	{
 		mask = _masks._exception[i];
 		nickname = mask.substr(0, mask.find("!"));
