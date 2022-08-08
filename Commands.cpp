@@ -134,7 +134,7 @@ int		Commands::invite(ftClient& client, Message& msg)
 			" " + nickname, (*target).get_awaymsg());
 	else
 	{
-		(*itchan).second.
+		//add to invite list
 		serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
 		return serverSend(target->get_fd(), "", "341 " + nickname + " " + client.get_name()
 			+ " " + channel, "");
@@ -556,11 +556,12 @@ int		Commands::nick(ftClient& client, Message& msg)
 //NOTICE
 int		Commands::notice(ftClient& client, Message& msg)
 {
-	std::string target = msg.getParam().front();
+	std::string target;
 	int			pos = 0;
 
 	if (!client.get_name().size() || msg.getParam().size() < 2)
 		return false;
+	target = msg.getParam().front();
 	if (msg.isNickname(target))
 	{
 		if ((pos = target.find('@')) || (pos = target.find('%')))
