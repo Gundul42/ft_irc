@@ -23,7 +23,7 @@ Commands::Commands()
 	// _userCommands["INFO"] = &Commands::info;
 	// _userCommands["INVITE"] = &Commands::invite;
 	_userCommands["JOIN"] = &Commands::join;
-	// _userCommands["KICK"] = &Commands::kick;
+	_userCommands["KICK"] = &Commands::kick;
 	_userCommands["LIST"] = &Commands::list;
 	_userCommands["MODE"] = &Commands::mode;
 	_userCommands["MOTD"] = &Commands::motd;
@@ -36,7 +36,7 @@ Commands::Commands()
 	_userCommands["TOPIC"] = &Commands::topic;
 	// _userCommands["USERHOST"] = &Commands::userhost;
 	_userCommands["VERSION"] = &Commands::version;
-	// _userCommands["CAP"] = &Commands::cap;
+	_userCommands["CAP"] = &Commands::cap;
 
 }
 
@@ -53,8 +53,8 @@ void	Commands::handle_command(const std::map<int, ftClient*>& usermap, int socke
 		userCommandsMap::const_iterator it = _userCommands.find(msg.getCommand());
 		if (it == _userCommands.end())
 			sendCommandResponse(*(_users.find(socket)->second), ERR_UNKNOWNCOMMAND, "Unknown command");
-	else
-		(this->*(it->second))(*(_users.find(socket)->second), msg);
+		else
+			(this->*(it->second))(*(_users.find(socket)->second), msg);
 	}
 }
 
@@ -201,7 +201,14 @@ int		Commands::join(ftClient& client, Message& msg)
 }
 
 //KICK
-// int		Commands::kick(ftClient& client, Message& msg) { return 1; }
+int		Commands::kick(ftClient& client, Message& msg)
+{
+	(void)client;
+	std::cout << "hi\n";
+	for(size_t i = 0; i < msg.getParam().size(); i++)
+		std::cout << msg.getParam()[i] << '\n';
+	return 1;
+}
 
 //KILL
 // int		Commands::kill(ftClient& client, Message& msg) { return 1; }
@@ -837,8 +844,12 @@ int		Commands::version(ftClient& client, Message& msg)
 // int		Commands::who(ftClient& client, Message& msg) { return 1; }
 // int		Commands::whois(ftClient& client, Message& msg) { return 1; }
 // int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
-// int		Commands::cap(ftClient& client, Message& msg) { return true; }
-
+int		Commands::cap(ftClient& client, Message& msg)
+{
+	(void)client;
+	(void)msg;
+	return true;
+}
 
 bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
 				const std::string & trailer) const
