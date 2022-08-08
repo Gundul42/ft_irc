@@ -144,7 +144,7 @@ bool	Target::isChannel(const std::string& target)
 
 void	Message::split_channels(void)
 {
-	if ((_command == "PART" || _command == "JOIN") && _param.size() >= 1)
+	if ((_command == "PART" || _command == "JOIN" || _command == "KICK") && _param.size() >= 1)
 	{
 		std::vector<std::string> newParam;
 

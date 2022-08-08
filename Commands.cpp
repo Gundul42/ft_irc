@@ -203,11 +203,41 @@ int		Commands::join(ftClient& client, Message& msg)
 //KICK
 int		Commands::kick(ftClient& client, Message& msg)
 {
-	(void)client;
-	std::cout << "hi\n";
-	for(size_t i = 0; i < msg.getParam().size(); i++)
-		std::cout << msg.getParam()[i] << '\n';
-	return 1;
+	servChannel::iterator		itchan;
+	std::vector<std::string>	params = msg.getChannel();
+	ftClient*					target;
+	std::string					kick_msg;
+
+	if (!client.isRegistered())
+		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
+	else if (msg.getParam().size() < 2)
+		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+	for(size_t i = 0; i < msg.getChannel().size(); i++)
+	{
+		if ((itchan = _channels.find(params[i])) == _channels.end())
+			sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
+		else if (!(*itchan).second->isMember(client))
+			sendCommandResponse(client, ERR_NOTONCHANNEL, params[i], "You're not on that channel");
+		else if (!(*itchan).second->isChop(client))
+			sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, params[i], "You're not channel operator");
+		else
+		{
+			for (size_t j = 0; j < msg.getKeys().size(); j++)
+			{
+				if (!(*itchan).second->getMember(msg.getKeys()[j], &target))
+					serverSend(client.get_fd(), "", "410 " + client.get_name() +
+											" " + msg.getKeys()[j], "No such nick/channel");
+				else
+				{
+					Message partmsg("PART " + params[i]);
+					kick_msg = msg.getTrailing().empty() ? msg.getKeys()[j] : msg.getTrailing();
+					(*itchan).second->removeMember(*target);
+					serverSend(client.get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
+				}
+			}
+		}
+	}
+	return true;
 }
 
 //KILL
@@ -223,10 +253,7 @@ int		Commands::list(ftClient& client, Message& msg)
 		size_t										pos;
 
 		if (_channels.size() == 0 || params.size() > 2)
-		{
-			sendCommandResponse(client, RPL_LISTEND, "End of /LIST");
-			return 1;
-		}
+			return !sendCommandResponse(client, RPL_LISTEND, "End of /LIST");
 		sendCommandResponse(client, RPL_LISTSTART, "Channel", "Users Name");
 		if (params.size() == 0)
 		{

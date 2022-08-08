@@ -38,6 +38,7 @@ clean	:
 fclean	:	clean	
 	rm -f $(NAME)
 	rm -f $(BOT)
+	rm -rf ./ircserv.dSYM
 
 re	:	fclean all
 
