@@ -19,10 +19,8 @@ const unsigned short UserMode::_lowerFlagTable[] =
 	RESTRICTED, MARK, 0, 0, 0, WALLOPS, 0, 0, 0
 };
 
-//
-// it makes no sense to copy clients, FDs are unique
-//
-ftClient::ftClient(const ftClient & cpy) {*this = cpy;}
+// base class need to be explicitly initialized in Copy Constructor
+ftClient::ftClient(const ftClient & cpy): UserMode(0)  {*this = cpy;}
 
 ftClient & ftClient::operator=(const ftClient & rgt)
 {

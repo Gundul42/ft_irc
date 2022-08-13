@@ -217,8 +217,8 @@ int		Commands::join(ftClient& client, Message& msg)
 				if (!(*itchan).second->isMember(client))
 				{
 					(*itchan).second->addMember(client);
-					for (size_t i = 0; i != (*itchan).second->getMembers().size(); i++)
-						serverSend((*itchan).second->getMembers()[i]->get_fd(), client.get_name(),
+					for (size_t j = 0; j != (*itchan).second->getMembers().size(); j++)
+						serverSend((*itchan).second->getMembers()[j]->get_fd(), client.get_name(),
 								"JOIN " + (*itchan).second->getName(), client.get_name());
 					if (!(*itchan).second->getTopic().empty())
 					{

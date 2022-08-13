@@ -83,7 +83,8 @@ IrcChannel::IrcChannel(void)
 		_chanBuffer.clear();
 }
 
-IrcChannel::IrcChannel(const IrcChannel & cpy) {*this = cpy;}
+// base class need to be explicitly initialized in Copy Constructor
+IrcChannel::IrcChannel(const IrcChannel & cpy): ChannelMode(0) {*this = cpy;}
 
 IrcChannel & IrcChannel::operator=(const IrcChannel & cpy)
 {
@@ -260,7 +261,7 @@ bool IrcChannel::addVoice(unsigned flag, ftClient& member)
 
 bool IrcChannel::removeChop(unsigned flag, ftClient & member)
 {
-	std::vector<ftClient*>::const_iterator	in;
+	std::vector<ftClient*>::iterator	in;
 
 	if (flag != ChannelMode::OPERATOR || _chop.size() == 0 || isChop(member) == false)
 			return false;
@@ -279,7 +280,7 @@ bool IrcChannel::removeChop(unsigned flag, ftClient & member)
 
 bool IrcChannel::removeMember(ftClient & member)
 {
-	std::vector<ftClient*>::const_iterator	in;
+	std::vector<ftClient*>::iterator	in;
 
 	if (_member.size() == 0 || isMember(member) == false)
 		return false;
@@ -298,7 +299,7 @@ bool IrcChannel::removeMember(ftClient & member)
 
 bool IrcChannel::removeVoice(unsigned flag, ftClient& member)
 {
-	std::vector<ftClient*>::const_iterator	in;
+	std::vector<ftClient*>::iterator	in;
 
 	if (flag != ChannelMode::VOICE || _voice.size() == 0 || isVoice(member) == false)
 		return false;
