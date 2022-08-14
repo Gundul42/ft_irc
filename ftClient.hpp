@@ -55,13 +55,13 @@ class ftClient : public UserMode
 				int			_quit;
 
 				ftClient(const ftClient & cpy);
-				ftClient & operator=(const ftClient & rgt);
 
 		public:
 				std::string		tmpBuffer;	// tmp buffer until we receive a cr and/or lf
 
 				ftClient(int fd,const std::string name, const std::string addr,
 								const std::string host);
+				ftClient & operator=(const ftClient & rgt);
 				~ftClient(void);
 
 				void			validate(void);
@@ -87,6 +87,7 @@ class ftClient : public UserMode
 				void			set_awaymsg(const std::string& msg);
 				void			set_quit();
 				void			set_send(void); //server end
+				void			set_fd(const int &fd);
 
 				int				getTimeConnected(void) const;
 				time_t			getLastAction(void) const;

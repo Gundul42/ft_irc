@@ -179,4 +179,5 @@ void			ftClient::set_awaymsg(const std::string& msg) { this->_awayMsg = msg; }
 std::string		ftClient::get_username(void) const { return this->_username; }
 int				ftClient::get_quit(void) const { return this->_quit; }
 void			ftClient::set_quit() { this->_quit = 1; }
+void			ftClient::set_fd(const int &fd) { this->_fd = fd; }
 

@@ -27,6 +27,8 @@ class Commands
 				Commands& operator=(const Commands& other);
 
 				bool	isUser(const std::string& nick);
+				void	printList(unsigned int incoming_flag, IrcChannel &channel, 
+									const std::string &flag, ftClient &client);
 		public:
 
 				Commands();

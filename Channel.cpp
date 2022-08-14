@@ -118,7 +118,7 @@ bool IrcChannel::getMember(const std::string& name, ftClient** member)
 	{
 		if ((*it)->get_name() == name)
 		{
-			*member = (*it);
+			*member = &(*(*it));
 			return true;
 		}
 	}

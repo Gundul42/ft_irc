@@ -132,12 +132,14 @@ int		Commands::invite(ftClient& client, Message& msg)
 	else if ((*target).get_flags() & UserMode::AWAY)
 		return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
 			" " + nickname, (*target).get_awaymsg());
-	else
+	else //invite does not add to invite list of channel
 	{
-		//add to invite list
+		//target value error
+		std::cout << target->get_name() << "\n";
+		std::cout << (*target).get_name() << "\n";
 		serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
-		return serverSend(target->get_fd(), "", "341 " + nickname + " " + client.get_name()
-			+ " " + channel, "");
+		return serverSend(target->get_fd(), "", "341 " + nickname + 
+			" " + client.get_name() + " " + channel, "");
 	}
 }
 
@@ -270,6 +272,11 @@ int		Commands::kick(ftClient& client, Message& msg)
 					(*itchan).second->removeMember(*target);
 					serverSend(client.get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
 					serverSend(target->get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
+					if (itchan->second->getMembers().size() == 0)
+					{
+						delete itchan->second;
+						_channels.erase(itchan);
+					}
 				}
 			}
 		}
@@ -332,15 +339,37 @@ int		Commands::list(ftClient& client, Message& msg)
 //LUSERS
 // int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
 
+void	Commands::printList(unsigned int incoming_flag, IrcChannel &channel,
+								const std::string &flag, ftClient &client)
+{
+	std::string	reply[] = {"346 ", "348 ", "367 ", "347 ", "349 ", "368 "};
+	std::string	trailing[] = {"invite", "exception", "ban"};
+	std::vector<std::string> list;
+	int	i = 0;
+
+	if (flag == "e")
+		i = 1;
+	else if (flag == "b")
+		i = 2;
+	channel.getMasks().getMaskList(incoming_flag, list);
+	for (std::vector<std::string>::iterator it = list.begin();
+		it != list.end(); it++)
+		serverSend(client.get_fd(), "", reply[i] + client.get_name() 
+			+ " " + channel.getName() + " " +  (*it) +
+			" " + client.get_prefix(), " ");
+	serverSend(client.get_fd(), "", reply[i + 3] + client.get_name() + " " +
+					channel.getName(),
+					"End of Channel " + trailing[i] + " List");
+}
+
 //MODE
 int		Commands::mode(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
-		std::vector<std::string>					list;
 		std::vector<std::string>::const_iterator	itpar;
 		servChannel::iterator						itchan;
-		unsigned									incoming_flag;
-		std::string									add_remove;
+		unsigned int								incoming_flag;
+		std::string									add_remove = "+";
 		std::string									mask;
 		ftClient*									target;
 
@@ -353,7 +382,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 			itchan =_channels.find(params[0]);
 			if (itchan == _channels.end())
 				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
-			if (params.size() == 1)
+			if (params.size() == 1) //mode #channel -> prints channel info
 			{
 				serverSend(client.get_fd(),IRCSERVNAME, "324 " +
 					client.get_name() + " " + params[0] + " +" +
@@ -361,102 +390,82 @@ int		Commands::mode(ftClient& client, Message& msg)
 				return serverSend(client.get_fd(),IRCSERVNAME, "329 " + client.get_name() + " " +
 										params[0] + " " + (*itchan).second->getCtime(), "");
 			}
-			else
+			for (size_t i = 0; i != msg.getFlags().size(); i++)
 			{
-				for (size_t i = 1; i != msg.getFlags().size(); i++)
+				std::cout << msg.getFlags()[i];
+				incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
+				if (i == 0 && msg.getFlags()[i] == "-") //get +/-, if not provided then +
+					add_remove = msg.getFlags()[i];
+				else if (incoming_flag == 0 || msg.getFlags()[i] == "a")
+					serverSend(client.get_fd(), "", "472 " + client.get_name() + " " +
+									msg.getFlags()[i].c_str(), "is an unknown mode char to me");
+				else if (params.size() == 2 &&  msg.getFlags()[i] == "b") //print ban list, no chop needed
+					printList(incoming_flag, *(*itchan).second, msg.getFlags()[i], client);
+				else if (!(*itchan).second->isChop(client)) //check chop
+					sendCommandResponse(client, ERR_CHANOPRIVSNEEDED,
+									"You're not channel operator");
+				else if (params.size() == 2 && (msg.getFlags()[i] == "I" 
+					|| msg.getFlags()[i] == "e")) //print invite or exception list
+					printList(incoming_flag, *(*itchan).second, msg.getFlags()[i], client);
+				else if	(add_remove == "+" && params.size() < 3 
+					&& (incoming_flag == ChannelMode::KEY 
+					|| incoming_flag == ChannelMode::LIMIT 
+					|| incoming_flag == ChannelMode::VOICE 
+					|| incoming_flag == ChannelMode::OPERATOR))
+						sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
+				else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
+					|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
+					continue; //if add already exit flag/ remove already not exist flag, send no response
+				else if (msg.getFlags()[i].find_first_not_of("ovklbeI") == std::string::npos) //handles flags ovklbeI
 				{
-					incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
-					add_remove = msg.getFlags()[0];
-					if (incoming_flag == 0 || msg.getFlags()[i] == "a")
-						serverSend(client.get_fd(), "", "472 " + client.get_name() + " " +
-										msg.getFlags()[i].c_str(), "is an unknown mode char to me");
-					else if (incoming_flag == ChannelMode::BAN_MASK && msg.getParam().size() == 2)//does not support ban time
+					(*itchan).second->setFlags(add_remove, incoming_flag);
+					mask = msg.getParam()[2];
+					if (incoming_flag == ChannelMode::VOICE
+						|| incoming_flag == ChannelMode::OPERATOR) //flags requiring user to be valid
 					{
-						(*itchan).second->getMasks().getMaskList(incoming_flag, list);
-						if (!list.empty())
-							for (std::vector<std::string>::iterator it = list.begin();
-										it != list.end(); it++)
-								serverSend(client.get_fd(), "", "367 " + client.get_name() 
-										+ " " + (*itchan).second->getName() + " " +  (*it) +
-										" " + client.get_prefix(), " ");
-						serverSend(client.get_fd(), "", "368 " + client.get_name() + " " +
-										(*itchan).second->getName(), "End of Channel Ban List");
+						if (!isUser(mask))
+							serverSend(client.get_fd(), "", "401 " + client.get_name() +
+									" " + mask, "No such nick/channel");
+						else if (!(*itchan).second->getMember(mask, &target))
+							serverSend(client.get_fd(), "", "441 " + mask +
+									" " + (*itchan).second->getName(), "They aren't on that channel");
 					}
-					else if (!(*itchan).second->isChop(client))
-						sendCommandResponse(client, ERR_CHANOPRIVSNEEDED,
-										"You're not channel operator");
-					else if ((incoming_flag == ChannelMode::INVITATION_MASK ||
-										incoming_flag == ChannelMode::EXCEPTION_MASK)
-										&& msg.getParam().size() == 2)//does not support invite time
+					if (add_remove == "+")
 					{
-						(*itchan).second->getMasks().getMaskList(incoming_flag, list);
-						if (!list.empty())
-							for (std::vector<std::string>::iterator it = list.begin();
-										it != list.end(); it++)
-								serverSend(client.get_fd(), "", "346 " + client.get_name() 
-										+ " " + (*itchan).second->getName() + " " +  (*it) +
-										" " + client.get_prefix(), " ");
-						serverSend(client.get_fd(), "", "347 " + client.get_name() + " " +
-										(*itchan).second->getName(), "End of Channel Invite List");
-					}
-					else if	(add_remove == "+" && (incoming_flag == ChannelMode::KEY ||
-										incoming_flag == ChannelMode::LIMIT
-										|| incoming_flag == ChannelMode::VOICE || incoming_flag ==
-										ChannelMode::OPERATOR) && msg.getParam().size() < 3)
-							sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-					else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
-										|| (add_remove == "-" && incoming_flag == ChannelMode::LIMIT
-										&& !(incoming_flag & (*itchan).second->getFlags())))
-						continue;
-					else if (msg.getFlags()[i].find_first_not_of("ovklbeI") == std::string::npos)
-					{
-						(*itchan).second->setFlags(add_remove, incoming_flag);
-						mask = msg.getParam()[2];
-						if (incoming_flag == ChannelMode::VOICE || incoming_flag ==
-										ChannelMode::OPERATOR)
-						{
-							if (!isUser(mask))
-								serverSend(client.get_fd(), "", "401 " + client.get_name() +
-										" " + mask, "No such nick/channel");
-							else if (!(*itchan).second->getMember(mask, &target))
-								serverSend(client.get_fd(), "", "441 " + mask +
-										" " + (*itchan).second->getName(), "They aren't on that channel");
-						}
-						if (add_remove == "+")
-						{
-							if ((*itchan).second->addChop(incoming_flag, *target)
-										|| (*itchan).second->addVoice(incoming_flag, *target)
-										|| (*itchan).second->setMasks(incoming_flag, mask))
-								serverSend(client.get_fd(), client.get_name(), "MODE "
-										+ (*itchan).second->getName() + " " + add_remove 
-										+ msg.getFlags()[i] + " " + mask, " ");
-						}
-						else
-						{
-							if ((*itchan).second->removeChop(incoming_flag, *target)
-										|| (*itchan).second->removeVoice(incoming_flag, *target)
-										|| (*itchan).second->unsetMasks(incoming_flag, mask))
-								serverSend(client.get_fd(), client.get_name(), "MODE "
-										+ (*itchan).second->getName() + " " + add_remove 
-										+ msg.getFlags()[i] + " " + mask, " ");
-							else if (incoming_flag == ChannelMode::LIMIT)
-								serverSend(client.get_fd(), client.get_name(), "MODE "
-										+ (*itchan).second->getName() + " " 
-										+ add_remove + msg.getFlags()[i], " ");
-						}
+						if ((*itchan).second->addChop(incoming_flag, *target)
+									|| (*itchan).second->addVoice(incoming_flag, *target)
+									|| (*itchan).second->setMasks(incoming_flag, mask))
+							serverSend(client.get_fd(), client.get_name(), "MODE "
+									+ (*itchan).second->getName() + " " + add_remove 
+									+ msg.getFlags()[i] + " " + mask, " ");
 					}
 					else
 					{
-						(*itchan).second->setFlags(add_remove, incoming_flag);
-						serverSend(client.get_fd(), client.get_name(), "MODE " +
-										(*itchan).second->getName() + " " + add_remove +
-										msg.getFlags()[i], " ");
+						if ((*itchan).second->removeChop(incoming_flag, *target)
+									|| (*itchan).second->removeVoice(incoming_flag, *target)
+									|| (*itchan).second->unsetMasks(incoming_flag, mask))
+							serverSend(client.get_fd(), client.get_name(), "MODE "
+									+ (*itchan).second->getName() + " " + add_remove 
+									+ msg.getFlags()[i] + " " + mask, " ");
+						else if (incoming_flag == ChannelMode::LIMIT)
+							serverSend(client.get_fd(), client.get_name(), "MODE "
+									+ (*itchan).second->getName() + " " 
+									+ add_remove + msg.getFlags()[i], " ");
 					}
+				}
+				else //handles flags qpsrtimn
+				{
+					(*itchan).second->setFlags(add_remove, incoming_flag);
+					serverSend(client.get_fd(), client.get_name(), "MODE " +
+									(*itchan).second->getName() + " " + add_remove +
+									msg.getFlags()[i], " ");
 				}
 			}
 		}
-		//MODE USER
-		return 1;
+		else //mode user is for server operator, not supported
+			return !sendCommandResponse(client, ERR_USERSDONTMATCH, 
+								"Cannot change mode for other users");
+		return true;
 }
 
 //MOTD
