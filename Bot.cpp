@@ -27,11 +27,13 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		if (this->_bfd < 0)
 		{
 				std::cerr << "Error: building socket failed" << std::endl;
+				freeaddrinfo(result);
 				exit(EXIT_FAILURE);
 		}
 		if (getaddrinfo((this->_addr).c_str(), (this->_port).c_str(), NULL, &result) != 0)
 		{
 				std::cerr << "Error in getaddrinfo" << std::endl;
+				freeaddrinfo(result);
 				exit(EXIT_FAILURE);
 		}
 		res = result;
@@ -46,6 +48,7 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		{
 				std::cerr << "Error: Could not connect to " << this->_addr << ":" << 
 						this->_port << std::endl;
+				freeaddrinfo(result);
 				exit(EXIT_FAILURE);
 		}
 		std::cerr << "Connected to " << this->_addr << ":" << this->_port << std::endl;
