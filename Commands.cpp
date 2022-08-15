@@ -103,21 +103,21 @@ int		Commands::die(ftClient& client, Message& msg)
 		return true;
 }
 
-
-
 // int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg)
 {
 	servChannel::iterator		itchan;
-	std::string					nickname = msg.getParam()[0];
-	std::string					channel = msg.getParam()[1];
+	std::string					nickname;
+	std::string					channel;
 	ftClient*					target;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 	else if (msg.getParam().size() < 2)
 		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-	else if ((itchan = _channels.find(channel)) == _channels.end())
+	nickname = msg.getParam()[0];
+	channel = msg.getParam()[1];
+	if ((itchan = _channels.find(channel)) == _channels.end())
 		return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, channel, "No such channel");
 	else if (!(*itchan).second->isMember(client))
 		return !sendCommandResponse(client, ERR_NOTONCHANNEL, channel, "You're not on that channel");
@@ -129,17 +129,22 @@ int		Commands::invite(ftClient& client, Message& msg)
 	else if ((*itchan).second->getMember(nickname, &target))
 		return !serverSend(client.get_fd(), "", "443 " + nickname +
 			" " + (*itchan).second->getName(), "is already on channel");
-	else if ((*target).get_flags() & UserMode::AWAY)
-		return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
-			" " + nickname, (*target).get_awaymsg());
 	else //invite does not add to invite list of channel
 	{
-		//target value error
-		std::cout << target->get_name() << "\n";
-		std::cout << (*target).get_name() << "\n";
-		serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
-		return serverSend(target->get_fd(), "", "341 " + nickname + 
-			" " + client.get_name() + " " + channel, "");
+		for (std::map<int, ftClient*>::iterator it = _users.begin();
+			it != _users.end(); it++)
+		{
+			if ((*it).second->get_name() == nickname)
+			{
+				(*it).second->invited(channel);
+				if ((*it).second->get_flags() & UserMode::AWAY)
+					return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
+						" " + nickname, (*it).second->get_awaymsg());
+				serverSend((*it).second->get_fd(), "", "341 " + nickname + 
+					" " + client.get_name() + " " + channel, "");
+			}
+		}
+		return serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
 	}
 }
 
@@ -372,6 +377,9 @@ int		Commands::mode(ftClient& client, Message& msg)
 		std::string									add_remove = "+";
 		std::string									mask;
 		ftClient*									target;
+		std::vector<ftClient*>::iterator			itmem;
+		std::vector<ftClient*>						members;
+		int											flag;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -392,7 +400,6 @@ int		Commands::mode(ftClient& client, Message& msg)
 			}
 			for (size_t i = 0; i != msg.getFlags().size(); i++)
 			{
-				std::cout << msg.getFlags()[i];
 				incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
 				if (i == 0 && msg.getFlags()[i] == "-") //get +/-, if not provided then +
 					add_remove = msg.getFlags()[i];
@@ -413,52 +420,53 @@ int		Commands::mode(ftClient& client, Message& msg)
 					|| incoming_flag == ChannelMode::VOICE 
 					|| incoming_flag == ChannelMode::OPERATOR))
 						sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-				else if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
-					|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
-					continue; //if add already exit flag/ remove already not exist flag, send no response
-				else if (msg.getFlags()[i].find_first_not_of("ovklbeI") == std::string::npos) //handles flags ovklbeI
+				else if (msg.getFlags()[i].find_first_not_of("qpsrtimnovklbeI") == std::string::npos)
 				{
-					(*itchan).second->setFlags(add_remove, incoming_flag);
 					mask = msg.getParam()[2];
-					if (incoming_flag == ChannelMode::VOICE
-						|| incoming_flag == ChannelMode::OPERATOR) //flags requiring user to be valid
-					{
-						if (!isUser(mask))
+					if ((incoming_flag == ChannelMode::VOICE
+						|| incoming_flag == ChannelMode::OPERATOR) && !isUser(mask)) //flags requiring user to be valid
 							serverSend(client.get_fd(), "", "401 " + client.get_name() +
 									" " + mask, "No such nick/channel");
-						else if (!(*itchan).second->getMember(mask, &target))
+					else if ((incoming_flag == ChannelMode::VOICE
+						|| incoming_flag == ChannelMode::OPERATOR) && !(*itchan).second->getMember(mask, &target))
 							serverSend(client.get_fd(), "", "441 " + mask +
 									" " + (*itchan).second->getName(), "They aren't on that channel");
-					}
-					if (add_remove == "+")
+					else if ((add_remove == "+" && ((*itchan).second->addChop(incoming_flag, *target)
+								|| (*itchan).second->addVoice(incoming_flag, *target)
+								|| (*itchan).second->setMasks(incoming_flag, mask)))
+						|| (add_remove == "-" && ((*itchan).second->removeChop(incoming_flag, *target)
+									|| (*itchan).second->removeVoice(incoming_flag, *target)
+									|| (*itchan).second->unsetMasks(incoming_flag, mask))))
 					{
-						if ((*itchan).second->addChop(incoming_flag, *target)
-									|| (*itchan).second->addVoice(incoming_flag, *target)
-									|| (*itchan).second->setMasks(incoming_flag, mask))
-							serverSend(client.get_fd(), client.get_name(), "MODE "
+						members = itchan->second->getMembers();
+						itmem = members.begin();
+						while (itmem != members.end())
+						{
+							serverSend((*itmem)->get_fd(), client.get_name(), "MODE "
 									+ (*itchan).second->getName() + " " + add_remove 
 									+ msg.getFlags()[i] + " " + mask, " ");
+							itmem++;
+						}
 					}
 					else
 					{
-						if ((*itchan).second->removeChop(incoming_flag, *target)
-									|| (*itchan).second->removeVoice(incoming_flag, *target)
-									|| (*itchan).second->unsetMasks(incoming_flag, mask))
-							serverSend(client.get_fd(), client.get_name(), "MODE "
-									+ (*itchan).second->getName() + " " + add_remove 
-									+ msg.getFlags()[i] + " " + mask, " ");
-						else if (incoming_flag == ChannelMode::LIMIT)
-							serverSend(client.get_fd(), client.get_name(), "MODE "
-									+ (*itchan).second->getName() + " " 
-									+ add_remove + msg.getFlags()[i], " ");
+						if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
+							|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
+							continue; //if add already exit flag/ remove already not exist flag, send no response
+						else
+						{
+							(*itchan).second->setFlags(add_remove, incoming_flag);
+							members = itchan->second->getMembers();
+							itmem = members.begin();
+							while (itmem != members.end())
+							{
+								serverSend(client.get_fd(), client.get_name(), "MODE "
+										+ (*itchan).second->getName() + " " 
+										+ add_remove + msg.getFlags()[i], " ");
+								itmem++;
+							}
+						}
 					}
-				}
-				else //handles flags qpsrtimn
-				{
-					(*itchan).second->setFlags(add_remove, incoming_flag);
-					serverSend(client.get_fd(), client.get_name(), "MODE " +
-									(*itchan).second->getName() + " " + add_remove +
-									msg.getFlags()[i], " ");
 				}
 			}
 		}

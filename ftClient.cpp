@@ -37,6 +37,7 @@ ftClient & ftClient::operator=(const ftClient & rgt)
 		_hostname = rgt._hostname;
 		_quit = rgt._quit;
 		tmpBuffer = rgt.tmpBuffer;
+		_invited = rgt._invited;
 		return (*this);
 }
 
@@ -180,4 +181,24 @@ std::string		ftClient::get_username(void) const { return this->_username; }
 int				ftClient::get_quit(void) const { return this->_quit; }
 void			ftClient::set_quit() { this->_quit = 1; }
 void			ftClient::set_fd(const int &fd) { this->_fd = fd; }
+bool			ftClient::is_invited(std::string& channel)
+{
+	std::vector<std::string>::const_iterator	it;
 
+	for (it = _invited.begin(); it != _invited.end(); it++)
+	{
+		if ((*it) == channel)
+			return true;
+	}
+	return false;
+}
+void			ftClient::invited(std::string& channel)
+{
+	std::vector<std::string>::const_iterator	it;
+	for (it = _invited.begin(); it != _invited.end(); it++)
+	{
+		if ((*it) == channel)
+			return;
+	}
+	_invited.push_back(channel);
+}

@@ -115,7 +115,7 @@ class IrcChannel : public ChannelMode
 		bool					isCreator(const ftClient & member) const;
 		bool					isSafe(void) const;
 		bool					isBanned(const ftClient & member) const;
-		bool					isInvited(const ftClient & member) const;
+		bool					isInvited(ftClient& member);
 		bool					isMember(const ftClient & candid) const;
 		bool					isException(const ftClient & member) const;
 		bool					isVoice(const ftClient & member) const;

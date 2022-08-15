@@ -219,7 +219,7 @@ bool IrcChannel::isMember(const ftClient & candid) const
 		return false;
 }
 
-bool IrcChannel::addMember(ftClient & member)
+bool IrcChannel::addMember(ftClient& member)
 {
 	if (isMember(member) == true)
 		return false;
@@ -433,6 +433,8 @@ int	IrcChannel::unsetMasks(unsigned mask, std::string& str)
 		it = _masks._ban.begin();
 		for (; it != _masks._ban.end(); it++)
 		{
+			std::cout << str << "\n";
+			std::cout << (*it) << "\n";
 			if ((*it) == str)
 			{
 				_masks._ban.erase(it);
@@ -467,14 +469,16 @@ void	Masks::getMaskList(unsigned mask, std::vector<std::string>& makslist)
 }
 
 //does not support wildcard such as a* or *.net
-bool IrcChannel::isInvited(const ftClient & member) const
+bool IrcChannel::isInvited(ftClient& member)
 {
 	std::string	nickname;
 	std::string	username;
 	std::string	hostname;
 	std::string	mask;
 
-	if (_masks._invitation.empty())
+	if (member.is_invited(_name))
+		return true;
+	else if (_masks._invitation.empty())
 		return false;
 	for (size_t i = 0; i != _masks._invitation.size(); i++)
 	{

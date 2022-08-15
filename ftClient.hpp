@@ -53,6 +53,7 @@ class ftClient : public UserMode
 				std::string	_password;
 				std::string	_awayMsg;
 				int			_quit;
+				std::vector<std::string>	_invited;//channels invited to
 
 				ftClient(const ftClient & cpy);
 
@@ -97,6 +98,8 @@ class ftClient : public UserMode
 
 				bool			isRegistered(void) const;
 				bool			isOperator(void) const;
+				void			invited(std::string& channel);
+				bool			is_invited(std::string& channel);
 
 				//to be continued
 };
