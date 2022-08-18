@@ -379,7 +379,6 @@ int		Commands::mode(ftClient& client, Message& msg)
 		ftClient*									target;
 		std::vector<ftClient*>::iterator			itmem;
 		std::vector<ftClient*>						members;
-		int											flag;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");

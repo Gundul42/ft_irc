@@ -13,7 +13,7 @@ CC		=	g++
 
 FLAGS	=	-std=c++98 -pedantic-errors -Wextra -Wall -Werror
 
-DFLAGS	=	-ggdb -std=c++98 -pedantic-errors -Wextra -Wall -Werror
+DFLAGS	=	-ggdb
 
 $(NAME)	:	$(SRCS) $(OBJ)
 	$(CC) $(FLAGS) -o $(NAME) $(OBJ) 
@@ -24,7 +24,12 @@ $(NAME)	:	$(SRCS) $(OBJ)
 all	:	$(NAME)
 
 debug	:	$(SRCS) fclean
-	$(CC) $(DFLAGS) $(SRCS) -o $(NAME) 
+	@echo
+	@echo "Server:"
+	$(CC) $(DFLAGS) $(FLAGS) $(SRCS) -o $(NAME)
+	@echo
+	@echo "Bot:"
+	$(CC) $(DFLAGS) $(FLAGS) $(BONUS) -o $(BOT) 
 
 bonus	:	$(BONUS)
 	$(CC) $(FLAGS) -o $(BOT) $(BONUS)
@@ -38,8 +43,8 @@ clean	:
 fclean	:	clean	
 	rm -f $(NAME)
 	rm -f $(BOT)
-	rm -rf ./ircserv.dSYM
+#	rm -rf ./ircserv.dSYM
 
 re	:	fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean bonus debug fclean re
