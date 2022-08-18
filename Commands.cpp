@@ -140,11 +140,11 @@ int		Commands::invite(ftClient& client, Message& msg)
 				if ((*it).second->get_flags() & UserMode::AWAY)
 					return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
 						" " + nickname, (*it).second->get_awaymsg());
-				serverSend((*it).second->get_fd(), "", "341 " + nickname + 
-					" " + client.get_name() + " " + channel, "");
+				serverSend((*it).second->get_fd(), "", "341 " + client.get_name() + 
+					" " + nickname + " " + channel, "");
 			}
 		}
-		return serverSend(client.get_fd(), "", "INVITE " + nickname, channel);
+		return serverSend(client.get_fd(), client.get_name(), "INVITE " + nickname, channel);
 	}
 }
 
