@@ -375,7 +375,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 			for (size_t i = 0; i != msg.getFlags().size(); i++)
 			{
 				incoming_flag = ChannelMode::parse(msg.getFlags()[i][0]);
-				if (i == 0 && msg.getFlags()[i] == "-") //get +/-, if not provided then +
+				if (i == 0 && (msg.getFlags()[i] == "-" || msg.getFlags()[i] == "+")) //get +/-, if not provided then +
 					add_remove = msg.getFlags()[i];
 				else if (incoming_flag == 0 || msg.getFlags()[i] == "a")
 					serverSend(client.get_fd(), "", "472 " + client.get_name() + " " +
