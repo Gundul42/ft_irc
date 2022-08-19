@@ -733,7 +733,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
-				if (members[i]->get_name() != client.get_name())
+				if (members[i]->get_name() != client.get_name() && !(*it).second->isBanned(*(members[i])))
 					serverSend(members[i]->get_fd(), client.get_name(), msg.getCommand() +
 									" " + target, msg.getTrailing());
 			return true;
