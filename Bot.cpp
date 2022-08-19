@@ -33,7 +33,6 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		if (getaddrinfo((this->_addr).c_str(), (this->_port).c_str(), NULL, &result) != 0)
 		{
 				std::cerr << "Error in getaddrinfo" << std::endl;
-				freeaddrinfo(result);
 				exit(EXIT_FAILURE);
 		}
 		res = result;
