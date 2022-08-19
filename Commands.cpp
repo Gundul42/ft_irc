@@ -576,7 +576,7 @@ int		Commands::notice(ftClient& client, Message& msg)
 	std::string target;
 	int			pos = 0;
 
-	if (!client.get_name().size() || msg.getParam().size() < 2)
+	if (!client.get_name().size() || msg.getParam().size() != 1)
 		return false;
 	target = msg.getParam().front();
 	if (msg.isNickname(target))
@@ -588,9 +588,7 @@ int		Commands::notice(ftClient& client, Message& msg)
 		{
 			if (target == (*it).second->get_name())
 			{
-				serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
-								" " + target, msg.getTrailing());
-				return serverSend(client.get_fd(), client.get_prefix(), msg.getCommand() +
+				return serverSend((*it).second->get_fd(), client.get_prefix(), msg.getCommand() +
 								" " + target, msg.getTrailing());
 			}
 		}
