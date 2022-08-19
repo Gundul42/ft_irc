@@ -19,6 +19,7 @@ std::string	IrcServ::_rdns(std::string addr)
 }
 
 IrcServ::IrcServ(const IrcServ & cpy) {*this = cpy;}
+
 IrcServ & IrcServ::operator=(const IrcServ & rgt) 
 {
 		_socketfd = rgt._socketfd; 
@@ -171,7 +172,7 @@ void IrcServ::loop(void)
 			exit(EXIT_FAILURE);
 		}
 
-		check_valid_client(pfds, &fd_count); // temp deactivated, 20 sec no valid -> kick client
+		check_valid_client(pfds, &fd_count);
 		for (i = 0; i < fd_count; i++)
 		{
 			ftClient *client = _connections.find(pfds[i].fd)->second; //local copy for less find calls
@@ -269,7 +270,7 @@ void IrcServ::loop(void)
 	}
 	this->_dropEmAll();
 	close(_socketfd);
-	free(pfds);				//alloc with calloc means free with free() !
+	free(pfds);
 }
 				
 int	IrcServ::getTimeDiff(ftClient & start)

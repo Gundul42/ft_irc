@@ -2,9 +2,9 @@
 # define CONFIG_H
 
 # define IRCSERVNAME "irc.gundul.net"
-# define IRCSERVWLC "Welcome to ft_IrcServ V 0.4beta"
-# define IRCSERVVERSION "ft_irc V0.4beta [mwen graja debug=on]"
-# define IRCSERVCDATE "040822"
+# define IRCSERVWLC "Welcome to IrcServ V 0.9alpha"
+# define IRCSERVVERSION "ircserv V0.9alpha [mwen graja debug=on]"
+# define IRCSERVCDATE "190822"
 # define IRCSERVUSERMODES "aiwroOs"
 # define IRCSERVCHANMODES "birkfsmqz"
 # define IRCFLOODCONTROL 2								//time intervall it is checked for msgs
@@ -12,5 +12,5 @@
 # define IRCMOTDFILE "ft_irc.motd"						//ascii file for motd
 # define IRCADMIN "admin"
 # define IRCADMINPWD "admin"
-# define IRCTIMEOUT 60
+# define IRCTIMEOUT 30
 #endif

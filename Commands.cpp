@@ -829,6 +829,7 @@ int		Commands::user(ftClient& client, Message& msg)
 		std::string			realname = msg.getTrailing();
 		std::string			servername = IRCSERVNAME;
 		std::string			serverversion = IRCSERVVERSION;
+		std::string			serverdate = IRCSERVCDATE;
 
 		if (client.get_name().empty())
 			return !serverSend(client.get_fd(), "", "", "You have not set your nickname yet");
@@ -846,7 +847,7 @@ int		Commands::user(ftClient& client, Message& msg)
 		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is "
 						+ servername + ", running version " + serverversion);
 		return serverSend(client.get_fd(), "", "003 " + client.get_name(),
-						"The server was created on I don't know how long ago...");
+						"The server was created on " + serverdate);
 }
 
 int		Commands::version(ftClient& client, Message& msg)

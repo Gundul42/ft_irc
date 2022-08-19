@@ -486,8 +486,6 @@ bool IrcChannel::isInvited(ftClient& member)
 		nickname = mask.substr(0, mask.find("!"));
 		username = mask.substr(mask.find("!") + 1, mask.find("@") - mask.find("!") - 1);
 		hostname = mask.substr(mask.find("@") + 1);
-		// std::cout << nickname << " " << username << " " << hostname << "\n";
-
 		if (hostname == member.get_hostname() || hostname == "*")
 		{
 			if (username == member.get_username() || username == "*")
