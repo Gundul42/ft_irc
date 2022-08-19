@@ -97,16 +97,17 @@ void IrcServ::_logAction(const std::string & log) const
 //
 // dynamically change size of the pollfd array
 //
-void IrcServ::_add_to_pfds( pollfd *pfds[], int newfd, int *fd_count, int *fd_size)
+void IrcServ::_add_to_pfds( pollfd **pfds, int newfd, int *fd_count, int *fd_size)
 {
 	if(*fd_count==*fd_size)
 	{
 		(*fd_size) *= 2;
 		*pfds=(pollfd*)realloc(*pfds,sizeof(*pfds) * (*fd_size));
-		memset((*pfds) + *fd_size * sizeof(*pfds), 0, *fd_size *sizeof(*pfds));
+		memset(pfds + *fd_size * sizeof(*pfds), 0, *fd_size *sizeof(*pfds));
 	}
 	(*pfds)[*fd_count].fd=newfd;
 	(*pfds)[*fd_count].events=POLLIN;
+	(*pfds)[*fd_count].revents=POLLIN;
 	(*fd_count)++;
 }
 
@@ -145,7 +146,7 @@ void IrcServ::loop(void)
 	char									buf[512];
 	char									remoteIP[INET6_ADDRSTRLEN];
 	int										fd_count = 0;
-	int										fd_size = 3;
+	int										fd_size = 2;
 	int										poll_count = 0;
 	pollfd									*pfds = (pollfd*) calloc(fd_size, sizeof (*pfds));
 	std::string								addrStr;
