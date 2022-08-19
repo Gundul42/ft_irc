@@ -2,25 +2,16 @@
 
 Commands::Commands()
 {
-	// _userCommands["KILL"] = &Commands::kill;
 	_userCommands["NICK"] = &Commands::nick;
 	_userCommands["NOTICE"] = &Commands::notice;
 	_userCommands["OPER"] = &Commands::oper;
 	_userCommands["PASS"] = &Commands::pass;
 	_userCommands["PING"] = &Commands::ping;
-	// _userCommands["PONG"] = &Commands::pong;
 	_userCommands["PRIVMSG"] = &Commands::privmsg;
 	_userCommands["QUIT"] = &Commands::quit;
-	// _userCommands["SERVICE"] = &Commands::service;
-	// _userCommands["SERVLIST"] = &Commands::servlist;
-	// _userCommands["SQUERY"] = &Commands::squery;
 	_userCommands["USER"] = &Commands::user;
-	// _userCommands["WHO"] = &Commands::who;
-	// _userCommands["WHOIS"] = &Commands::whois;
-	// _userCommands["WHOWAS"] = &Commands::whowas;
 	_userCommands["AWAY"] = &Commands::away;
 	_userCommands["DIE"] = &Commands::die;
-	// _userCommands["INFO"] = &Commands::info;
 	_userCommands["INVITE"] = &Commands::invite;
 	_userCommands["JOIN"] = &Commands::join;
 	_userCommands["KICK"] = &Commands::kick;
@@ -29,15 +20,10 @@ Commands::Commands()
 	_userCommands["MOTD"] = &Commands::motd;
 	_userCommands["NAMES"] = &Commands::names;
 	_userCommands["PART"] = &Commands::part;
-	// _userCommands["REHASH"] = &Commands::rehash;
-	// _userCommands["RESTART"] = &Commands::restart;
-	// _userCommands["STATS"] = &Commands::stats;
 	_userCommands["TIME"] = &Commands::ustime;
 	_userCommands["TOPIC"] = &Commands::topic;
-	// _userCommands["USERHOST"] = &Commands::userhost;
 	_userCommands["VERSION"] = &Commands::version;
 	_userCommands["CAP"] = &Commands::cap;
-
 }
 
 Commands::~Commands() {}
@@ -75,7 +61,6 @@ int		Commands::away(ftClient& client, Message& msg)
 	}
 }
 
-//DIE
 int		Commands::die(ftClient& client, Message& msg) 
 { 
 		servChannel::iterator	it = _channels.begin();
@@ -103,7 +88,6 @@ int		Commands::die(ftClient& client, Message& msg)
 		return true;
 }
 
-// int		Commands::info(ftClient& client, Message& msg) { return 1; }
 int		Commands::invite(ftClient& client, Message& msg)
 {
 	servChannel::iterator		itchan;
@@ -149,7 +133,6 @@ int		Commands::invite(ftClient& client, Message& msg)
 	}
 }
 
-//JOIN
 int		Commands::join(ftClient& client, Message& msg) 
 {
 		std::vector<std::string>	params = msg.getChannel();
@@ -241,7 +224,6 @@ int		Commands::join(ftClient& client, Message& msg)
 		return true;
 }
 
-//KICK
 int		Commands::kick(ftClient& client, Message& msg)
 {
 	servChannel::iterator		itchan;
@@ -290,10 +272,6 @@ int		Commands::kick(ftClient& client, Message& msg)
 	return true;
 }
 
-//KILL
-// int		Commands::kill(ftClient& client, Message& msg) { return 1; }
-
-//LIST
 int		Commands::list(ftClient& client, Message& msg)
 {
 		servChannel::iterator						it = _channels.begin();
@@ -342,9 +320,6 @@ int		Commands::list(ftClient& client, Message& msg)
 		return 1;
 }
 
-//LUSERS
-// int		Commands::lusers(ftClient& client, Message& msg) { return 1; }
-
 void	Commands::printList(unsigned int incoming_flag, IrcChannel &channel,
 								const std::string &flag, ftClient &client)
 {
@@ -368,7 +343,6 @@ void	Commands::printList(unsigned int incoming_flag, IrcChannel &channel,
 					"End of Channel " + trailing[i] + " List");
 }
 
-//MODE
 int		Commands::mode(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
@@ -476,7 +450,6 @@ int		Commands::mode(ftClient& client, Message& msg)
 		return true;
 }
 
-//MOTD
 int		Commands::motd(ftClient& client, Message& msg)
 {
 		std::fstream		motd;
@@ -498,7 +471,6 @@ int		Commands::motd(ftClient& client, Message& msg)
 		return true;
 }
 
-//NAMES
 int		Commands::names(ftClient& client, Message& msg)
 {
 	servChannel::iterator	it;
@@ -546,7 +518,6 @@ int		Commands::names(ftClient& client, Message& msg)
 	return true;
 }
 
-//NICK
 int		Commands::nick(ftClient& client, Message& msg)
 {
 	std::string oldnick = client.get_name();
@@ -570,7 +541,6 @@ int		Commands::nick(ftClient& client, Message& msg)
 	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
 }
 
-//NOTICE
 int		Commands::notice(ftClient& client, Message& msg)
 {
 	std::string target;
@@ -615,11 +585,10 @@ int		Commands::notice(ftClient& client, Message& msg)
 		}
 		return false;
 	}
-	//else if (msg.isMask(target))
+	//else if (msg.isMask(target)), for furture dev
 	return false;
 }
 
-//OPER
 int		Commands::oper(ftClient& client, Message& msg)
 {
 	std::vector<std::string>::iterator it = _operList.begin();
@@ -642,7 +611,6 @@ int		Commands::oper(ftClient& client, Message& msg)
 	return !serverSend(client.get_fd(), "", "491 " + client.get_name(), "No O-lines for your host");
 }
 
-//PART
 int		Commands::part(ftClient& client, Message& msg)
 {
 	std::vector<std::string>			params;
@@ -699,7 +667,6 @@ int		Commands::part(ftClient& client, Message& msg)
 	return false;
 }
 
-//PASS
 int		Commands::pass(ftClient& client, Message& msg)
 {
 	if (client.isRegistered())
@@ -710,7 +677,6 @@ int		Commands::pass(ftClient& client, Message& msg)
 	return true;
 }
 
-//PING
 int		Commands::ping(ftClient& client, Message& msg)
 {
 	std::ostringstream oss;
@@ -721,8 +687,6 @@ int		Commands::ping(ftClient& client, Message& msg)
 	else
 		return serverSend(client.get_fd(), "", oss.str(), msg.getParam().front());
 }
-
-// int		Commands::pong(ftClient& client, Message& msg) { return true; }
 
 int		Commands::privmsg(ftClient& client, Message& msg)
 {
@@ -776,7 +740,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
 	}
-	//else if (msg.isMask(target)) oper related
+	//else if (msg.isMask(target)) oper related, for future dev
 	return true;
 }
 
@@ -808,28 +772,6 @@ int		Commands::quit(ftClient& client, Message& msg)
 	return true;
 }
 
-// int		Commands::rehash(ftClient& client, Message& msg) { return 1; }
-
-//RESTART - RFC2812 4.4 ... this message is optional ...
-// int		Commands::restart(ftClient& client, Message& msg) { return 1; }
-
-//SERVICE
-//should not be allowed from client rfc2813, 4.1.4
-// int		Commands::service(ftClient& client, Message& msg) { return 1; }
-
-//SERVLIST
-//bonus would be a service ? a bot ?
-// int		Commands::servlist(ftClient& client, Message& msg) { return 1; }
-
-//SQUERY
-//this would be a PM to a service
-// int		Commands::squery(ftClient& client, Message& msg) { return 1; }
-
-//STATS
-//all stats about the server, this would mean to register each byte going in and out !
-// int		Commands::stats(ftClient& client, Message& msg) { return 1; }
-
-//TIME
 int		Commands::ustime(ftClient& client, Message& msg)
 {
 		std::vector<std::string>	params = msg.getParam();
@@ -845,7 +787,6 @@ int		Commands::ustime(ftClient& client, Message& msg)
 		return serverSend(client.get_fd(), "", oss.str(), mytime);
 }
 
-//TOPIC
 int		Commands::topic(ftClient& client, Message& msg)
 {
 	servChannel::iterator	it;
@@ -882,7 +823,6 @@ int		Commands::topic(ftClient& client, Message& msg)
 					msg.getParam()[0], msg.getTrailing());
 }
 
-//USER
 int		Commands::user(ftClient& client, Message& msg)
 {
 		std::string			username;
@@ -909,10 +849,6 @@ int		Commands::user(ftClient& client, Message& msg)
 						"The server was created on I don't know how long ago...");
 }
 
-//USERHOST
-// int		Commands::userhost(ftClient& client, Message& msg) { return 1; }
-
-//VERSION
 int		Commands::version(ftClient& client, Message& msg)
 {
 		std::vector<std::string>	params = msg.getParam();
@@ -922,9 +858,6 @@ int		Commands::version(ftClient& client, Message& msg)
 		return !sendCommandResponse(client, RPL_VERSION, IRCSERVVERSION, "");
 }
 
-// int		Commands::who(ftClient& client, Message& msg) { return 1; }
-// int		Commands::whois(ftClient& client, Message& msg) { return 1; }
-// int		Commands::whowas(ftClient& client, Message& msg) { return 1; }
 int		Commands::cap(ftClient& client, Message& msg)
 {
 	(void)client;
@@ -932,7 +865,7 @@ int		Commands::cap(ftClient& client, Message& msg)
 	return true;
 }
 
-bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
+bool	Commands::sendCommandResponse(const ftClient & clt, const int & code, 
 				const std::string & trailer) const
 {
 	std::ostringstream	tosend;
@@ -942,7 +875,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 	return sendCommandResponse(clt, tosend.str(), trailer);
 }
 
-bool Commands::sendCommandResponse(const ftClient & clt, const std::string & code, 
+bool	Commands::sendCommandResponse(const ftClient & clt, const std::string & code, 
 				const std::string & trailer) const
 {
 	std::ostringstream	tosend;
@@ -959,7 +892,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const std::string & cod
 	return true;
 }
 
-bool Commands::sendCommandResponse(const ftClient & clt, const int & code, 
+bool	Commands::sendCommandResponse(const ftClient & clt, const int & code, 
 				const std::string & argument, const std::string & trailer) const
 {
 	std::ostringstream	tosend;
@@ -977,7 +910,7 @@ bool Commands::sendCommandResponse(const ftClient & clt, const int & code,
 	return true;
 }
 
-bool Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
+bool	Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
 {
 		std::string	tosend;
 

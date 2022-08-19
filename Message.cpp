@@ -97,20 +97,6 @@ void							Message::parse(const std::string& input)
 			this->_param.push_back(component);
 		i++;
 	}
-	//  std::cout << "*prefix: " << this->_prefix << "~\n";
-	//  std::cout << "*command: " << this->_command << "~\n";
-	//  std::cout << "*param: ";
-	 for (std::vector<std::string>::iterator it = this->_param.begin(); it != this->_param.end(); it++)
-	//  {	std::cout << *it << " ";
-	 	if ((*it).find("\x0d") != std::string::npos)
-			std::cout << "YO\n";
-	//  std::cout << "~\n";
-	//  std::cout << "*trailing: " << this->_trailing << "~\n";
-
-	if (this->_prefix.find("\x0d") != std::string::npos
-		|| this->_command.find("\x0d") != std::string::npos
-		|| this->_trailing.find("\x0d") != std::string::npos)
-		std::cout << "YO\n";
 }
 
 Target::Target() {}
@@ -163,9 +149,6 @@ void	Message::split_channels(void)
 				_keys = newParam;
 			newParam.clear();
 		}
-		// std::vector<std::string>::iterator it = _keys.begin();
-		// for (; it != _keys.end(); it++)
-		// 	std::cout << (*it) << '\n';
 	}
 }
 
