@@ -14,11 +14,12 @@ Bot Bot::operator=(Bot const & cpy)
 		this->_port = cpy._port;
 		this->_addr = cpy._addr;
 		this->_passwd = cpy._passwd;
+		this->_timer = cpy._timer;
 		return (*this);
 }
 
 Bot::Bot(std::string const & address, std::string const & port, std::string const & password): 
-		_port(port), _addr(address), _passwd(password)
+		 _bfd(-1), _port(port), _addr(address), _passwd(password), _timer(0)
 {
 		struct addrinfo *result, *res;
 
@@ -27,7 +28,6 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		if (this->_bfd < 0)
 		{
 				std::cerr << "Error: building socket failed" << std::endl;
-				freeaddrinfo(result);
 				exit(EXIT_FAILURE);
 		}
 		if (getaddrinfo((this->_addr).c_str(), (this->_port).c_str(), NULL, &result) != 0)
@@ -53,6 +53,7 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		}
 		std::cerr << "Connected to " << this->_addr << ":" << this->_port << std::endl;
 		freeaddrinfo(result);
+		sleep(1);
 }
 
 Bot::~Bot(void)
@@ -92,16 +93,16 @@ void Bot::write(std::string const & msg) const
 		send(this->_bfd, out.c_str(), out.length(), 0);
 }
 
-std::string	Bot::read(bool block) const
+std::string	Bot::read(bool block)
 {
-		char	buf[FT_BOTBUFSIZE];
-		int		flag;
+		static char		buf[FT_BOTBUFSIZE];
+		int			flag;
 		
+		memset(buf, 0, FT_BOTBUFSIZE);
 		if (block)
 				flag = 0;
 		else
 				flag = MSG_DONTWAIT;
-		memset(buf, 0, FT_BOTBUFSIZE);
 		if (recv(this->_bfd, buf, FT_BOTBUFSIZE, flag) < 0)
 		{
 				if (block)
@@ -112,8 +113,9 @@ std::string	Bot::read(bool block) const
 
 bool Bot::loop(void)
 {
-		std::string msg;
+		std::string msg = "";
 
+		msg.clear();
 		signal(SIGINT, &Bot::myHandler);
 		while (this->keepAlive())
 		{

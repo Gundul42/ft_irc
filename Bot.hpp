@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 08:33:53 by graja             #+#    #+#             */
-/*   Updated: 2022/07/31 15:07:06 by graja            ###   ########.fr       */
+/*   Updated: 2022/08/19 10:15:36 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ class Bot
 				Bot operator=(Bot const & cpy);
 
 				void		write(std::string const & msg) const;
-				std::string	read(bool block) const;
+				std::string	read(bool block);
 				std::string getName(std::string const & msg) const;
 				std::string	getInfo(std::string const & msg) const;
 				void		answer(std::string const & msg) const;

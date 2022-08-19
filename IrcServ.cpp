@@ -310,7 +310,7 @@ void IrcServ::check_valid_client(pollfd *pfds,int *fd_count)
 		{
 			wrongPwd = false;
 			if (!(it->second))
-					return;
+					continue;
 			if (this->getPwd() != it->second->getPwd())
 				wrongPwd = true;
 			if (it->second->isRegistered() == false || wrongPwd)

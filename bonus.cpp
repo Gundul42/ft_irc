@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 09:49:56 by graja             #+#    #+#             */
-/*   Updated: 2022/07/31 13:57:18 by graja            ###   ########.fr       */
+/*   Updated: 2022/08/19 11:02:00 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int main(int argc, char **argv)
 	}
 
 	Bot		bot(argv[1], argv[2], argv[3]);
+	sleep(1);
 	if (!bot.login())
 	{
 		std::cout << "Error: Login failed" << std::endl;
