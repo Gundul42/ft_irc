@@ -79,7 +79,11 @@ bool ftClient::get_send(void) const {return _send;}
 //
 // Call once after the client has been validated after login
 //
-void ftClient::validate(void) {_val = true;}
+void ftClient::validate(void)
+{
+	if (!_name.empty() && !_realname.empty())
+		_val = true;
+}
 void ftClient::deval(void) {_val = false;}
 
 //

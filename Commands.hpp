@@ -29,6 +29,8 @@ class Commands
 				bool	isUser(const std::string& nick);
 				void	printList(unsigned int incoming_flag, IrcChannel &channel, 
 									const std::string &flag, ftClient &client);
+				bool	sendRegistered(ftClient &client, Message &msg);
+
 		public:
 
 				Commands();

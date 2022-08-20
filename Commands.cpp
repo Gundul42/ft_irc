@@ -200,7 +200,7 @@ int		Commands::join(ftClient& client, Message& msg)
 								!(*itchan).second->isInvited(client))
 					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
 								"Cannot join channel (+i)");
-				if (((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
+				else if (((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
 								|| ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
 								!= (*itchan).second->getKey()))
 					return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
@@ -412,6 +412,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 									|| (*itchan).second->removeVoice(incoming_flag, *target)
 									|| (*itchan).second->unsetMasks(incoming_flag, mask))))
 					{
+						(*itchan).second->setFlags(add_remove, incoming_flag);
 						members = itchan->second->getMembers();
 						itmem = members.begin();
 						while (itmem != members.end())
@@ -457,8 +458,6 @@ int		Commands::motd(ftClient& client, Message& msg)
 		std::string			str;
 
 		(void)msg;
-		if (client.get_name().empty() || !client.isRegistered())
-			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
 		motd.open(IRCMOTDFILE, std::ios::in);
 		if (!motd.is_open())
 			return !sendCommandResponse(client, ERR_NOMOTD, "MOTD File is missing");
@@ -538,7 +537,11 @@ int		Commands::nick(ftClient& client, Message& msg)
 	client.set_name(msg.getParam().front());
 	if (oldnick.empty())
 		oldnick = newnick;
-	return serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
+	serverSend(client.get_fd(), oldnick,  msg.getCommand(), newnick);
+	client.validate();
+	if (client.isRegistered())
+		return sendRegistered(client, msg);
+	return true;
 }
 
 int		Commands::notice(ftClient& client, Message& msg)
@@ -671,9 +674,12 @@ int		Commands::pass(ftClient& client, Message& msg)
 {
 	if (client.isRegistered())
 		return !serverSend(client.get_fd(), "", "462 ", "You may not reregister");
-	else if (msg.getParam().empty())
+	else if (msg.getParam().empty() && msg.getTrailing().empty())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
-	client.setPwd(msg.getParam().front());
+	else if (msg.getTrailing().size())
+		client.setPwd(msg.getTrailing());
+	else
+		client.setPwd(msg.getParam().front());
 	return true;
 }
 
@@ -831,8 +837,6 @@ int		Commands::user(ftClient& client, Message& msg)
 		std::string			serverversion = IRCSERVVERSION;
 		std::string			serverdate = IRCSERVCDATE;
 
-		if (client.get_name().empty())
-			return !serverSend(client.get_fd(), "", "", "You have not set your nickname yet");
 		if (client.isRegistered())
 			return !sendCommandResponse(client, ERR_ALREADYREGISTRED, "You may not reregister");
 		else if (msg.getParam().size() < 3)
@@ -840,14 +844,9 @@ int		Commands::user(ftClient& client, Message& msg)
 		username = msg.getParam()[0];
 		client.set_names(username, realname);
 		client.validate();
-		if (!motd(client, msg)) //show motd
-			return false;
-		serverSend(client.get_fd(), "", "001 " + client.get_name(),
-						"Welcome to the Internet Relay Network " + client.get_name());
-		serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is "
-						+ servername + ", running version " + serverversion);
-		return serverSend(client.get_fd(), "", "003 " + client.get_name(),
-						"The server was created on " + serverdate);
+		if (client.isRegistered())
+			return sendRegistered(client, msg);
+		return false;
 }
 
 int		Commands::version(ftClient& client, Message& msg)
@@ -937,4 +936,21 @@ bool	Commands::isUser(const std::string& nick)
 			return true;
 	}
 	return false;
+}
+
+bool	Commands::sendRegistered(ftClient &client, Message &msg)
+{
+	std::string			servername = IRCSERVNAME;
+	std::string			serverversion = IRCSERVVERSION;
+
+	if (!motd(client, msg)) //show motd
+		return false;
+	serverSend(client.get_fd(), "", "001 " + client.get_name(),
+					"Welcome to the Internet Relay Network " + client.get_name());
+	serverSend(client.get_fd(), "", "002 " + client.get_name(), "Your host is "
+					+ servername + ", running version " + serverversion);
+	serverSend(client.get_fd(), "", "003 " + client.get_name(),
+					"The server was created on I don't know how long ago...");
+	return serverSend(client.get_fd(), "", "004 " + client.get_name() + " " + IRCSERVNAME + " " + IRCSERVVERSION + " " + IRCSERVUSERMODES + " " + IRCSERVCHANMODES,
+					" ");
 }
