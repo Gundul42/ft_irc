@@ -6,7 +6,7 @@
 # define IRCSERVVERSION "ircserv V0.9alpha [mwen graja debug=on]"
 # define IRCSERVCDATE "190822"
 # define IRCSERVUSERMODES "ao"
-# define IRCSERVCHANMODES "biklmm"
+# define IRCSERVCHANMODES "biklmn"
 # define IRCFLOODCONTROL 2								//time intervall it is checked for msgs
 # define IRCMAXMSGCOUNT 5								//that many can be sent in floodcontrol
 # define IRCMOTDFILE "ft_irc.motd"						//ascii file for motd
