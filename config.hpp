@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   config.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/08/20 13:01:33 by graja             #+#    #+#             */
+/*   Updated: 2022/08/20 13:01:38 by graja            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CONFIG_H
 # define CONFIG_H
 
 # define IRCSERVNAME "irc.gundul.net"
-# define IRCSERVWLC "Welcome to IrcServ V 0.9alpha"
-# define IRCSERVVERSION "ircserv V0.9alpha [mwen graja debug=on]"
-# define IRCSERVCDATE "190822"
+# define IRCSERVWLC "Welcome to IrcServ V1.0"
+# define IRCSERVVERSION "ircserv V1.0 [mwen graja]"
+# define IRCSERVCDATE "200822"
 # define IRCSERVUSERMODES "ao"
 # define IRCSERVCHANMODES "biklmn"
 # define IRCFLOODCONTROL 2								//time intervall it is checked for msgs
@@ -12,5 +24,5 @@
 # define IRCMOTDFILE "ft_irc.motd"						//ascii file for motd
 # define IRCADMIN "admin"
 # define IRCADMINPWD "admin"
-# define IRCTIMEOUT 30
+# define IRCTIMEOUT 20
 #endif
