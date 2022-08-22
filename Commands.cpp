@@ -425,7 +425,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 					}
 					else if (msg.getFlags()[i].find_first_not_of("timn") == std::string::npos)
 					{
-						std::cout << "masaka " << msg.getFlags()[i] << "\n";
+						//std::cout << "masaka " << msg.getFlags()[i] << "\n";
 						if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
 							|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
 							continue; //if add already exit flag/ remove already not exist flag, send no response
@@ -735,7 +735,8 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 								!(*it).second->isMember(client))
 				|| ((*it).second->getFlags() & ChannelMode::MODERATED &&
 								!(*it).second->isChop(client) && !(*it).second->isVoice(client))
-				|| (!(*it).second->isChop(client) && !(*it).second->isVoice(client)) && (*it).second->isBanned(client))
+				|| ((!(*it).second->isChop(client) && !(*it).second->isVoice(client)) &&
+								(*it).second->isBanned(client)))
 				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
