@@ -178,7 +178,6 @@ int		Commands::join(ftClient& client, Message& msg)
 				if (params[i][0] == '#')
 				{
 					newChan->setFlags("+", ChannelMode::parse('n'));
-					newChan->setFlags("+", ChannelMode::parse('s'));
 					newChan->setFlags("+", ChannelMode::parse('t'));
 				}
 				_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
@@ -394,9 +393,10 @@ int		Commands::mode(ftClient& client, Message& msg)
 					|| incoming_flag == ChannelMode::VOICE 
 					|| incoming_flag == ChannelMode::OPERATOR))
 						sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
-				else if (msg.getFlags()[i].find_first_not_of("qpsrtimnovklbeI") == std::string::npos)
+				else if (msg.getFlags()[i].find_first_not_of("ovtimnklbeI") == std::string::npos)
 				{
-					mask = msg.getParam()[2];
+					if (msg.getParam().size() == 3)
+						mask = msg.getParam()[2];
 					if ((incoming_flag == ChannelMode::VOICE
 						|| incoming_flag == ChannelMode::OPERATOR) && !isUser(mask)) //flags requiring user to be valid
 							serverSend(client.get_fd(), "", "401 " + client.get_name() +
@@ -423,8 +423,9 @@ int		Commands::mode(ftClient& client, Message& msg)
 							itmem++;
 						}
 					}
-					else
+					else if (msg.getFlags()[i].find_first_not_of("timn") == std::string::npos)
 					{
+						std::cout << "masaka " << msg.getFlags()[i] << "\n";
 						if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
 							|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
 							continue; //if add already exit flag/ remove already not exist flag, send no response
@@ -734,7 +735,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 								!(*it).second->isMember(client))
 				|| ((*it).second->getFlags() & ChannelMode::MODERATED &&
 								!(*it).second->isChop(client) && !(*it).second->isVoice(client))
-				|| (*it).second->isBanned(client))
+				|| (!(*it).second->isChop(client) && !(*it).second->isVoice(client)) && (*it).second->isBanned(client))
 				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
 			std::vector<ftClient*> members = (*it).second->getMembers();
 			int size = members.size();
