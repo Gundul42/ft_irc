@@ -1010,22 +1010,22 @@ bool	Commands::getChannel(const std::string& name, IrcChannel** channel)
 
 	for (size_t i = 0; i < name.size(); i++)
 		target_name += tolower(name[i]);
-	std::cout << "target: "<< target_name << "\n";
+	// std::cout << "target: "<< target_name << "\n";
 
 	for (; it != _channels.end(); it++)
 	{
 		for (size_t i = 0; i < it->second->getName().size(); i++)
 			search_name += tolower(it->second->getName()[i]);
-		std::cout << "search: " << search_name << "\n";
+		// std::cout << "search: " << search_name << "\n";
 		if (search_name == target_name)
 		{
 			*channel = &(*(it->second));
-			std::cout << "true\n";
+			// std::cout << "true\n";
 			return true;
 		}
 		search_name = "";
 	}
-	std::cout << "false\n";
+	// std::cout << "false\n";
 	return false;
 }
 
