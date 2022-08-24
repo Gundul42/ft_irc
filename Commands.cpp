@@ -585,6 +585,7 @@ int		Commands::notice(ftClient& client, Message& msg)
 {
 	std::string target;
 	int			pos = 0;
+	IrcChannel*	existedChan;
 
 	if (!client.get_name().size() || msg.getParam().size() != 1)
 		return false;
@@ -606,21 +607,23 @@ int		Commands::notice(ftClient& client, Message& msg)
 	}
 	else if (msg.isChannel(target))
 	{
-		servChannel::iterator it = _channels.find(target);
+		// servChannel::iterator it = _channels.find(target);
 
-		if (it != _channels.end())
+		// if (it != _channels.end())
+		if (getChannel(target, &existedChan))
 		{
-			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG &&
-									!(*it).second->isMember(client))
-				|| ((*it).second->getFlags() & ChannelMode::MODERATED &&
-						!(*it).second->isChop(client) && !(*it).second->isVoice(client))
-				|| (*it).second->isBanned(client))
+			if ((existedChan->getFlags() & ChannelMode::NO_OUTSIDE_MSG &&
+									!existedChan->isMember(client))
+				|| (existedChan->getFlags() & ChannelMode::MODERATED &&
+						!existedChan->isChop(client) && !existedChan->isVoice(client))
+				|| ((!existedChan->isChop(client) && !existedChan->isVoice(client)) &&
+								existedChan->isBanned(client)))
 				return false;
-			std::vector<ftClient*> members = (*it).second->getMembers();
+			std::vector<ftClient*> members = existedChan->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
 				serverSend(members[i]->get_fd(), client.get_prefix(), msg.getCommand() +
-							" " + target, msg.getTrailing());
+							" " + existedChan->getName(), msg.getTrailing());
 			return true;
 		}
 		return false;
@@ -1001,13 +1004,13 @@ bool	Commands::getChannel(const std::string& name, IrcChannel** channel)
 	std::string target_name;
 	servChannel::iterator it = _channels.begin();
 
-	for (int i = 0; i < name.size(); i++)
+	for (size_t i = 0; i < name.size(); i++)
 		target_name += tolower(name[i]);
 	std::cout << "target: "<< target_name << "\n";
 
 	for (; it != _channels.end(); it++)
 	{
-		for (int i = 0; i < it->second->getName().size(); i++)
+		for (size_t i = 0; i < it->second->getName().size(); i++)
 			search_name += tolower(it->second->getName()[i]);
 		std::cout << "search: " << search_name << "\n";
 		if (search_name == target_name)
