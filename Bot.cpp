@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 12:59:17 by graja             #+#    #+#             */
-/*   Updated: 2022/08/24 10:01:48 by graja            ###   ########.fr       */
+/*   Updated: 2022/08/24 11:57:45 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ Bot::Bot(std::string const & address, std::string const & port, std::string cons
 		}
 		std::cerr << "Connected to " << this->_addr << ":" << this->_port << std::endl;
 		freeaddrinfo(result);
-		//sleep(1);
 }
 
 Bot::~Bot(void)
@@ -131,7 +130,7 @@ bool Bot::loop(void)
 		signal(SIGINT, &Bot::myHandler);
 		while (this->keepAlive())
 		{
-				//sleep(1);
+				usleep(100);
 				msg.clear();
 				msg = this->read(false);
 				if (msg.length() > 0)
