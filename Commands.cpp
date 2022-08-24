@@ -90,10 +90,11 @@ int		Commands::die(ftClient& client, Message& msg)
 
 int		Commands::invite(ftClient& client, Message& msg)
 {
-	servChannel::iterator		itchan;
+	// servChannel::iterator		itchan;
 	std::string					nickname;
 	std::string					channel;
 	ftClient*					target;
+	IrcChannel*					existedChan;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -101,18 +102,18 @@ int		Commands::invite(ftClient& client, Message& msg)
 		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 	nickname = msg.getParam()[0];
 	channel = msg.getParam()[1];
-	if ((itchan = _channels.find(channel)) == _channels.end())
+	if (!getChannel(channel, &existedChan))
 		return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, channel, "No such channel");
-	else if (!(*itchan).second->isMember(client))
-		return !sendCommandResponse(client, ERR_NOTONCHANNEL, channel, "You're not on that channel");
-	else if (!(*itchan).second->isChop(client))
-		return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, channel, "You're not channel operator");
+	else if (!existedChan->isMember(client))
+		return !sendCommandResponse(client, ERR_NOTONCHANNEL, existedChan->getName(), "You're not on that channel");
+	else if (!existedChan->isChop(client))
+		return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, existedChan->getName(), "You're not channel operator");
 	else if (!isUser(nickname))
 		return !serverSend(client.get_fd(), "", "401 " + client.get_name() +
 		" " + nickname, "No such nick/channel");
-	else if ((*itchan).second->getMember(nickname, &target))
+	else if (existedChan->getMember(nickname, &target))
 		return !serverSend(client.get_fd(), "", "443 " + nickname +
-			" " + (*itchan).second->getName(), "is already on channel");
+			" " + existedChan->getName(), "is already on channel");
 	else //invite does not add to invite list of channel
 	{
 		for (std::map<int, ftClient*>::iterator it = _users.begin();
@@ -120,6 +121,7 @@ int		Commands::invite(ftClient& client, Message& msg)
 		{
 			if ((*it).second->get_name() == nickname)
 			{
+				channel = existedChan->getName();
 				(*it).second->invited(channel);
 				if ((*it).second->get_flags() & UserMode::AWAY)
 					return !serverSend(client.get_fd(), "", "301 " + client.get_name() +
