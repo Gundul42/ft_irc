@@ -31,6 +31,7 @@ class Commands
 									const std::string &flag, ftClient &client);
 				bool	sendRegistered(ftClient &client, Message &msg);
 				bool	getChannel(const std::string& name, IrcChannel** channel);
+				void	removeChannel(const std::string& name);
 
 		public:
 

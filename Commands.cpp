@@ -259,10 +259,11 @@ int		Commands::join(ftClient& client, Message& msg)
 
 int		Commands::kick(ftClient& client, Message& msg)
 {
-	servChannel::iterator		itchan;
+	// servChannel::iterator		itchan;
 	std::vector<std::string>	params = msg.getChannel();
 	ftClient*					target;
 	std::string					kick_msg;
+	IrcChannel*					existedChan;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -270,12 +271,13 @@ int		Commands::kick(ftClient& client, Message& msg)
 		return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 	for(size_t i = 0; i < msg.getChannel().size(); i++)
 	{
-		if ((itchan = _channels.find(params[i])) == _channels.end())
+		// if ((itchan = _channels.find(params[i])) == _channels.end())
+		if (!getChannel(params[i], &existedChan))
 			sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
-		else if (!(*itchan).second->isMember(client))
-			sendCommandResponse(client, ERR_NOTONCHANNEL, params[i], "You're not on that channel");
-		else if (!(*itchan).second->isChop(client))
-			sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, params[i], "You're not channel operator");
+		else if (!existedChan->isMember(client))
+			sendCommandResponse(client, ERR_NOTONCHANNEL, existedChan->getName(), "You're not on that channel");
+		else if (!existedChan->isChop(client))
+			sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, existedChan->getName(), "You're not channel operator");
 		else
 		{
 			for (size_t j = 0; j < msg.getKeys().size(); j++)
@@ -283,21 +285,18 @@ int		Commands::kick(ftClient& client, Message& msg)
 				if (!isUser(msg.getKeys()[j]))
 					serverSend(client.get_fd(), "", "401 " + client.get_name() +
 							" " + msg.getKeys()[j], "No such nick/channel");
-				else if (!(*itchan).second->getMember(msg.getKeys()[j], &target))
+				else if (!existedChan->getMember(msg.getKeys()[j], &target))
 					serverSend(client.get_fd(), "", "441 " + msg.getKeys()[j] +
-							" " + (*itchan).second->getName(), "They aren't on that channel");
+							" " + existedChan->getName(), "They aren't on that channel");
 				else
 				{
-					Message partmsg("PART " + params[i]);
+					Message partmsg("PART " + existedChan->getName());
 					kick_msg = msg.getTrailing().empty() ? msg.getKeys()[j] : msg.getTrailing();
-					(*itchan).second->removeMember(*target);
-					serverSend(client.get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
-					serverSend(target->get_fd(), client.get_name(), "KICK " + params[i] + " " + msg.getKeys()[j], kick_msg);
-					if (itchan->second->getMembers().size() == 0)
-					{
-						delete itchan->second;
-						_channels.erase(itchan);
-					}
+					existedChan->removeMember(*target);
+					serverSend(client.get_fd(), client.get_name(), "KICK " + existedChan->getName() + " " + msg.getKeys()[j], kick_msg);
+					serverSend(target->get_fd(), client.get_name(), "KICK " + existedChan->getName() + " " + msg.getKeys()[j], kick_msg);
+					if (existedChan->getMembers().size() == 0)
+						removeChannel(existedChan->getName());
 				}
 			}
 		}
@@ -350,7 +349,7 @@ int		Commands::list(ftClient& client, Message& msg)
 				chan = chan.substr(pos + 1, std::string::npos);
 		}
 		while (pos != std::string::npos);
-		return 1;
+			return 1;
 }
 
 void	Commands::printList(unsigned int incoming_flag, IrcChannel &channel,
@@ -657,13 +656,14 @@ int		Commands::oper(ftClient& client, Message& msg)
 int		Commands::part(ftClient& client, Message& msg)
 {
 	std::vector<std::string>			params;
-	servChannel::iterator				itchan;
+	// servChannel::iterator				itchan;
 	std::vector<ftClient*>				members;
 	std::vector<ftClient*>::iterator	itmem;
 	std::string							comment;
 	std::string							parse;
 	std::string							tmp;
 	size_t								pos;
+	IrcChannel*							existedChan;
 
 	params = msg.getParam();
 	if (!client.isRegistered())
@@ -680,34 +680,32 @@ int		Commands::part(ftClient& client, Message& msg)
 	{
 		pos = parse.find(',');
 		tmp = parse.substr(0, pos);
-		itchan = _channels.find(tmp);
-		if (itchan == _channels.end())
+		// itchan = _channels.find(tmp);
+		// if (itchan == _channels.end())
+		if (!getChannel(tmp, &existedChan))
 			sendCommandResponse(client, ERR_NOSUCHCHANNEL, tmp, "No such channel");
 		else
 		{
-			if (!itchan->second->isMember(client))
-				sendCommandResponse(client, ERR_NOTONCHANNEL, tmp, "You're not on that channel");
+			if (!existedChan->isMember(client))
+				sendCommandResponse(client, ERR_NOTONCHANNEL, existedChan->getName(), "You're not on that channel");
 			else
 			{
-				members = itchan->second->getMembers();
+				members = existedChan->getMembers();
 				itmem = members.begin();
 				while (itmem != members.end())
 				{
-					serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + tmp, comment);
+					serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + existedChan->getName(), comment);
 					itmem++;
 				}
-				itchan->second->removeMember(client);
+				existedChan->removeMember(client);
 			}
-			if (itchan->second->getMembers().size() == 0)
-			{
-				delete itchan->second;
-				_channels.erase(itchan);
-			}
+			if (existedChan->getMembers().size() == 0)
+				removeChannel(existedChan->getName());
 		}
 		parse = parse.substr(pos + 1, std::string::npos);
 	}
 	while (pos != std::string::npos);
-	return false;
+		return false;
 }
 
 int		Commands::pass(ftClient& client, Message& msg)
@@ -1027,4 +1025,20 @@ bool	Commands::getChannel(const std::string& name, IrcChannel** channel)
 	}
 	std::cout << "false\n";
 	return false;
+}
+
+void	Commands::removeChannel(const std::string& name)
+{
+	servChannel::iterator it = _channels.begin();
+
+	while (it != _channels.end())
+	{
+		if (it->second->getName() == name)
+		{
+			delete it->second;
+			_channels.erase(it);
+			return ;
+		}
+		it++;
+	}
 }
