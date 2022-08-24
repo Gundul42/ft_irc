@@ -165,7 +165,6 @@ int		Commands::join(ftClient& client, Message& msg)
 		for (size_t i = 0; i != params.size(); i++)
 		{
 			// if ((itchan = _channels.find(params[i])) == _channels.end())
-			std::cout << "p: " << params[i] << "\n";
 			if (!getChannel(params[i], &existedChan))
 			{
 				newChan = new IrcChannel(params[i], client);
@@ -736,6 +735,7 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 {
 	std::string target;
 	int			pos = 0;
+	IrcChannel*	existedChan;
 
 	if (!client.isRegistered())
 		return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -764,23 +764,24 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 	}
 	else if (msg.isChannel(target))
 	{
-		servChannel::iterator it = _channels.find(target);
+		// servChannel::iterator it = _channels.find(target);
 
-		if (it != _channels.end())
+		// if (it != _channels.end())
+		if (getChannel(target, &existedChan))
 		{
-			if (((*it).second->getFlags() & ChannelMode::NO_OUTSIDE_MSG &&
-								!(*it).second->isMember(client))
-				|| ((*it).second->getFlags() & ChannelMode::MODERATED &&
-								!(*it).second->isChop(client) && !(*it).second->isVoice(client))
-				|| ((!(*it).second->isChop(client) && !(*it).second->isVoice(client)) &&
-								(*it).second->isBanned(client)))
-				return !serverSend(client.get_fd(), "", "404 " + target, "Cannot send to channel");
-			std::vector<ftClient*> members = (*it).second->getMembers();
+			if ((existedChan->getFlags() & ChannelMode::NO_OUTSIDE_MSG &&
+								!existedChan->isMember(client))
+				|| (existedChan->getFlags() & ChannelMode::MODERATED &&
+								!existedChan->isChop(client) && !existedChan->isVoice(client))
+				|| ((!existedChan->isChop(client) && !existedChan->isVoice(client)) &&
+								existedChan->isBanned(client)))
+				return !serverSend(client.get_fd(), "", "404 " + existedChan->getName(), "Cannot send to channel");
+			std::vector<ftClient*> members = existedChan->getMembers();
 			int size = members.size();
 			for (int i = 0; i != size; i++)
-				if (members[i]->get_name() != client.get_name() && !(*it).second->isBanned(*(members[i])))
+				if (members[i]->get_name() != client.get_name() && !existedChan->isBanned(*(members[i])))
 					serverSend(members[i]->get_fd(), client.get_name(), msg.getCommand() +
-									" " + target, msg.getTrailing());
+									" " + existedChan->getName(), msg.getTrailing());
 			return true;
 		}
 		return !serverSend(client.get_fd(), "", "401 " + target, "No such nick/channel");
