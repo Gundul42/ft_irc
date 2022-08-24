@@ -838,38 +838,42 @@ int		Commands::ustime(ftClient& client, Message& msg)
 
 int		Commands::topic(ftClient& client, Message& msg)
 {
-	servChannel::iterator	it;
+	// servChannel::iterator	it;
+	IrcChannel*	existedChan;
+	std::string	target_channel;
 
 	if (msg.getParam().empty())
 		return !serverSend(client.get_fd(), "", "461 " + msg.getCommand(), "Not enough parameters");
 	if (msg.getParam().size() > 1)
 		return false;
-	it = _channels.find(msg.getParam()[0]);
-	if (it == _channels.end())
+	// it = _channels.find(msg.getParam()[0]);
+	// if (it == _channels.end())
+	target_channel = msg.getParam()[0];
+	if (!getChannel(target_channel, &existedChan))
 		return !serverSend(client.get_fd(), "", "403 " + client.get_name() + " "
-						+ msg.getParam()[0], "No such channel");//weechat does not react to this response
-	else if ((*it).second->getName()[0] == '+')
-		return !sendCommandResponse(client, ERR_NOCHANMODES, msg.getParam()[0],
+						+ target_channel, "No such channel");
+	else if (existedChan->getName()[0] == '+')
+		return !sendCommandResponse(client, ERR_NOCHANMODES, existedChan->getName(),
 						"Channel doesn't support modes");
 	else if (!msg.getTrailing().size())
 	{
-		if ((*it).second->getTopic().empty())
-			return !sendCommandResponse(client, RPL_NOTOPIC, msg.getParam()[0], "No topic is set");
+		if (existedChan->getTopic().empty())
+			return !sendCommandResponse(client, RPL_NOTOPIC, existedChan->getName(), "No topic is set");
 		return serverSend(client.get_fd(), "", "332 " + client.get_name() + " " +
-						msg.getParam()[0], (*it).second->getTopic());
+						existedChan->getName(), existedChan->getTopic());
 	}
-	else if (!(*it).second->isMember(client))
-		return !sendCommandResponse(client, ERR_NOTONCHANNEL, msg.getParam()[0],
+	else if (!existedChan->isMember(client))
+		return !sendCommandResponse(client, ERR_NOTONCHANNEL, existedChan->getName(),
 						"You're not on that channel");
-	else if ((*it).second->getFlags() & ChannelMode::TOPIC_SETTABLE_BY_CHANOP)
+	else if (existedChan->getFlags() & ChannelMode::TOPIC_SETTABLE_BY_CHANOP)
 	{
-		if (!(*it).second->isChop(client))
-			return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, msg.getParam()[0],
+		if (!existedChan->isChop(client))
+			return !sendCommandResponse(client, ERR_CHANOPRIVSNEEDED, existedChan->getName(),
 							"You're not channel operator");
 	}
-	(*it).second->setTopic(msg.getTrailing());
+	existedChan->setTopic(msg.getTrailing());
 	return serverSend(client.get_fd(), client.get_name(), msg.getCommand() + " " +
-					msg.getParam()[0], msg.getTrailing());
+					existedChan->getName(), msg.getTrailing());
 }
 
 int		Commands::user(ftClient& client, Message& msg)
