@@ -116,9 +116,9 @@ bool	Target::isMask(const std::string& target)
 
 bool	Target::isNickname(const std::string& target)
 {
-	if (target[0] != '#' && target[0] != '$')
-		return true;
-	return false;
+	if (isChannel(target))
+		return false;
+	return true;
 }
 
 bool	Target::isChannel(const std::string& target)
