@@ -30,6 +30,7 @@ class Commands
 				void	printList(unsigned int incoming_flag, IrcChannel &channel, 
 									const std::string &flag, ftClient &client);
 				bool	sendRegistered(ftClient &client, Message &msg);
+				bool	getChannel(const std::string& name, IrcChannel** channel);
 
 		public:
 

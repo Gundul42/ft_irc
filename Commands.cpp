@@ -137,8 +137,9 @@ int		Commands::join(ftClient& client, Message& msg)
 {
 		std::vector<std::string>	params = msg.getChannel();
 		servChannel::iterator		itchan;
-		bool						isnew = false;
+		// bool						isnew = false;
 		IrcChannel*					newChan;
+		IrcChannel*					existedChan;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -163,7 +164,9 @@ int		Commands::join(ftClient& client, Message& msg)
 		}
 		for (size_t i = 0; i != params.size(); i++)
 		{
-			if ((itchan = _channels.find(params[i])) == _channels.end())
+			// if ((itchan = _channels.find(params[i])) == _channels.end())
+			std::cout << "p: " << params[i] << "\n";
+			if (!getChannel(params[i], &existedChan))
 			{
 				newChan = new IrcChannel(params[i], client);
 				if (newChan->valChanName(params[i]) == false)
@@ -171,10 +174,8 @@ int		Commands::join(ftClient& client, Message& msg)
 					delete newChan;
 					return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[i], "No such channel");
 				}
-				isnew = true;
-			}
-			if (isnew)
-			{
+				// isnew = true;
+				//moved to here for cases like first channel is new but second channel not will cause join error
 				if (params[i][0] == '#')
 				{
 					newChan->setFlags("+", ChannelMode::parse('n'));
@@ -186,36 +187,70 @@ int		Commands::join(ftClient& client, Message& msg)
 				mode(client, m);
 				names(client, m);
 			}
+			// if (isnew)
+			// {
+			// 	if (params[i][0] == '#')
+			// 	{
+			// 		newChan->setFlags("+", ChannelMode::parse('n'));
+			// 		newChan->setFlags("+", ChannelMode::parse('t'));
+			// 	}
+			// 	_channels.insert(std::pair<std::string, IrcChannel*>(params[i], newChan));
+			// 	serverSend(client.get_fd(), client.get_name(), "JOIN " + params[i], client.get_name());
+			// 	Message m(params[i]);
+			// 	mode(client, m);
+			// 	names(client, m);
+			// }
 			else
 			{
-				if ((*itchan).second->isBanned(client))
-					return !sendCommandResponse(client, ERR_BANNEDFROMCHAN, params[i],
+				// if ((*itchan).second->isBanned(client))
+				if (existedChan->isBanned(client))
+					return !sendCommandResponse(client, ERR_BANNEDFROMCHAN, existedChan->getName(),
 								"Cannot join channel (+b)");
-				else if ((*itchan).second->getLimit() > 0 && (*itchan).second->getLimit()
-								<= static_cast<int>((*itchan).second->getMembers().size()))
-					return !sendCommandResponse(client, ERR_CHANNELISFULL, params[i],
+				// else if ((*itchan).second->getLimit() > 0 && (*itchan).second->getLimit()
+				// 				<= static_cast<int>((*itchan).second->getMembers().size()))
+				// 	return !sendCommandResponse(client, ERR_CHANNELISFULL, params[i],
+				// 				"Cannot join channel (+l)");
+				else if (existedChan->getLimit() > 0 && existedChan->getLimit()
+								<= static_cast<int>(existedChan->getMembers().size()))
+					return !sendCommandResponse(client, ERR_CHANNELISFULL, existedChan->getName(),
 								"Cannot join channel (+l)");
-				else if ((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY &&
-								!(*itchan).second->isInvited(client))
-					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
+				// else if ((*itchan).second->getFlags() & ChannelMode::INVITE_ONLY &&
+				// 				!(*itchan).second->isInvited(client))
+				// 	return !sendCommandResponse(client, ERR_INVITEONLYCHAN, params[i],
+				// 				"Cannot join channel (+i)");
+				else if (existedChan->getFlags() & ChannelMode::INVITE_ONLY &&
+								!existedChan->isInvited(client))
+					return !sendCommandResponse(client, ERR_INVITEONLYCHAN, existedChan->getName(),
 								"Cannot join channel (+i)");
-				else if (((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
-								|| ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
-								!= (*itchan).second->getKey()))
-					return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
+				// else if (((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
+				// 				|| ((*itchan).second->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
+				// 				!= (*itchan).second->getKey()))
+				// 	return !sendCommandResponse(client, ERR_BADCHANNELKEY, params[i],
+				// 				"Cannot join channel (+k)");
+				else if ((existedChan->getFlags() & ChannelMode::KEY && msg.getKeys().empty())
+								|| (existedChan->getFlags() & ChannelMode::KEY && msg.getKeys()[i]
+								!= existedChan->getKey()))
+					return !sendCommandResponse(client, ERR_BADCHANNELKEY, existedChan->getName(),
 								"Cannot join channel (+k)");
-				if (!(*itchan).second->isMember(client))
+				// if (!(*itchan).second->isMember(client))
+				if (!existedChan->isMember(client))
 				{
-					(*itchan).second->addMember(client);
-					for (size_t j = 0; j != (*itchan).second->getMembers().size(); j++)
-						serverSend((*itchan).second->getMembers()[j]->get_fd(), client.get_name(),
-								"JOIN " + (*itchan).second->getName(), client.get_name());
-					if (!(*itchan).second->getTopic().empty())
+					std::cout << "channel join: " << existedChan->getName() << "\n";
+					// (*itchan).second->addMember(client);
+					existedChan->addMember(client);
+					// for (size_t j = 0; j != (*itchan).second->getMembers().size(); j++)
+					// 	serverSend((*itchan).second->getMembers()[j]->get_fd(), client.get_name(),
+					// 			"JOIN " + (*itchan).second->getName(), client.get_name());
+					for (size_t j = 0; j != existedChan->getMembers().size(); j++)
+						serverSend(existedChan->getMembers()[j]->get_fd(), client.get_name(),
+								"JOIN " + existedChan->getName(), client.get_name());
+					// if (!(*itchan).second->getTopic().empty())
+					if (!existedChan->getTopic().empty())
 					{
-						Message mt("TOPIC " + params[i]);
+						Message mt("TOPIC " + existedChan->getName());
 						topic(client, mt);
 					}
-					Message m(params[i]);
+					Message m(existedChan->getName());
 					names(client, m);
 				}
 			}
@@ -346,13 +381,14 @@ int		Commands::mode(ftClient& client, Message& msg)
 {
 		std::vector<std::string>					params = msg.getParam();
 		std::vector<std::string>::const_iterator	itpar;
-		servChannel::iterator						itchan;
+		// servChannel::iterator					itchan;
 		unsigned int								incoming_flag;
 		std::string									add_remove = "+";
 		std::string									mask;
 		ftClient*									target;
 		std::vector<ftClient*>::iterator			itmem;
 		std::vector<ftClient*>						members;
+		IrcChannel*									existedChan;
 
 		if (client.get_name().empty() || !client.isRegistered())
 			return !serverSend(client.get_fd(), "", "", "You are not registered yet");
@@ -360,16 +396,18 @@ int		Commands::mode(ftClient& client, Message& msg)
 			return !sendCommandResponse(client, ERR_NEEDMOREPARAMS, "Not enough parameters");
 		if (msg.isChannel(params[0]))
 		{
-			itchan =_channels.find(params[0]);
-			if (itchan == _channels.end())
+			// itchan =_channels.find(params[0]);
+			// if (itchan == _channels.end())
+				// return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
+			if (!getChannel(params[0], &existedChan))
 				return !sendCommandResponse(client, ERR_NOSUCHCHANNEL, params[0], "No such channel");
 			if (params.size() == 1) //mode #channel -> prints channel info
 			{
 				serverSend(client.get_fd(),IRCSERVNAME, "324 " +
-					client.get_name() + " " + params[0] + " +" +
-					(*itchan).second->toString(), "");
+					client.get_name() + " " + existedChan->getName() + " +" +
+					existedChan->toString(), "");
 				return serverSend(client.get_fd(),IRCSERVNAME, "329 " + client.get_name() + " " +
-										params[0] + " " + (*itchan).second->getCtime(), "");
+										existedChan->getName() + " " + existedChan->getCtime(), "");
 			}
 			for (size_t i = 0; i != msg.getFlags().size(); i++)
 			{
@@ -380,13 +418,13 @@ int		Commands::mode(ftClient& client, Message& msg)
 					serverSend(client.get_fd(), "", "472 " + client.get_name() + " " +
 									msg.getFlags()[i].c_str(), "is an unknown mode char to me");
 				else if (params.size() == 2 &&  msg.getFlags()[i] == "b") //print ban list, no chop needed
-					printList(incoming_flag, *(*itchan).second, msg.getFlags()[i], client);
-				else if (!(*itchan).second->isChop(client)) //check chop
+					printList(incoming_flag, *existedChan, msg.getFlags()[i], client);
+				else if (!existedChan->isChop(client)) //check chop
 					sendCommandResponse(client, ERR_CHANOPRIVSNEEDED,
 									"You're not channel operator");
 				else if (params.size() == 2 && (msg.getFlags()[i] == "I" 
 					|| msg.getFlags()[i] == "e")) //print invite or exception list
-					printList(incoming_flag, *(*itchan).second, msg.getFlags()[i], client);
+					printList(incoming_flag, *existedChan, msg.getFlags()[i], client);
 				else if	(add_remove == "+" && params.size() < 3 
 					&& (incoming_flag == ChannelMode::KEY 
 					|| incoming_flag == ChannelMode::LIMIT 
@@ -402,42 +440,41 @@ int		Commands::mode(ftClient& client, Message& msg)
 							serverSend(client.get_fd(), "", "401 " + client.get_name() +
 									" " + mask, "No such nick/channel");
 					else if ((incoming_flag == ChannelMode::VOICE
-						|| incoming_flag == ChannelMode::OPERATOR) && !(*itchan).second->getMember(mask, &target))
+						|| incoming_flag == ChannelMode::OPERATOR) && !existedChan->getMember(mask, &target))
 							serverSend(client.get_fd(), "", "441 " + mask +
-									" " + (*itchan).second->getName(), "They aren't on that channel");
-					else if ((add_remove == "+" && ((*itchan).second->addChop(incoming_flag, *target)
-								|| (*itchan).second->addVoice(incoming_flag, *target)
-								|| (*itchan).second->setMasks(incoming_flag, mask)))
-						|| (add_remove == "-" && ((*itchan).second->removeChop(incoming_flag, *target)
-									|| (*itchan).second->removeVoice(incoming_flag, *target)
-									|| (*itchan).second->unsetMasks(incoming_flag, mask))))
+									" " + existedChan->getName(), "They aren't on that channel");
+					else if ((add_remove == "+" && (existedChan->addChop(incoming_flag, *target)
+								|| existedChan->addVoice(incoming_flag, *target)
+								|| existedChan->setMasks(incoming_flag, mask)))
+						|| (add_remove == "-" && (existedChan->removeChop(incoming_flag, *target)
+									|| existedChan->removeVoice(incoming_flag, *target)
+									|| existedChan->unsetMasks(incoming_flag, mask))))
 					{
-						(*itchan).second->setFlags(add_remove, incoming_flag);
-						members = itchan->second->getMembers();
+						existedChan->setFlags(add_remove, incoming_flag);
+						members = existedChan->getMembers();
 						itmem = members.begin();
 						while (itmem != members.end())
 						{
 							serverSend((*itmem)->get_fd(), client.get_name(), "MODE "
-									+ (*itchan).second->getName() + " " + add_remove 
+									+ existedChan->getName() + " " + add_remove 
 									+ msg.getFlags()[i] + " " + mask, " ");
 							itmem++;
 						}
 					}
-					else if (msg.getFlags()[i].find_first_not_of("timn") == std::string::npos)
+					else if (msg.getFlags()[i].find_first_not_of("timnl") == std::string::npos)
 					{
-						//std::cout << "masaka " << msg.getFlags()[i] << "\n";
-						if ((add_remove == "+" && (incoming_flag & (*itchan).second->getFlags()))
-							|| (add_remove == "-" && !(incoming_flag & (*itchan).second->getFlags())))
+						if ((add_remove == "+" && (incoming_flag & existedChan->getFlags()))
+							|| (add_remove == "-" && !(incoming_flag & existedChan->getFlags())))
 							continue; //if add already exit flag/ remove already not exist flag, send no response
 						else
 						{
-							(*itchan).second->setFlags(add_remove, incoming_flag);
-							members = itchan->second->getMembers();
+							existedChan->setFlags(add_remove, incoming_flag);
+							members = existedChan->getMembers();
 							itmem = members.begin();
 							while (itmem != members.end())
 							{
 								serverSend(client.get_fd(), client.get_name(), "MODE "
-										+ (*itchan).second->getName() + " " 
+										+ existedChan->getName() + " " 
 										+ add_remove + msg.getFlags()[i], " ");
 								itmem++;
 							}
@@ -955,4 +992,31 @@ bool	Commands::sendRegistered(ftClient &client, Message &msg)
 					"The server was created on I don't know how long ago...");
 	return serverSend(client.get_fd(), "", "004 " + client.get_name() + " " + IRCSERVNAME + " " + IRCSERVVERSION + " " + IRCSERVUSERMODES + " " + IRCSERVCHANMODES,
 					" ");
+}
+
+bool	Commands::getChannel(const std::string& name, IrcChannel** channel)
+{
+	std::string	search_name;
+	std::string target_name;
+	servChannel::iterator it = _channels.begin();
+
+	for (int i = 0; i < name.size(); i++)
+		target_name += tolower(name[i]);
+	std::cout << "target: "<< target_name << "\n";
+
+	for (; it != _channels.end(); it++)
+	{
+		for (int i = 0; i < it->second->getName().size(); i++)
+			search_name += tolower(it->second->getName()[i]);
+		std::cout << "search: " << search_name << "\n";
+		if (search_name == target_name)
+		{
+			*channel = &(*(it->second));
+			std::cout << "true\n";
+			return true;
+		}
+		search_name = "";
+	}
+	std::cout << "false\n";
+	return false;
 }
