@@ -6,7 +6,7 @@
 /*   By: mwen <mwen@student.42wolfsburg.de>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 13:01:33 by graja             #+#    #+#             */
-/*   Updated: 2022/08/22 10:40:52 by mwen             ###   ########.fr       */
+/*   Updated: 2022/08/24 12:04:50 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 # define CONFIG_H
 
 # define IRCSERVNAME "irc.gundul.net"
-# define IRCSERVWLC "Welcome to IrcServ V1.0"
-# define IRCSERVVERSION "ircserv V1.0 [mwen graja]"
-# define IRCSERVCDATE "200822"
+# define IRCSERVWLC "Welcome to IrcServ V1.1"
+# define IRCSERVVERSION "ircserv V1.1 [mwen graja]"
+# define IRCSERVCDATE "240822"
 # define IRCSERVUSERMODES "ao"
 # define IRCSERVCHANMODES "ovbiklmnt"
 # define IRCFLOODCONTROL 2								//time intervall it is checked for msgs

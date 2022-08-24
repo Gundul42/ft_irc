@@ -6,7 +6,7 @@
 #    By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/08/20 13:02:33 by graja             #+#    #+#              #
-#    Updated: 2022/08/20 13:02:52 by graja            ###   ########.fr        #
+#    Updated: 2022/08/24 12:14:19 by graja            ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,7 +34,7 @@ $(NAME)	:	$(SRCS) $(OBJ)
 
 all	:	$(NAME)
 
-debug	:	$(SRCS) fclean
+debug	:	$(BONUS) $(SRCS) fclean
 	@echo
 	@echo "Server:"
 	$(CC) $(DFLAGS) $(FLAGS) $(SRCS) -o $(NAME)
