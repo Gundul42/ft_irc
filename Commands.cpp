@@ -473,7 +473,7 @@ int		Commands::mode(ftClient& client, Message& msg)
 							itmem = members.begin();
 							while (itmem != members.end())
 							{
-								serverSend(client.get_fd(), client.get_name(), "MODE "
+								serverSend((*itmem)->get_fd(), client.get_name(), "MODE "
 										+ existedChan->getName() + " " 
 										+ add_remove + msg.getFlags()[i], " ");
 								itmem++;
