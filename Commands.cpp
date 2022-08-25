@@ -76,7 +76,7 @@ int		Commands::die(ftClient& client, Message& msg)
 		}
 		if (itop == _operList.end())
 				return false;
-		std::cout << client.get_hostname() << " from " << client.get_addr() <<
+		std::cout << client.get_name() << " from " << client.get_addr() <<
 				" shuts down server." << std::endl;
 		while (it != _channels.end())
 		{

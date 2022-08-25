@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/29 09:49:56 by graja             #+#    #+#             */
-/*   Updated: 2022/08/19 12:51:48 by graja            ###   ########.fr       */
+/*   Updated: 2022/08/25 11:02:06 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,9 +23,9 @@ int main(int argc, char **argv)
 			exit(EXIT_FAILURE);
 	}
 	port = atoi(argv[2]);
-	if (port < 1024 || port > 65534)
+	if (port < 1024 || port > 65535)
 	{
-			std::cout << "Error: wrong port range [1024 - 65534]" << std::endl;
+			std::cout << "Error: wrong port range [1024 - 65535]" << std::endl;
 			exit (EXIT_FAILURE);
 	}
 	Bot		bot(argv[1], argv[2], argv[3]);
