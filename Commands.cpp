@@ -800,9 +800,11 @@ int		Commands::quit(ftClient& client, Message& msg)
 	std::vector<ftClient*>::iterator	itmem;
 
 	(void)msg;
+	
 	serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
 	serverSend(client.get_fd(), " ", "Error", "Closing Link: " + 
 					client.get_addr() + " (Client Quit)");
+	
 	itchan = _channels.begin();
 	while (itchan != _channels.end())
 	{
@@ -969,6 +971,13 @@ bool	Commands::sendCommandResponse(const ftClient & clt, const int & code,
 bool	Commands::serverSend(int fd, std::string prefix, std::string msg, std::string trl)
 {
 		std::string	tosend;
+		int			err;
+
+		err = send(fd, NULL, 0, 0);
+		//std::cout << "!!! " << fd << ":" << err << " <<<" << std::endl;
+
+		if (err < 0)
+			return true;
 
 		if (prefix.length() == 0)
 				prefix = IRCSERVNAME;
@@ -977,7 +986,9 @@ bool	Commands::serverSend(int fd, std::string prefix, std::string msg, std::stri
 
 		tosend.clear();
 		tosend = ":" + prefix + " " + msg + " :" + trl + "\x0d\x0a";
-		if (send(fd, tosend.c_str(), tosend.length(), 0) == -1)
+		if (send(fd, NULL, 0, 0) != -1)
+			send(fd, tosend.c_str(), tosend.length(), 0);
+		else
 				perror("serverSend");
 		usleep(100); // break of 0.1s to avoid of omitting this msg in case of a following close()
 		return true;
