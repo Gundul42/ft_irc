@@ -795,7 +795,9 @@ int		Commands::privmsg(ftClient& client, Message& msg)
 
 int		Commands::quit(ftClient& client, Message& msg)
 {
-	servChannel::iterator	itchan;
+	servChannel::iterator				itchan;
+	std::vector<ftClient*>				members;
+	std::vector<ftClient*>::iterator	itmem;
 
 	(void)msg;
 	serverSend(client.get_fd(), client.get_prefix(), "QUIT", "Client Quit");
@@ -807,6 +809,13 @@ int		Commands::quit(ftClient& client, Message& msg)
 		if ((*itchan).second->isMember(client))
 		{
 			(*itchan).second->removeMember(client);
+			members = (*itchan).second->getMembers();
+			itmem = members.begin();
+			while (itmem != members.end())
+			{
+				serverSend((*itmem)->get_fd(), client.get_prefix(), "PART " + (*itchan).second->getName(), client.get_name());
+				itmem++;
+			}
 			if ((*itchan).second->getMembers().size() == 0)
 			{
 				delete itchan->second;
