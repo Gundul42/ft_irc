@@ -6,7 +6,7 @@
 /*   By: graja <graja@student.42wolfsburg.de>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/08/20 12:59:57 by graja             #+#    #+#             */
-/*   Updated: 2022/08/20 13:00:02 by graja            ###   ########.fr       */
+/*   Updated: 2022/08/26 17:40:31 by graja            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -230,6 +230,7 @@ void IrcServ::loop(void)
 						oss << " sec" << std::endl;
 						_logAction(oss.str());
 						oss.str("");
+						this->_commands.handle_command(_connections, pfds[i].fd, "QUIT");
 						_del_from_pfds(pfds, i, &fd_count);
 					}
 					else
