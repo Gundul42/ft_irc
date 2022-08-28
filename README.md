@@ -6,8 +6,8 @@
 ##### file transfers work best with weechat V2.8 - V3.5
 <br/>
 <br/>
-adjust settings in the config.hpp
-run make to compile.
+adjust settings in the config.hpp<br/>
+run make to compile.<br/>
 
 ```
 ./ircserv [port][password]
@@ -18,8 +18,8 @@ run make to compile.
 
 ## Bonus
 
-adjust settings in the BotConfig.hpp
-run make bonus
+adjust settings in the BotConfig.hpp<br/>
+run make bonus<br/>
 
 ```
 ./bot [serveraddr][port][password]
